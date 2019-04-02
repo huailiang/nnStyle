@@ -5,6 +5,18 @@
 
 Unity2018.2 (MacOS  & Windows)
 
+Python2.7 or 3.5 
+
+Tensorflow 1.7 or new
+
+
+## Export Data
+
+cd python/ 
+
+run export.py,  it will be make .bytes file named `args.bytes`, which be used in unity env;
+
+
 
 ## Active Function
 
