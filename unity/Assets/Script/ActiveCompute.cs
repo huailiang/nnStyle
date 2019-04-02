@@ -1,57 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class ActiveCompute : MonoBehaviour
 {
-
-    struct PBuffer
-    {
-        public float scale;
-        public float axi;
-    }
-
     public ComputeShader shader;
-    private RenderTexture midDestination = null;
+    public Color tintColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
     private RenderTexture tempDestination = null;
-    public Renderer tempRender = null;
-    public Color color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-    public float scale = 1;
-    public float axi = 1;
-    private ComputeBuffer buffer, buffer2;
-    private int handleActiveMain;
-    private int handleLastMain;
-    private PBuffer[] values;
+    private int handleActiveMain, handleBufferMain;
+    private ComputeBuffer appendBuffer, consumeBuffer, countBuffer;
+    private Renderer tempRender = null;
+
 
     void Start()
     {
+        tempRender = GetComponent<Renderer>();
         handleActiveMain = shader.FindKernel("ActiveMain");
-        handleLastMain = shader.FindKernel("LastMain");
-        if (handleActiveMain < 0 || handleLastMain < 0)
+        handleBufferMain = shader.FindKernel("BufferMain");
+        if (handleActiveMain < 0 || handleBufferMain < 0)
         {
             Debug.Log("Initialization failed ");
             enabled = false;
         }
-
-        buffer = new ComputeBuffer(1, 2 * sizeof(float), ComputeBufferType.Append);
-        values = new PBuffer[1];
-        values[0].scale = scale;
-        values[0].axi = axi;
-        buffer.SetData(values);
-        int len = 256;
-        buffer2 = new ComputeBuffer(len, sizeof(float));
-        buffer2.SetData(new float[len]);
+        appendBuffer = new ComputeBuffer(64, sizeof(float), ComputeBufferType.Append);
+        appendBuffer.SetCounterValue(0);
+        consumeBuffer = new ComputeBuffer(64, sizeof(int), ComputeBufferType.Append);
+        consumeBuffer.SetCounterValue(0);
+        consumeBuffer.SetData(new int[] { 97, 98, 99 });
+        consumeBuffer.SetCounterValue(3);
+        shader.SetBuffer(handleBufferMain, "appendBuffer", appendBuffer);
+        shader.SetBuffer(handleBufferMain, "consumeBuffer", consumeBuffer);
     }
 
-    void Update()
-    {
-        if (values != null)
-        {
-            values[0].scale = scale;
-            values[0].axi = axi;
-            buffer.SetData(values);
-        }
-    }
 
     void OnDestroy()
     {
@@ -60,20 +39,15 @@ public class ActiveCompute : MonoBehaviour
             tempDestination.Release();
             tempDestination = null;
         }
-        if (midDestination != null)
+        if (appendBuffer != null)
         {
-            midDestination.Release();
-            midDestination = null;
+            appendBuffer.Release();
+            appendBuffer = null;
         }
-        if (buffer != null)
+        if (consumeBuffer != null)
         {
-            buffer.Release();
-            buffer = null;
-        }
-        if (buffer2 != null)
-        {
-            buffer2.Release();
-            buffer2 = null;
+            consumeBuffer.Release();
+            consumeBuffer = null;
         }
     }
 
@@ -91,23 +65,39 @@ public class ActiveCompute : MonoBehaviour
                 tempDestination = new RenderTexture(256, 256, 0);
                 tempDestination.enableRandomWrite = true;
                 tempDestination.Create();
-
-                midDestination = new RenderTexture(256, 256, 0);
-                midDestination.enableRandomWrite = true;
-                midDestination.Create();
             }
 
-            shader.SetTexture(handleLastMain, "Destination", tempDestination);
+            shader.SetTexture(handleBufferMain, "Destination", tempDestination);
             shader.SetTexture(handleActiveMain, "Destination", tempDestination);
-            shader.SetTexture(handleLastMain, "Middletion", midDestination);
-            shader.SetTexture(handleActiveMain, "Middletion", midDestination);
-            shader.SetVector("Color", (Vector4)color);
-            shader.SetBuffer(handleActiveMain, "buffer", buffer);
-            shader.SetBuffer(handleActiveMain, "buffer2", buffer2);
-            shader.SetBuffer(handleLastMain, "buffer2", buffer2);
+            shader.SetVector("Color", (Vector4)tintColor);
+            shader.SetBuffer(handleActiveMain, "buffer2", appendBuffer);
+            shader.SetBuffer(handleBufferMain, "buffer2", appendBuffer);
             shader.Dispatch(handleActiveMain, tempDestination.width / 8, tempDestination.height / 8, 1);
-            shader.Dispatch(handleLastMain, tempDestination.width / 8, tempDestination.height / 8, 1);
+            shader.Dispatch(handleBufferMain, tempDestination.width / 8, tempDestination.height / 8, 1);
             tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
+        }
+        if (GUI.Button(new Rect(20, 100, 140, 40), "Append Consume"))
+        {
+            shader.Dispatch(handleBufferMain, 8 / 8, 1, 1);
+            var countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
+            ComputeBuffer.CopyCount(appendBuffer, countBuffer, 0);
+            int[] counter = new int[1] { 0 };
+            countBuffer.GetData(counter);
+            int count = counter[0];
+            Debug.Log("append buffer count: " + count);
+            var data = new int[count];
+            appendBuffer.GetData(data);
+            Debug.Log("data length: " + data.Length);
+            string str = string.Empty;
+            for (int i = 0; i < data.Length; i++)
+            {
+                str += " " + data[i];
+            }
+            Debug.Log(str);
+            ComputeBuffer.CopyCount(consumeBuffer, countBuffer, 0);
+            countBuffer.GetData(counter);
+            Debug.Log("consume buffer count: " + counter[0]);
+            countBuffer.Dispose();
         }
     }
 

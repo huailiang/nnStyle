@@ -8,22 +8,14 @@ Contact: peng_huailiang@qq.com
 
 
 #pragma kernel ActiveMain
-#pragma kernel LastMain
+#pragma kernel BufferMain
 
 #include "libActive.cginc"
 
-struct PBuffer
-{
-   float scale;
-   float axi;
-};
-
-RWTexture2D<float4> Source;
+AppendStructuredBuffer<int> appendBuffer;
+ConsumeStructuredBuffer<int> consumeBuffer;
 RWTexture2D<float4> Destination;
-RWTexture2D<float4> Middletion;
 float4 Color;
-StructuredBuffer<PBuffer> buffer;
-RWStructuredBuffer<float> buffer2;
 
 float relu_active(float x, float y, float eplison)
 {
@@ -43,23 +35,22 @@ float tanh_active(float x, float y, float eplison)
 [numthreads(8,8,1)]
 void ActiveMain (uint3 id : SV_DispatchThreadID) 
 {
-   float in_scale = buffer[0].scale;
-   float in_axi = pow(abs(buffer[0].axi), 10);
    float r = relu_active(id.x - 128.0f, id.y - 128.0f, 1e-2);
    float g = sigmod_active((id.x - 128.0f)/32.0f, id.y/256.0f, 1e-2);
-   float b = tanh_active((id.x-128.0f)/32.0f, (id.y-128.0f)/128.0f, 1e-2);
-   Destination[id.xy] = float4(r,g,b,1) * Color * in_scale * in_axi; 
-   
-   // float xx = id.y % 64< 32 ? id.x/255.0f : 64;
-   // Middletion[id.xy] = float4(xx, 0, 0, 1);
-   // buffer2[id.x] = id.x;
+   float b = tanh_active((id.x - 128.0f)/32.0f, (id.y-128.0f)/128.0f, 1e-2);
+   Destination[id.xy] = float4(r,g,b,1) * Color; 
 }
 
-
-[numthreads(8,8,1)]
-void LastMain(uint3 id: SV_DispatchThreadID)
+[numthreads(8,1,1)]
+void BufferMain (uint3 id : SV_DispatchThreadID) 
 {
-   // float mid = Mid[id.x%8]/32.0f;
-   // Destination[id.xy] = Middletion[id.xy];
-   // Destination[id.xy] = float4(0, buffer2[id.x]/255, 0, 1);
+   if(id.x==2)
+   {
+      int value = consumeBuffer.Consume();
+      appendBuffer.Append(value);
+   }
+   if(id.x>2)
+   {
+      appendBuffer.Append(id.x);
+   }
 }
