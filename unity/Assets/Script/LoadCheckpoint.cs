@@ -10,7 +10,8 @@ public class LoadCheckpoint
 
     public void Load(Action<Dictionary<string, float[]>, Dictionary<string, Matrix3X3[]>> callback)
     {
-        string path = "/Users/penghuailiang/Documents/ml/adaptive-style-transfer/args.bytes";
+        string path = Application.dataPath + "/Resources/args.bytes";
+        Debug.Log(path);
         FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
         var reader = new BinaryReader(fs);
         Read(reader);

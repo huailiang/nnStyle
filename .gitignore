@@ -25,3 +25,4 @@ python/models/
 *.apk
 *.DS_Store
 *.pyc
+**/args.bytes*
