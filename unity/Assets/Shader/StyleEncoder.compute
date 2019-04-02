@@ -1,0 +1,201 @@
+﻿/*
+Copyright (c) 2019 huailiang
+
+# This file is part of neural network impleted with shader
+
+contact: peng_huailiang@qq.com
+*/
+
+#pragma kernel StyleMain
+#pragma kernel StyleConv1
+#pragma kernel StyleNormal1
+#pragma kernel StyleInstance1
+#pragma kernel StyleConv2
+#pragma kernel StyleNormal2
+#pragma kernel StyleInstance2
+#pragma kernel StyleConv3
+#pragma kernel StyleNormal3
+#pragma kernel StyleInstance3
+#pragma kernel StyleConv4
+#pragma kernel StyleNormal4
+#pragma kernel StyleInstance4
+#pragma kernel StyleConv5
+#pragma kernel StyleNormal5
+#pragma kernel StyleInstance5
+
+#include "libEncoder.cginc"
+#include "libEncoderArgs.cginc"
+
+Texture2D<float4> source;
+RWTexture2D<float4> destination;
+
+RWStructuredBuffer<float> encoder_conv0;
+RWStructuredBuffer<float> encoder_conv1;
+RWStructuredBuffer<float> encoder_conv1_statistic;
+RWStructuredBuffer<float> encoder_conv2;
+RWStructuredBuffer<float> encoder_conv2_statistic;
+RWStructuredBuffer<float> encoder_conv3;
+RWStructuredBuffer<float> encoder_conv3_statistic;
+RWStructuredBuffer<float> encoder_conv4;
+RWStructuredBuffer<float> encoder_conv4_statistic;
+RWStructuredBuffer<float> encoder_conv5;
+RWStructuredBuffer<float> encoder_conv5_statistic;
+
+/*
+***  formula  o=(w-k+2p)/s+1  ***
+encoder construct as:
+init  256x256x3->
+pad	 	286x286x3->  
+conv1	  284x284x32->
+conv2		141x141x32->
+conv3		  70x70x64->
+conv4			34x34x128->
+conv5			  16x16x256		
+*/
+
+void StylePad(uint3 id)
+{
+	uint pad = 15;
+	uint width = 256;
+	int low =   width - id.x - 1;
+	int mid =  id.x - pad;
+	int high = 2 * pad + width - 1 - id.x;
+	int x_array[3] = { low, mid, high };
+	
+	low =  width - id.y - 1;
+	mid =  id.y - pad;
+	high = 2 * pad + width - 1 - id.y;
+	int y_array[3] = { low, mid, high };
+
+	int x_id = id.x > (pad + width) ? 2 : saturate(id.x / pad);
+	int y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);
+	x_id = x_array[1];
+	y_id = y_array[y_id];
+	float4 color = source[int2(x_id, y_id)];
+	int indx = ((width + pad * 2) * 3) * x_id + 3 * y_id ;
+	encoder_conv0[indx] = color.x;
+	encoder_conv0[indx+1] = color.y;
+	encoder_conv0[indx+2] = color.z;
+}
+
+
+[numthreads(8,8,1)]
+void StyleMain (uint3 id : SV_DispatchThreadID)
+{
+	int coordx = id.x; 	 //[0, 288]
+	int coordy = id.y/2; //[0, 288]
+	StylePad(id);
+	float3x3 val = abs(encoder_g_e5_c_Conv_weights[0]);
+	destination[id.xy] = float4(val[id.y/85].xyz,1);
+	destination[id.xy] = source[id.xy - uint2(64,64)];
+}
+
+[numthreads(8,8,1)]
+void StyleConv1 (uint3 id : SV_DispatchThreadID)
+{
+	uint input = 286, output = 284, depth1 = 3, stride =1;
+	uint depth2 = id.x <= output && id.y <= output ? 32 : 0;
+	DefineEncoderConv(id, input, output, depth1, depth2, stride, 1, 0);
+}
+
+[numthreads(8,1,1)]
+void StyleNormal1 (uint3 id : SV_DispatchThreadID) // id.xy=32, id.z=1
+{
+	DefineEncoderNormal(id.x*2, 32, 1)
+}
+
+[numthreads(8,8,4)]
+void StyleInstance1 (uint3 id : SV_DispatchThreadID) // id.xy=288, id.z=32
+{
+	uint width = 284;
+	uint depth = id.x<= width && id.y<=width ? 32 : 0;
+	DefineInstanceRelu(id, width, depth, 1);
+}
+
+[numthreads(8,8,1)]
+void StyleConv2 (uint3 id : SV_DispatchThreadID) //id.xy=144, id.z=1
+{
+	uint input = 284, output = 141, depth1 = 32, stride =2;
+	uint depth2 = id.x <= output && id.y <= output ? 32 : 0;
+	DefineEncoderConv(id, input, output, depth1, depth2, stride, 2, 1);
+}
+
+[numthreads(8,1,1)]
+void StyleNormal2 (uint3 id : SV_DispatchThreadID)  //id.xy=32, id.z=1
+{
+	DefineEncoderNormal(id.x*2, 32, 2)
+}
+
+[numthreads(8,8,4)]
+void StyleInstance2 (uint3 id : SV_DispatchThreadID) //id.xy=144, id.z=32
+{
+	uint width = 141;
+	uint depth = id.x<= width && id.y<=width ? 32 : 0;
+	DefineInstanceRelu(id, width, depth, 2)
+}
+
+[numthreads(8,8,1)]
+void StyleConv3 (uint3 id : SV_DispatchThreadID) //id.xy=72, id.z=1
+{
+	uint input = 141, output = 70, depth1 = 32, stride =2;
+	uint depth2 = id.x <= output && id.y <= output ? 64 : 0;
+	DefineEncoderConv(id, input, output, depth1, depth2, stride, 3, 2)
+}
+
+[numthreads(8,1,1)]
+void StyleNormal3 (uint3 id : SV_DispatchThreadID)  //id.xy=64, id.z=1
+{
+	DefineEncoderNormal(id.x*2, 64, 3)
+}
+
+[numthreads(8,8,4)]
+void StyleInstance3 (uint3 id : SV_DispatchThreadID) //id.xy=72, id.z=64
+{
+	uint width = 70;
+	uint depth = id.x<= width && id.y<=width ? 64 : 0;
+	DefineInstanceRelu(id, width, depth, 3);
+}
+
+[numthreads(8,8,1)]
+void StyleConv4 (uint3 id : SV_DispatchThreadID) //id.xy=40, id.z=1
+{
+	uint input = 70, output = 34, depth1 = 64, stride =2;
+	uint depth2 = id.x <= output && id.y <= output ? 128 : 0;
+	DefineEncoderConv(id, input, output, depth1, depth2, stride, 4, 3);
+}
+
+[numthreads(8,1,1)]
+void StyleNormal4 (uint3 id : SV_DispatchThreadID) //id.xy=128, id.z=1
+{
+	DefineEncoderNormal(id.x*2, 128, 4)
+}
+
+[numthreads(8,8,4)]
+void StyleInstance4 (uint3 id : SV_DispatchThreadID) //id.xy=40,id.z=128
+{
+	uint width = 34;
+	uint depth = id.x<= width && id.y<=width ? 128 : 0;
+	DefineInstanceRelu(id, width, depth, 4);
+}
+
+[numthreads(8,8,1)]
+void StyleConv5 (uint3 id : SV_DispatchThreadID) //id.xy=16, id.z=1
+{
+	uint input = 34, output = 16, depth1 = 128, stride =2;
+	uint depth2 = id.x <= output && id.y <= output ? 256 : 0;
+	DefineEncoderConv(id, input, output, depth1, depth2, stride, 5, 4);
+}
+
+[numthreads(8,1,1)]
+void StyleNormal5 (uint3 id : SV_DispatchThreadID)  // id.xy=256, id.z=1
+{
+	DefineEncoderNormal(id.x*2, 256, 5)
+}
+
+[numthreads(8,8,4)]
+void StyleInstance5 (uint3 id : SV_DispatchThreadID) // id.xy=16, id.z=256
+{
+	uint width = 16;
+	uint depth = id.x<= width && id.y<=width ? 256 : 0;
+	DefineInstanceRelu(id, width, depth, 5);
+}
