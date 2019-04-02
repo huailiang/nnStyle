@@ -9,7 +9,7 @@ public class StyleProcess : MonoBehaviour
     private RenderTexture tempDestination = null;
     private Texture mainTexture = null;
     private LoadCheckpoint checkpoint;
-    private ComputeBuffer buffer;
+    private ComputeBuffer buffer, encoder_output, decoder_input;
     private int styleMain;
     private int enStyleConv1, enStyleNorm1, enStyleInstance1;
     private int enStyleConv2, enStyleNorm2, enStyleInstance2;
@@ -123,7 +123,8 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enStyleConv5, 16 / 8, 16 / 8, 1);
             encoderShader.Dispatch(enStyleNorm5, 256 / 8, 1, 1);
             encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
-            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
+            //transfer
+            ComputeBuffer.CopyCount(encoder_output, decoder_input, 0);
             //decoder
             decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
@@ -145,6 +146,7 @@ public class StyleProcess : MonoBehaviour
             decoderShader.Dispatch(decoderNormal4, 256 / 8, 256 / 8, 32 / 4);
             decoderShader.Dispatch(decoderExpand5, 256 / 8, 256 / 8, 32 / 4);
             decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
+            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
         }
     }
 
@@ -263,6 +265,7 @@ public class StyleProcess : MonoBehaviour
         cb.SetCounterValue((uint)count);
         encoderShader.SetBuffer(enStyleConv5, "encoder_conv5", cb);
         encoderShader.SetBuffer(enStyleInstance5, "encoder_conv5", cb);
+        encoder_output = cb;
 
         count = 32;
         cb = BufferPool.Get(count, sizeof(float));
@@ -298,7 +301,6 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv5, "encoder_conv5_statistic", cb);
         encoderShader.SetBuffer(enStyleNorm5, "encoder_conv5_statistic", cb);
         encoderShader.SetBuffer(enStyleInstance5, "encoder_conv5_statistic", cb);
-        encoderShader.SetTexture(enStyleInstance5, "destination", tempDestination);
     }
 
     private void ProcessDecoder()
@@ -308,6 +310,7 @@ public class StyleProcess : MonoBehaviour
         var cb = BufferPool.Get(count, sizeof(float));
         cb.SetCounterValue((uint)count);
         decoderShader.SetBuffer(deResidulePad1_1, "input_initial", cb);
+        decoder_input = cb;
 
         cb = BufferPool.Get(count, sizeof(float));
         cb.SetCounterValue((uint)count);

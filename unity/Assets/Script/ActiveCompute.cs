@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class tintComputeScript : MonoBehaviour
+public class ActiveCompute : MonoBehaviour
 {
 
     struct PBuffer
@@ -19,15 +19,15 @@ public class tintComputeScript : MonoBehaviour
     public float scale = 1;
     public float axi = 1;
     private ComputeBuffer buffer, buffer2;
-    private int handleTintMain;
+    private int handleActiveMain;
     private int handleLastMain;
     private PBuffer[] values;
 
     void Start()
     {
-        handleTintMain = shader.FindKernel("TintMain");
+        handleActiveMain = shader.FindKernel("ActiveMain");
         handleLastMain = shader.FindKernel("LastMain");
-        if (handleTintMain < 0 || handleLastMain < 0)
+        if (handleActiveMain < 0 || handleLastMain < 0)
         {
             Debug.Log("Initialization failed ");
             enabled = false;
@@ -79,9 +79,9 @@ public class tintComputeScript : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUI.Button(new Rect(20, 20, 40, 20), "Test"))
+        if (GUI.Button(new Rect(20, 20, 140, 40), "Active function"))
         {
-            if (null == shader || handleTintMain < 0) return;
+            if (null == shader || handleActiveMain < 0) return;
             if (null == tempDestination)
             {
                 if (null != tempDestination)
@@ -98,52 +98,18 @@ public class tintComputeScript : MonoBehaviour
             }
 
             shader.SetTexture(handleLastMain, "Destination", tempDestination);
-            shader.SetTexture(handleTintMain, "Destination", tempDestination);
+            shader.SetTexture(handleActiveMain, "Destination", tempDestination);
             shader.SetTexture(handleLastMain, "Middletion", midDestination);
-            shader.SetTexture(handleTintMain, "Middletion", midDestination);
+            shader.SetTexture(handleActiveMain, "Middletion", midDestination);
             shader.SetVector("Color", (Vector4)color);
-            shader.SetBuffer(handleTintMain, "buffer", buffer);
-            shader.SetBuffer(handleTintMain, "buffer2", buffer2);
+            shader.SetBuffer(handleActiveMain, "buffer", buffer);
+            shader.SetBuffer(handleActiveMain, "buffer2", buffer2);
             shader.SetBuffer(handleLastMain, "buffer2", buffer2);
-            shader.Dispatch(handleTintMain, tempDestination.width / 8, tempDestination.height / 8, 1);
+            shader.Dispatch(handleActiveMain, tempDestination.width / 8, tempDestination.height / 8, 1);
             shader.Dispatch(handleLastMain, tempDestination.width / 8, tempDestination.height / 8, 1);
             tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
         }
     }
 
-    // void OnRenderImage (RenderTexture source, RenderTexture destination)
-    // {
-    //     if (null == shader || handleTintMain < 0 || null == source)
-    //     {
-    //         Graphics.Blit (source, destination); // just copy
-    //         return;
-    //     }
-    //     if (null == tempDestination || source.width != tempDestination.width || source.height != tempDestination.height)
-    //     {
-    //         if (null != tempDestination)
-    //         {
-    //             tempDestination.Release ();
-    //         }
-    //         tempDestination = new RenderTexture (source.width, source.height, source.depth);
-    //         tempDestination.enableRandomWrite = true;
-    //         tempDestination.Create ();
-
-    //         midDestination = new RenderTexture (source.width, source.height, source.depth);
-    //         midDestination.enableRandomWrite = true;
-    //         midDestination.Create ();
-    //     }
-
-    //     shader.SetTexture (handleTintMain, "Source", source);
-    //     shader.SetTexture (handleLastMain, "Destination", tempDestination);
-    //     shader.SetTexture (handleTintMain, "Destination", tempDestination);
-    //     shader.SetTexture (handleLastMain, "Middletion", midDestination);
-    //     shader.SetTexture (handleTintMain, "Middletion", midDestination);
-    //     shader.SetVector ("Color", (Vector4) color);
-    //     shader.SetBuffer (handleTintMain, "buffer", buffer);
-
-    //     shader.Dispatch (handleTintMain, tempDestination.width / 8, tempDestination.height / 8, 1);
-    //     shader.Dispatch (handleLastMain, tempDestination.width / 8, tempDestination.height / 8, 1);
-    //     Graphics.Blit (tempDestination, destination);
-    // }
 
 }

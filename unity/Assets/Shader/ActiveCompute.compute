@@ -2,16 +2,14 @@
 Copyright (c) 2019 huailiang
 
 # This file is part of neural network impleted with shader
-Contact: peng_huailiang@qq.com
 
-About SV_DispatchThreadID calculate reinference:
-   https://blog.csdn.net/weixin_38884324/article/details/80570160
-GroupID(32,32,1) * numThreads(8,8,1)
+Contact: peng_huailiang@qq.com
 */
 
 
-#pragma kernel TintMain
+#pragma kernel ActiveMain
 #pragma kernel LastMain
+
 #include "libActive.cginc"
 
 struct PBuffer
@@ -43,13 +41,12 @@ float tanh_active(float x, float y, float eplison)
 }
 
 [numthreads(8,8,1)]
-void TintMain (uint3 id : SV_DispatchThreadID) 
-      //  GroupID * numthreads + GroupThreadID  
+void ActiveMain (uint3 id : SV_DispatchThreadID) 
 {
    float in_scale = buffer[0].scale;
    float in_axi = pow(abs(buffer[0].axi), 10);
    float r = relu_active(id.x - 128.0f, id.y - 128.0f, 1e-2);
-   float g = sigmod_active((id.x - 128.0f)/32.0f,(id.y)/256.0f, 1e-2);
+   float g = sigmod_active((id.x - 128.0f)/32.0f, id.y/256.0f, 1e-2);
    float b = tanh_active((id.x-128.0f)/32.0f, (id.y-128.0f)/128.0f, 1e-2);
    Destination[id.xy] = float4(r,g,b,1) * Color * in_scale * in_axi; 
    
