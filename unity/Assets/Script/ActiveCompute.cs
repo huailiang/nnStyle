@@ -85,20 +85,43 @@ public class ActiveCompute : MonoBehaviour
             countBuffer.GetData(counter);
             int count = counter[0];
             Debug.Log("append buffer count: " + count);
-            var data = new int[count];
-            appendBuffer.GetData(data);
-            Debug.Log("data length: " + data.Length);
-            string str = string.Empty;
-            for (int i = 0; i < data.Length; i++)
-            {
-                str += " " + data[i];
-            }
-            Debug.Log(str);
+            PrintAppend(count);
             ComputeBuffer.CopyCount(consumeBuffer, countBuffer, 0);
             countBuffer.GetData(counter);
             Debug.Log("consume buffer count: " + counter[0]);
+            var data = new int[counter[0]];
+            consumeBuffer.GetData(data);
+            Debug.Log("consume data: " + data[0] + " " + data[1]);
+
+            appendBuffer.SetCounterValue(2);
+            appendBuffer = consumeBuffer;
+
+            ComputeBuffer.CopyCount(appendBuffer, countBuffer, 0);
+            countBuffer.GetData(counter);
+            Debug.Log("3->append buffer: " + counter[0]);
+            PrintAppend(counter[0]);
+
+            ComputeBuffer.CopyCount(consumeBuffer, countBuffer, 0);
+            countBuffer.GetData(counter);
+            Debug.Log("3->consume buffer: " + counter[0]);
+            data = new int[counter[0]];
+            consumeBuffer.GetData(data);
+            Debug.Log("consume data: " + data[0] + " " + data[1]);
             countBuffer.Dispose();
         }
+    }
+
+
+    private void PrintAppend(int count)
+    {
+        var data = new int[count];
+        appendBuffer.GetData(data);
+        string str = string.Empty;
+        for (int i = 0; i < data.Length; i++)
+        {
+            str += " " + data[i];
+        }
+        Debug.Log("append buffer: " + str);
     }
 
 
