@@ -8,31 +8,31 @@ tf.set_random_seed(228)
 
 # 输出checkpoint里的参数
 
-# from tensorflow.python import pywrap_tensorflow
-# checkpoint_path ="./models/model_gauguin/checkpoint_long/model11_gauguin_bks10_flw100_90000.ckpt-90000" #model11_gauguin_bks10_flw100_90000.ckpt-90000
-# reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
-# var_to_shape_map = reader.get_variable_to_shape_map()
-# print("len: ",len(var_to_shape_map))
-# counter = 0
-# llist = []
-# for key in var_to_shape_map:
-#     shape = reader.get_tensor(key).shape
-#     if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(shape) > 0:
-#         tensor = str(reader.get_tensor(key))
-#         print(key.replace("/","_"),shape)
-#         llist.append(key.replace("/","_")+"  "+str(shape))
-#         for x in shape:
-#             counter += x
+from tensorflow.python import pywrap_tensorflow
+checkpoint_path ="./models/model_gauguin/checkpoint_long/model11_gauguin_bks10_flw100_90000.ckpt-90000" #model11_gauguin_bks10_flw100_90000.ckpt-90000
+reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
+var_to_shape_map = reader.get_variable_to_shape_map()
+print("len: ",len(var_to_shape_map))
+counter = 0
+llist = []
+for key in var_to_shape_map:
+    shape = reader.get_tensor(key).shape
+    if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(shape) > 0:
+        tensor = str(reader.get_tensor(key))
+        # print(key.replace("/","_"),shape)
+        llist.append(key.replace("/","_")+"  "+str(shape))
+        for x in shape:
+            counter += x
 
-# llist.sort()
-# for x in llist:
-# 	print x
-# print("network arg memory: %dMB"%((counter * 4)/1024))
+llist.sort()
+for x in llist:
+	print x
+print("network arg memory: %dMB"%((counter * 4)/1024))
 
 
-img = tf.Variable(tf.ones([1,80,80,256]))
-print img.get_shape()
-print(img.get_shape().as_list()[-1])
+# img = tf.Variable(tf.ones([1,80,80,256]))
+# print img.get_shape()
+# print(img.get_shape().as_list()[-1])
 
 
 # 用来测试tf.nn.moments & keep_dims

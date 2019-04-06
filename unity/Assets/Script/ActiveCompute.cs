@@ -66,14 +66,9 @@ public class ActiveCompute : MonoBehaviour
                 tempDestination.enableRandomWrite = true;
                 tempDestination.Create();
             }
-
-            shader.SetTexture(handleBufferMain, "Destination", tempDestination);
             shader.SetTexture(handleActiveMain, "Destination", tempDestination);
             shader.SetVector("Color", (Vector4)tintColor);
-            shader.SetBuffer(handleActiveMain, "buffer2", appendBuffer);
-            shader.SetBuffer(handleBufferMain, "buffer2", appendBuffer);
             shader.Dispatch(handleActiveMain, tempDestination.width / 8, tempDestination.height / 8, 1);
-            shader.Dispatch(handleBufferMain, tempDestination.width / 8, tempDestination.height / 8, 1);
             tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
         }
         if (GUI.Button(new Rect(20, 100, 140, 40), "Append Consume"))
@@ -95,7 +90,6 @@ public class ActiveCompute : MonoBehaviour
 
             appendBuffer.SetCounterValue(2);
             appendBuffer = consumeBuffer;
-
             ComputeBuffer.CopyCount(appendBuffer, countBuffer, 0);
             countBuffer.GetData(counter);
             Debug.Log("3->append buffer: " + counter[0]);
