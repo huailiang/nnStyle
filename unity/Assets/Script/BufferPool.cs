@@ -4,30 +4,51 @@ using UnityEngine;
 
 public class BufferPool
 {
-    private static List<ComputeBuffer> buffer = new List<ComputeBuffer>();
+    private static Dictionary<string, ComputeBuffer> buffer = new Dictionary<string, ComputeBuffer>();
 
-    public static ComputeBuffer Get(int count, int stride)
+    public static ComputeBuffer Get(string name, int count, int stride)
     {
         var cb = new ComputeBuffer(count, stride);
-        buffer.Add(cb);
+        buffer.Add(name, cb);
         return cb;
+    }
+
+    public static ComputeBuffer Get(string name)
+    {
+        if (buffer.ContainsKey(name))
+        {
+            return buffer[name];
+        }
+        return null;
+    }
+
+    public static void Release(string name)
+    {
+        if (buffer.ContainsKey(name))
+        {
+            buffer[name].Release();
+            buffer.Remove(name);
+        }
     }
 
     public static void Release(ComputeBuffer cb)
     {
-        if (buffer.Contains(cb))
+        foreach (var it in buffer)
         {
-            buffer.Remove(cb);
+            if (it.Value == cb)
+            {
+                cb.Release();
+                buffer.Remove(it.Key);
+                break;
+            }
         }
-        cb.Release();
-        cb = null;
     }
 
     public static void ReleaseAll()
     {
-        for (int i = 0; i < buffer.Count; i++)
+        foreach (var item in buffer)
         {
-            buffer[i].Release();
+            item.Value.Release();
         }
         buffer.Clear();
     }
