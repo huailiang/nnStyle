@@ -83,7 +83,6 @@ void StylePad(uint3 id)
 void StyleMain (uint3 id : SV_DispatchThreadID)
 {
 	StylePad(id);
-	float3x3 val = abs(encoder_g_e5_c_Conv_weights[0]);
 }
 
 [numthreads(8,8,1)]

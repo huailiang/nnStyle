@@ -1,20 +1,3 @@
-# Copyright (C) 2018  Artsiom Sanakoyeu and Dmytro Kotovenko
-#
-# This file is part of Adaptive Style Transfer
-#
-# Adaptive Style Transfer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Adaptive Style Transfer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import math
 import numpy as np
 import tensorflow as tf
@@ -81,4 +64,25 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
             return tf.matmul(input_, matrix) + bias, matrix, bias
         else:
             return tf.matmul(input_, matrix) + bias
+
+
+def printf(tensor, name):
+    shape = tensor.shape
+    if len(shape) == 4:
+        idx_x = shape[1] / 2
+        print("%s shape: %dx%dx%d  indx:%d"%(name, shape[1], shape[2], shape[3], idx_x))
+        max_y = min(80, shape[2])
+        max_z = min(10, shape[3])
+        o_str = ""
+        if shape[3] > 8:
+            max_y = min(20, shape[2])
+            # max_z = shape[3]
+        for i in range(0,max_y):
+            o_str += "[" + str(i) + "] "
+            for j in range(0, max_z):
+                o_str += "\t" + str(round(tensor[0][idx_x][i][j], 3))
+            o_str+="\n"
+        print(o_str)
+
+
 

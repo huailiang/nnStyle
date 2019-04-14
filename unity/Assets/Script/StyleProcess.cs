@@ -30,7 +30,7 @@ public class StyleProcess : MonoBehaviour
         }
         if (tempRender.sharedMaterial.mainTexture == null)
         {
-            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("apple");
+            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app1");
         }
         mainTexture = tempRender.sharedMaterial.mainTexture;
         tempDestination = new RenderTexture(width, width, 0);
@@ -100,7 +100,6 @@ public class StyleProcess : MonoBehaviour
         {
             //encoder
             encoderShader.Dispatch(styleMain, 288 / 8, 288 / 8, 1);
-            BufferProfile.Print("encoder_conv0", 286, 286, 3);
             encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleNorm1, 32 / 8, 1, 1);
             encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
@@ -144,8 +143,10 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 80, 80, 40), "Debug"))
         {
+            BufferProfile.Print("encoder_conv0", 286, 286, 3);
+            BufferProfile.Print("encoder_conv2", 141, 141, 32);
+            BufferProfile.Print("encoder_conv4", 34, 34, 128);
             BufferProfile.Print(buffer_encoder_output, "buffer_encoder_output", 16, 16, 256);
-            // BufferProfile.Print(buffer_decoder_input, 16, 16, 256);
         }
     }
 

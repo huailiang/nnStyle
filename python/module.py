@@ -1,20 +1,3 @@
-# Copyright (C) 2018  Artsiom Sanakoyeu and Dmytro Kotovenko
-#
-# This file is part of Adaptive Style Transfer
-#
-# Adaptive Style Transfer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Adaptive Style Transfer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 from __future__ import division
 from ops import *
 
@@ -54,7 +37,7 @@ def encoder(image, options, reuse=True, name="encoder"):
         c5 = tf.nn.relu(instance_norm(conv2d(c4, options.gf_dim * 8, 3, 2, padding='VALID', name='g_e5_c'),
                                       is_training=options.is_training,
                                       name='g_e5_bn'))
-        return c5
+        return [c5, image, c0, c1]
 
 
 def decoder(features, options, reuse=True, name="decoder"):
@@ -117,7 +100,7 @@ def decoder(features, options, reuse=True, name="decoder"):
 
         d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
         pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c'))*2. - 1.
-        return pred
+        return [pred,d1]
 
 
 def discriminator(image, options, reuse=True, name="discriminator"):

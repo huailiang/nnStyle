@@ -1,20 +1,3 @@
-# Copyright (C) 2018  Artsiom Sanakoyeu and Dmytro Kotovenko
-#
-# This file is part of Adaptive Style Transfer
-#
-# Adaptive Style Transfer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Adaptive Style Transfer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 from __future__ import division
 from __future__ import print_function
 
@@ -105,7 +88,7 @@ class Artgan(object):
                                                 reuse=False)
 
             # Decode obtained features
-            self.output_photo = decoder(features=self.input_photo_features,
+            self.output_photo = decoder(features=self.input_photo_features[0],
                                         options=self.options,
                                         reuse=False)
 
@@ -262,7 +245,7 @@ class Artgan(object):
                                                 reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(features=self.input_photo_features,
+            self.output_photo = decoder(features=self.input_photo_features[0],
                                         options=self.options,
                                         reuse=False)
 
@@ -493,12 +476,23 @@ class Artgan(object):
             alpha = float(self.image_size) / float(min(img_shape))
             img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
+            e_list = self.sess.run(
+                self.input_photo_features,
+                feed_dict={self.input_photo: normalize_arr_of_imgs(img)}
+            )
 
-            img = self.sess.run(
+            printf(e_list[1], "instance_norm")
+            printf(e_list[2], "conv_pad")
+            printf(e_list[3], "conv_relu_c1")
+
+            d_list = self.sess.run(
                 self.output_photo,
-                feed_dict={
-                    self.input_photo: normalize_arr_of_imgs(img),
-                })
+                feed_dict={ self.input_photo: normalize_arr_of_imgs(img) })
+
+            img = d_list[0]
+
+
+            # print(d_list[1])
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)
