@@ -6,7 +6,10 @@ Copyright (c) 2019 huailiang
 contact: peng_huailiang@qq.com
 */
 
-#pragma kernel StyleMain
+#pragma kernel StyleEncoderConv
+#pragma kernel StyleEncoderNormal
+#pragma kernel StyleEncoderInstance
+#pragma kernel StylePad
 #pragma kernel StyleConv1
 #pragma kernel StyleNormal1
 #pragma kernel StyleInstance1
@@ -29,6 +32,8 @@ contact: peng_huailiang@qq.com
 Texture2D<float4> source;
 RWTexture2D<float4> destination;
 
+RWStructuredBuffer<float> encoder_inst;
+RWStructuredBuffer<float> encoder_inst_statistic;
 RWStructuredBuffer<float> encoder_conv0;
 RWStructuredBuffer<float> encoder_conv1;
 RWStructuredBuffer<float> encoder_conv1_statistic;
@@ -53,7 +58,72 @@ conv4			34x34x128->
 conv5			  16x16x256		
 */
 
-void StylePad(uint3 id)
+
+[numthreads(8,8,3)]
+void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
+{
+	float4 color = source[uint2(id.x, id.y)];
+	int arr[3]={color.x,color.y,color.z};
+	float v = arr[id.z];
+	encoder_inst_statistic[id.z * 2] += v;
+	encoder_inst_statistic[id.z * 2 + 1] += pow(v,2);
+	// encoder_inst_statistic[2] += color.y;
+	// encoder_inst_statistic[3] += pow(color.y, 2);
+	// encoder_inst_statistic[4] += color.z;
+	// encoder_inst_statistic[5] += pow(color.z, 2);
+}
+
+[numthreads(3,1,1)]
+void StyleEncoderNormal(uint3 id : SV_DispatchThreadID)
+{
+	int i = id.x * 2;
+	float vl = 256.0f * 256.0f;
+	float mean = encoder_inst_statistic[i] / vl;
+	float variance = encoder_inst_statistic[i + 1] / vl - pow(mean,2);
+	encoder_inst_statistic[i] = mean;
+	encoder_inst_statistic[i+1] = variance;
+}
+
+
+[numthreads(8,8,1)]
+void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
+{
+	float4 color = source[int2(id.x, id.y)];
+	uint width = 256, depth = 3;
+	int z = 0;
+	int idx = id.x * width * depth + id.y * depth + z;
+	float mean = encoder_inst_statistic[z * 2];
+	float variance = encoder_inst_statistic[z * 2 + 1];
+	float inv = rsqrt(variance + EPSILON);
+	float ori = (color.x - mean) * inv;
+	float scale = encoder_g_e0_bn_scale[z];
+	float offset = encoder_g_e0_bn_offset[z];
+	encoder_inst[idx]  = relu(scale * ori + offset);
+
+	z = 1;
+	idx += 1;
+	mean = encoder_inst_statistic[ z * 2];
+	variance = encoder_inst_statistic[z*2+1];
+	inv = rsqrt(variance+EPSILON);
+	ori = (color.y - mean) * inv;
+	scale = encoder_g_e0_bn_scale[z];
+	offset = encoder_g_e0_bn_offset[z];
+	encoder_inst[idx]  = relu(scale * ori + offset);
+
+	z = 2;
+	idx += 1;
+	mean = encoder_inst_statistic[ z * 2];
+	variance = encoder_inst_statistic[z*2+1];
+	inv = rsqrt(variance+EPSILON);
+	ori = (color.z - mean) * inv;
+	scale = encoder_g_e0_bn_scale[z];
+	offset = encoder_g_e0_bn_offset[z];
+	encoder_inst[idx]  = relu(scale * ori + offset);
+}
+
+
+[numthreads(8,8,1)]
+void StylePad(uint3 id : SV_DispatchThreadID)
 {
 	uint pad = 15;
 	uint width = 256;
@@ -78,12 +148,6 @@ void StylePad(uint3 id)
 	encoder_conv0[indx+2] = color.z;
 }
 
-
-[numthreads(8,8,1)]
-void StyleMain (uint3 id : SV_DispatchThreadID)
-{
-	StylePad(id);
-}
 
 [numthreads(8,8,1)]
 void StyleConv1 (uint3 id : SV_DispatchThreadID)

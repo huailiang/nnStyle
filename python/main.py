@@ -142,7 +142,7 @@ def main(_):
                                   path_to_folder=args.inference_images_dir[0],
                                   resize_to_original=False,
                                   to_save_dir=args.save_dir,
-                                  ckpt_nmbr = args.ckpt_nmbr)
+                                  ckpt_nmbr=args.ckpt_nmbr)
         sess.close()
 
 if __name__ == '__main__':

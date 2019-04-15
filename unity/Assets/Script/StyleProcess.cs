@@ -10,7 +10,8 @@ public class StyleProcess : MonoBehaviour
     private Texture mainTexture = null;
     private LoadCheckpoint checkpoint;
     private ComputeBuffer buffer, buffer_encoder_output, buffer_decoder_input;
-    private int styleMain, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
+    private int enConv, enNorm, enInst;
+    private int stylePad, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
     private int enStyleConv3, enStyleNorm3, enStyleInstance3, enStyleConv4, enStyleNorm4, enStyleInstance4, enStyleConv5, enStyleNorm5, enStyleInstance5;
 
     private int deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2;
@@ -23,7 +24,7 @@ public class StyleProcess : MonoBehaviour
     {
         InitEncoder();
         InitDecoder();
-        if (styleMain < 0 || enStyleConv1 < 0 || enStyleNorm1 < 0 || enStyleInstance1 < 0)
+        if (stylePad < 0 || enStyleConv1 < 0 || enStyleNorm1 < 0 || enStyleInstance1 < 0)
         {
             Debug.Log("Initialization Failed");
             return;
@@ -36,13 +37,16 @@ public class StyleProcess : MonoBehaviour
         tempDestination = new RenderTexture(width, width, 0);
         tempDestination.enableRandomWrite = true;
         tempDestination.Create();
-        checkpoint = new LoadCheckpoint();
-        checkpoint.Load(Process);
+        // checkpoint = new LoadCheckpoint();
+        // checkpoint.Load(Process);
     }
 
     private void InitEncoder()
     {
-        styleMain = encoderShader.FindKernel("StyleMain");
+        enConv = encoderShader.FindKernel("StyleEncoderConv");
+        enNorm = encoderShader.FindKernel("StyleEncoderNormal");
+        enInst = encoderShader.FindKernel("StyleEncoderInstance");
+        stylePad = encoderShader.FindKernel("StylePad");
         enStyleConv1 = encoderShader.FindKernel("StyleConv1");
         enStyleNorm1 = encoderShader.FindKernel("StyleNormal1");
         enStyleInstance1 = encoderShader.FindKernel("StyleInstance1");
@@ -98,8 +102,15 @@ public class StyleProcess : MonoBehaviour
     {
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
+            //test
+            encoderShader.Dispatch(enConv, 256 / 8, 256 / 8, 1);
+            encoderShader.Dispatch(enNorm, 3 / 3, 1, 1);
+            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
+            BufferProfile.Print("encoder_inst", 256, 256, 3);
+            return;
+
             //encoder
-            encoderShader.Dispatch(styleMain, 288 / 8, 288 / 8, 1);
+            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleNorm1, 32 / 8, 1, 1);
             encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
@@ -148,6 +159,11 @@ public class StyleProcess : MonoBehaviour
             BufferProfile.Print("encoder_conv4", 34, 34, 128);
             BufferProfile.Print(buffer_encoder_output, "buffer_encoder_output", 16, 16, 256);
         }
+        if (GUI.Button(new Rect(20, 140, 80, 40), "Texture"))
+        {
+            var texture = Resources.Load<Texture2D>("app1");
+            BufferProfile.NormalInst(texture);
+        }
     }
 
     void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)
@@ -158,6 +174,7 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get(item.Key, item.Value.Length, sizeof(float));
                 buffer.SetData(item.Value);
+                encoderShader.SetBuffer(enInst, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleInstance1, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleInstance2, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleInstance3, item.Key, buffer);
@@ -179,7 +196,7 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get(item.Key, item.Value.Length, 9 * sizeof(float));
                 buffer.SetData(item.Value);
-                encoderShader.SetBuffer(styleMain, item.Key, buffer);
+                encoderShader.SetBuffer(stylePad, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleConv1, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleNorm1, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleConv2, item.Key, buffer);
@@ -199,7 +216,9 @@ public class StyleProcess : MonoBehaviour
                     decoderConv1, decoderNormal3, decoderConv4, decoderNormal4}, item.Key, buffer);
             }
         }
-        encoderShader.SetTexture(styleMain, "source", mainTexture);
+        encoderShader.SetTexture(stylePad, "source", mainTexture);
+        encoderShader.SetTexture(enConv, "source", mainTexture);
+        encoderShader.SetTexture(enInst, "source", mainTexture);
         Debug.Log("process network args finish");
         ProcessNet();
         Debug.Log("Process neural network finsih");
@@ -217,8 +236,22 @@ public class StyleProcess : MonoBehaviour
         string name = "encoder_conv0";
         var cb = BufferPool.Get(name, count, sizeof(float));
         cb.SetCounterValue((uint)count);
-        encoderShader.SetBuffer(styleMain, name, cb);
+        encoderShader.SetBuffer(stylePad, name, cb);
         encoderShader.SetBuffer(enStyleConv1, name, cb);
+
+        count = 256 * 256 * 3;
+        name = "encoder_inst";
+        cb = BufferPool.Get(name, count, sizeof(float));
+        cb.SetCounterValue((uint)count);
+        encoderShader.SetBuffer(enInst, name, cb);
+
+        count = 3 * 2;
+        name = "encoder_inst_statistic";
+        cb = BufferPool.Get(name, count, sizeof(float));
+        cb.SetCounterValue((uint)count);
+        encoderShader.SetBuffer(enConv, name, cb);
+        encoderShader.SetBuffer(enNorm, name, cb);
+        encoderShader.SetBuffer(enInst, name, cb);
 
         count = 284 * 284 * 32;
         name = "encoder_conv1";

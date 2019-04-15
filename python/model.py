@@ -476,18 +476,22 @@ class Artgan(object):
             alpha = float(self.image_size) / float(min(img_shape))
             img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
+
+            arr=normalize_arr_of_imgs(img)
+            # print(img[0][253])
+            # print(arr[0][253])
+
             e_list = self.sess.run(
                 self.input_photo_features,
                 feed_dict={self.input_photo: normalize_arr_of_imgs(img)}
             )
-
+            printf(e_list[2], "conv_input")
             printf(e_list[1], "instance_norm")
-            printf(e_list[2], "conv_pad")
-            printf(e_list[3], "conv_relu_c1")
+            # printf(e_list[3], "conv_relu_c1")
 
             d_list = self.sess.run(
                 self.output_photo,
-                feed_dict={ self.input_photo: normalize_arr_of_imgs(img) })
+                feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
 
             img = d_list[0]
 

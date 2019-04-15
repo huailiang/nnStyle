@@ -17,7 +17,10 @@ public class LoadCheckpoint
         Read(reader);
         reader.Close();
         fs.Close();
-        callback(v1_map, v3_map);
+        if (callback != null)
+        {
+            callback(v1_map, v3_map);
+        }
     }
 
 
