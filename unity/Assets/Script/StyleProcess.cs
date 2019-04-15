@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class StyleProcess : MonoBehaviour
@@ -37,8 +36,8 @@ public class StyleProcess : MonoBehaviour
         tempDestination = new RenderTexture(width, width, 0);
         tempDestination.enableRandomWrite = true;
         tempDestination.Create();
-        // checkpoint = new LoadCheckpoint();
-        // checkpoint.Load(Process);
+        checkpoint = new LoadCheckpoint();
+        checkpoint.Load(Process);
     }
 
     private void InitEncoder()
@@ -102,13 +101,6 @@ public class StyleProcess : MonoBehaviour
     {
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
-            //test
-            encoderShader.Dispatch(enConv, 256 / 8, 256 / 8, 1);
-            encoderShader.Dispatch(enNorm, 3 / 3, 1, 1);
-            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("encoder_inst", 256, 256, 3);
-            return;
-
             //encoder
             encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
@@ -163,6 +155,32 @@ public class StyleProcess : MonoBehaviour
         {
             var texture = Resources.Load<Texture2D>("app1");
             BufferProfile.NormalInst(texture);
+        }
+        if (GUI.Button(new Rect(20, 200, 80, 40), "Normalize"))
+        {
+            string name = "encoder_inst_statistic";
+            BufferPool.Release(name);
+            var cb = BufferPool.Get(name, 256 * 3, sizeof(uint));
+            encoderShader.SetBuffer(enConv, name, cb);
+            encoderShader.SetBuffer(enNorm, name, cb);
+            encoderShader.SetBuffer(enNorm, "encoder_inst", BufferPool.Get("encoder_inst"));
+            encoderShader.Dispatch(enConv, 256 / 8, 256 / 8, 3 / 3);
+            encoderShader.Dispatch(enNorm, 1, 1, 1);
+            //encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
+            uint[] array = new uint[256 * 3];
+            cb.GetData(array);
+            uint[] all = new uint[3];
+            string str = name + ": ";
+            for (int i = 0; i < 256; i++)
+            {
+                all[0] += array[i * 3];
+                all[1] += array[i * 3 + 1];
+                all[2] += array[i * 3 + 2];
+            }
+            str += all[0] + " " + all[1] + " " + all[2];
+            Debug.Log(str);
+            BufferProfile.Print("encoder_inst", 256, 256, 3);
+            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
         }
     }
 
@@ -219,6 +237,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetTexture(stylePad, "source", mainTexture);
         encoderShader.SetTexture(enConv, "source", mainTexture);
         encoderShader.SetTexture(enInst, "source", mainTexture);
+        encoderShader.SetTexture(enConv, "destination", tempDestination);
         Debug.Log("process network args finish");
         ProcessNet();
         Debug.Log("Process neural network finsih");
@@ -243,11 +262,12 @@ public class StyleProcess : MonoBehaviour
         name = "encoder_inst";
         cb = BufferPool.Get(name, count, sizeof(float));
         cb.SetCounterValue((uint)count);
+        encoderShader.SetBuffer(enConv, name, cb);
         encoderShader.SetBuffer(enInst, name, cb);
 
-        count = 3 * 2;
+        count = 256*3;
         name = "encoder_inst_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get(name, count, sizeof(uint));
         cb.SetCounterValue((uint)count);
         encoderShader.SetBuffer(enConv, name, cb);
         encoderShader.SetBuffer(enNorm, name, cb);

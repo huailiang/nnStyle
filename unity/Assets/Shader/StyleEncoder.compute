@@ -31,9 +31,8 @@ contact: peng_huailiang@qq.com
 
 Texture2D<float4> source;
 RWTexture2D<float4> destination;
-
 RWStructuredBuffer<float> encoder_inst;
-RWStructuredBuffer<float> encoder_inst_statistic;
+RWStructuredBuffer<int> encoder_inst_statistic;
 RWStructuredBuffer<float> encoder_conv0;
 RWStructuredBuffer<float> encoder_conv1;
 RWStructuredBuffer<float> encoder_conv1_statistic;
@@ -62,26 +61,39 @@ conv5			  16x16x256
 [numthreads(8,8,3)]
 void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 {
-	float4 color = source[uint2(id.x, id.y)];
-	int arr[3]={color.x,color.y,color.z};
-	float v = arr[id.z];
-	encoder_inst_statistic[id.z * 2] += v;
-	encoder_inst_statistic[id.z * 2 + 1] += pow(v,2);
-	// encoder_inst_statistic[2] += color.y;
-	// encoder_inst_statistic[3] += pow(color.y, 2);
-	// encoder_inst_statistic[4] += color.z;
-	// encoder_inst_statistic[5] += pow(color.z, 2);
+	uint width = 256, depth = 3;
+	float4 color = source[uint2(id.x, width - id.y)];
+	float arr[3] = { color.x, color.y, color.z };
+	float v = 2 * arr[id.z] - 1;
+	int idx = id.y * width * depth + id.x * depth + id.z;
+	encoder_inst[idx] = v;
+	//InterlockedAdd(encoder_inst_statistic[id.z * 2], 1, encoder_inst_statistic[id.z * 2]);
+	//encoder_inst_statistic[id.z * 2] += 1;// v;
+	//encoder_inst_statistic[id.z * 2 + 1] += 2;// pow(v, 2);
+	//DeviceMemoryBarrierWithGroupSync();
+	float mean = 0.33f * (arr[0] + arr[1] + arr[2]);
+	destination[id.xy] = float4(mean, mean, mean, 1);
+	//encoder_inst_statistic[id.x * depth + id.z] = id.x;
 }
 
-[numthreads(3,1,1)]
+[numthreads(256,1,3)]
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID)
 {
-	int i = id.x * 2;
-	float vl = 256.0f * 256.0f;
-	float mean = encoder_inst_statistic[i] / vl;
-	float variance = encoder_inst_statistic[i + 1] / vl - pow(mean,2);
-	encoder_inst_statistic[i] = mean;
-	encoder_inst_statistic[i+1] = variance;
+	for (int i = 0; i < 256; i++)
+	{
+		//int idx = id.x * 256 * 3 + 0 * 3 + id.z;
+		//if (id.z < 3)
+		{
+			encoder_inst_statistic[id.x * 3 + id.z] += 1;// encoder_inst[idx];
+		}
+	}
+
+	//int i = id.x * 2;
+	//float vl = 256.0f * 256.0f;
+	//float mean = encoder_inst_statistic[i] / vl;
+	//float variance = encoder_inst_statistic[i + 1] / vl - pow(mean, 2);
+	//encoder_inst_statistic[i] = mean;
+	//encoder_inst_statistic[i + 1] = variance;
 }
 
 

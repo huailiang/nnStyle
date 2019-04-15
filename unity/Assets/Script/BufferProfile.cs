@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Text;
 using UnityEngine;
-using System.Text;
+
+/// <summary>
+/// This script is just for Debug
+/// Calculate on the CPU
+/// </summary>
+
 public class BufferProfile
 {
 
@@ -61,7 +66,6 @@ public class BufferProfile
         int width = 256, height = 256, depth = 3;
         float[] buffer = new float[width * height * depth];
         float[] statistic = new float[depth * 2];
-        // Debug.Log(texture.GetPixel(2, 2));
         for (int j = 0; j < height; j++)
         {
             for (int i = 0; i < width; i++)
@@ -98,8 +102,8 @@ public class BufferProfile
         }
 
         float EPSILON = 1e-5f;
-        float[] x_offset = { 0.12092815f, -0.11713269f, 0.17570892f };
-        float[] x_scale = { 1.0396817f, 0.94713473f, 0.9952491f };
+        float[] x_offset = { 0.14529803f, -0.21076468f, -0.06774432f };
+        float[] x_scale = { 0.6957419f, 0.8511919f, 1.3949857f };
         for (int j = 0; j < height; j++)
         {
             for (int i = 0; i < width; i++)
@@ -109,28 +113,28 @@ public class BufferProfile
                 float mean = statistic[0];
                 float variance = statistic[1];
                 float inv = 1f / Mathf.Sqrt(variance + EPSILON);
-                float orig = (color[0] - mean) * inv;
+                float normalized = (color[0] - mean) * inv;
                 float scale = x_scale[0];
                 float offset = x_offset[0];
-                buffer[idx] = scale * color[0] + offset;
+                buffer[idx] = scale * normalized + offset;
 
                 idx++;
                 mean = statistic[2];
                 variance = statistic[3];
                 inv = 1f / Mathf.Sqrt(variance + EPSILON);
-                orig = (color[1] - mean) * inv;
+                normalized = (color[1] - mean) * inv;
                 scale = x_scale[1];
                 offset = x_offset[1];
-                buffer[idx] = scale * color[1] + offset;
+                buffer[idx] = scale * normalized + offset;
 
                 idx++;
                 mean = statistic[4];
                 variance = statistic[5];
                 inv = 1f / Mathf.Sqrt(variance + EPSILON);
-                orig = (color[2] - mean) * inv;
+                normalized = (color[2] - mean) * inv;
                 scale = x_scale[2];
                 offset = x_offset[2];
-                buffer[idx] = scale * color[2] + offset;
+                buffer[idx] = scale * normalized + offset;
             }
         }
 
@@ -143,7 +147,6 @@ public class BufferProfile
         }
         Debug.Log(str);
     }
-
 
 
 }
