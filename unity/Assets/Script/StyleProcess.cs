@@ -162,6 +162,7 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enNorm, 1, 1, 1);
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
             encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
+            encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
             BufferProfile.Print("encoder_conv0", 286, 286, 3);
         }
     }

@@ -123,7 +123,10 @@ void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 void StylePad(uint3 id : SV_DispatchThreadID)
 {
 	uint pad = 15, width = 256, depth = 3;
-	uint nwidth = width + 2 * pad;
+	uint nwidth = width + 2 * pad; // 286
+
+	if (StdCheckRange(id, nwidth)) return;
+
 	int low = width - id.x - 1;
 	int mid = id.x - pad;
 	int high = 2 * pad + width - 1 - id.x;
@@ -146,10 +149,10 @@ void StylePad(uint3 id : SV_DispatchThreadID)
 
 
 [numthreads(8,8,1)]
-void StyleConv1 (uint3 id : SV_DispatchThreadID)
+void StyleConv1 (uint3 id : SV_DispatchThreadID) //286x286x3->284x284x32
 {
 	uint input = 286, output = 284, depth1 = 3, stride =1;
-	uint depth2 = id.x <= output && id.y <= output ? 32 : 0;
+	uint depth2 = StdCheckRange(id, output) ? 0 : 32;
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 1, 0);
 }
 
@@ -168,7 +171,7 @@ void StyleInstance1 (uint3 id : SV_DispatchThreadID) // id.xy=288, id.z=32
 }
 
 [numthreads(8,8,1)]
-void StyleConv2 (uint3 id : SV_DispatchThreadID) //id.xy=144, id.z=1
+void StyleConv2 (uint3 id : SV_DispatchThreadID) // 284x284x32->141x141x32 id.xy=144, id.z=1
 {
 	uint input = 284, output = 141, depth1 = 32, stride =2;
 	uint depth2 = id.x <= output && id.y <= output ? 32 : 0;
