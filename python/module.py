@@ -17,8 +17,8 @@ def encoder(image, options, reuse=True, name="encoder"):
         if reuse:
             tf.get_variable_scope().reuse_variables()
         else:
+            print("encoder reuse",tf.get_variable_scope().reuse)
             assert tf.get_variable_scope().reuse is False
-        inputx = image
         image = instance_norm(input=image,
                               is_training=options.is_training,
                               name='g_e0_bn')
@@ -38,7 +38,7 @@ def encoder(image, options, reuse=True, name="encoder"):
         c5 = tf.nn.relu(instance_norm(conv2d(c4, options.gf_dim * 8, 3, 2, padding='VALID', name='g_e5_c'),
                                       is_training=options.is_training,
                                       name='g_e5_bn'))
-        return [c5, image, inputx, c1]
+        return [c5, c1, c2]
 
 
 def decoder(features, options, reuse=True, name="decoder"):

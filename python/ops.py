@@ -28,7 +28,7 @@ def instance_norm(input, name="instance_norm", is_training=True):
         epsilon = 1e-5
         inv = tf.rsqrt(variance + epsilon)
         normalized = (input-mean)*inv
-        return scale*input + offset
+        return scale * normalized + offset
 
 
 def conv2d(input_, output_dim, ks=4, s=2, stddev=0.02, padding='SAME', name="conv2d", activation_fn=None):
@@ -71,18 +71,18 @@ def printf(tensor, name):
     if len(shape) == 4:
         idx_x = shape[1] / 2
         print("\n%s shape: %dx%dx%d  indx:%d"%(name, shape[1], shape[2], shape[3], idx_x))
-        max_y = min(80, shape[2])
-        max_z = min(10, shape[3])
-        o_str = ""
-        if shape[3] > 8:
-            max_y = min(20, shape[2])
-            # max_z = shape[3]
-        for i in range(0,max_y):
-            o_str += "[" + str(i) + "] "
-            for j in range(0, max_z):
-                o_str += "\t" + str(round(tensor[0][253][i][j], 3))
-            o_str += "\n"
-        print(o_str)
+        # max_y = min(80, shape[2])
+        # max_z = min(10, shape[3])
+        # o_str = ""
+        # if shape[3] > 8:
+        #     max_y = min(20, shape[2])
+        #     # max_z = shape[3]
+        # for i in range(0,max_y):
+        #     o_str += "[" + str(i) + "] "
+        #     for j in range(0, max_z):
+        #         o_str += "\t" + str(round(tensor[0][idx_x][i][j], 3))
+        #     o_str += "\n"
+        # print(o_str)
 
 
 

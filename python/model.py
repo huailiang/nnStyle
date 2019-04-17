@@ -468,6 +468,7 @@ class Artgan(object):
             names += glob(os.path.join(d, '*'))
         names = [x for x in names if os.path.basename(x)[0] != '.']
         names.sort()
+
         for img_idx, img_path in enumerate(tqdm(names)):
             img = scipy.misc.imread(img_path, mode='RGB')
             img_shape = img.shape[:2]
@@ -485,8 +486,8 @@ class Artgan(object):
                 self.input_photo_features,
                 feed_dict={self.input_photo: normalize_arr_of_imgs(img)}
             )
-            printf(e_list[2], "conv_input")
-            printf(e_list[1], "instance_norm")
+            printf(e_list[1], "conv_c1")
+            printf(e_list[2], "conv_c2")
             # printf(e_list[3], "conv_relu_c1")
 
             d_list = self.sess.run(
@@ -538,6 +539,7 @@ class Artgan(object):
             ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+                print("checkpoint path: ",ckpt.model_checkpoint_path)
                 self.initial_step = int(ckpt_name.split("_")[-1].split(".")[0])
                 print("Load checkpoint %s. Initial step: %s." % (ckpt_name, self.initial_step))
                 self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
