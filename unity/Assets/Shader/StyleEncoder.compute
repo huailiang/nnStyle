@@ -61,7 +61,7 @@ conv5			  16x16x256
 void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
-	float4 color = source[uint2(id.x, width - id.y)];
+	float4 color = source[uint2(id.x, width - id.y - 1)];
 	float arr[3] = { color.x, color.y, color.z };
 	float v = 2 * arr[id.z] - 1;
 	int idx = id.y * width * depth + id.x * depth + id.z;
@@ -106,7 +106,7 @@ void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex
 void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
-	float4 color = source[uint2(id.x, width - id.y)];
+	float4 color = source[uint2(id.x, width - id.y - 1)];
 	int z = id.z;
 	int idx = id.x * width * depth + id.y * depth + z;
 	float mean = encoder_inst_statistic[z * 2];

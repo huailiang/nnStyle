@@ -11,13 +11,27 @@ public class BufferProfile
 
     private static StringBuilder sb = new StringBuilder();
 
+
     public static void Print(string name, params int[] shape)
     {
+        int dftX = shape[0] / 2;
         var cb = BufferPool.Get(name);
-        Print(cb, name, shape);
+        Print(cb, dftX, name, shape);
+    }
+
+    public static void Print(int dftX, string name,  params int[] shape)
+    {
+        var cb = BufferPool.Get(name);
+        Print(cb, dftX, name, shape);
     }
 
     public static void Print(ComputeBuffer buffer, string name, params int[] shape)
+    {
+        int dftX = shape[0] / 2;
+        Print(buffer, dftX, name, shape);
+    }
+
+    public static void Print(ComputeBuffer buffer, int dftX, string name,  params int[] shape)
     {
         sb.Length = 0;
         int len = shape.Length;
@@ -40,7 +54,7 @@ public class BufferProfile
                 for (int k = 0; k < Mathf.Min(max_z, z); k++)
                 {
                     sb.Append("\t");
-                    sb.Append(array[x / 2 * y * z + j * z + k].ToString("f4"));
+                    sb.Append(array[dftX * y * z + j * z + k].ToString("f4"));
                 }
                 sb.Append("\n");
             }
@@ -51,6 +65,7 @@ public class BufferProfile
             Debug.LogWarning("yet not support shape not equal 3 tensor output!");
         }
     }
+
 
     private static float[] TransfColor(Color color)
     {
@@ -99,7 +114,7 @@ public class BufferProfile
             statistic[idx] = mean;
             statistic[idx + 1] = statistic[idx + 1] / len - Mathf.Pow(mean, 2);
         }
-        Debug.Log(string.Format("[CPU] {0}\t{1}\t{2}\t{3}\t{4}\t{5}\n{6}", statistic[0].ToString("f3"),
+        Debug.Log(string.Format("[CPU] statistic:{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n{6}", statistic[0].ToString("f3"),
             statistic[1].ToString("f4"),
             statistic[2].ToString("f4"),
             statistic[3].ToString("f4"),

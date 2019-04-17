@@ -158,12 +158,11 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 200, 80, 40), "Normalize"))
         {
-            encoderShader.Dispatch(enConv, 256 / 8, 256 / 8, 1);
+            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
             encoderShader.Dispatch(enNorm, 1, 1, 1);
             BufferProfile.Print("encoder_inst_statistic", 1, 1, 6);
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("encoder_inst", 256, 256, 3);
-
+            BufferProfile.Print("encoder_inst", width, width, 3);
         }
     }
 
