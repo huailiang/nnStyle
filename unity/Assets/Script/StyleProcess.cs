@@ -159,40 +159,10 @@ public class StyleProcess : MonoBehaviour
         if (GUI.Button(new Rect(20, 200, 80, 40), "Normalize"))
         {
             encoderShader.Dispatch(enConv, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("encoder_inst", 256, 256, 3);
-            var cb = BufferPool.Get("encoder_inst");
-            float[] array = new float[256 * 256 * 3];
-            cb.GetData(array);
-            float[] bb = new float[256 * 3];
-            float[] cc = new float[3];
-            for (int i = 0; i < 256 * 3; i++)
-            {
-                for (int j = 0; j < 256; j++)
-                {
-                    int idx = j * 256 * 3 + i;
-                    bb[i] += array[idx];
-                }
-            }
-            for (int i = 0; i < 256; i++)
-            {
-                int idx = i * 3;
-                cc[0] += bb[idx];
-                idx++;
-                cc[1] += bb[idx];
-                idx++;
-                cc[2] += bb[idx];
-            }
-            string ss = "\n";
-            for (int i = 0; i < 80; i++)
-            {
-                ss += "[ " + i + " ] \t" + bb[i * 3] + "\t" + bb[i * 3 + 1] + "\t" + bb[i * 3 + 2] + "\n";
-            }
-            Debug.Log("aa statistic: " + cc[0] + "\t" + cc[1] + "\t" + cc[2] + ss);
-
             encoderShader.Dispatch(enNorm, 1, 1, 1);
             BufferProfile.Print("encoder_inst_statistic", 1, 1, 6);
+            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
             BufferProfile.Print("encoder_inst", 256, 256, 3);
-            //encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
 
         }
     }

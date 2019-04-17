@@ -40,7 +40,7 @@ public class BufferProfile
                 for (int k = 0; k < Mathf.Min(max_z, z); k++)
                 {
                     sb.Append("\t");
-                    sb.Append(array[0 * y * z + j * z + k].ToString("f4"));
+                    sb.Append(array[x / 2 * y * z + j * z + k].ToString("f4"));
                 }
                 sb.Append("\n");
             }
@@ -91,21 +91,20 @@ public class BufferProfile
             int idx = x * width * depth + i * depth;
             str += string.Format("[ {0} ] \t{1}\t{2}\t{3}\n", i, buffer[idx].ToString("f3"), buffer[idx + 1].ToString("f3"), buffer[idx + 2].ToString("f3"));
         }
-        //for (int i = 0; i < 3; i++)
-        //{
-        //    int idx = i * 2;
-        //    int len = width * height;
-        //    float mean = statistic[idx] / len;
-        //    statistic[idx] = mean;
-        //    statistic[idx + 1] = statistic[idx + 1] / len - Mathf.Pow(mean, 2);
-        //}
+        for (int i = 0; i < 3; i++)
+        {
+            int idx = i * 2;
+            int len = width * height;
+            float mean = statistic[idx] / len;
+            statistic[idx] = mean;
+            statistic[idx + 1] = statistic[idx + 1] / len - Mathf.Pow(mean, 2);
+        }
         Debug.Log(string.Format("[CPU] {0}\t{1}\t{2}\t{3}\t{4}\t{5}\n{6}", statistic[0].ToString("f3"),
-            statistic[1].ToString("f3"),
-            statistic[2].ToString("f3"),
-            statistic[3].ToString("f3"),
-            statistic[4].ToString("f3"),
-            statistic[5].ToString("f3"), str));
-        return;
+            statistic[1].ToString("f4"),
+            statistic[2].ToString("f4"),
+            statistic[3].ToString("f4"),
+            statistic[4].ToString("f4"),
+            statistic[5].ToString("f4"), str));
         float EPSILON = 1e-5f;
         float[] x_offset = { 0.14529803f, -0.21076468f, -0.06774432f };
         float[] x_scale = { 0.6957419f, 0.8511919f, 1.3949857f };
@@ -144,7 +143,7 @@ public class BufferProfile
         }
 
         x = 256 / 2;
-        str = "style transf\n";
+        str = "style transf arg:\n";
         for (int i = 0; i < 80; i++)
         {
             int idx = x * width * depth + i * depth;

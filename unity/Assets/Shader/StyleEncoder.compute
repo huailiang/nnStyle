@@ -74,16 +74,17 @@ groupshared float temp[2 * 256 * 3];
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex)
 {
 	uint offset = 256 * 3;
-	temp[gix] = 0;
-	temp[gix + offset] = 0;
+	uint nix = id.y * 3 + id.z;
+	temp[nix] = 0.0f;
+	temp[nix + offset] = 0;
 	for (int i = 0; i < 256; i++)
 	{
-		int idx = i * 256 * 3 + id.y * 3 + id.z;
-		temp[gix] += encoder_inst[idx];
-		temp[gix + offset] += pow(abs(encoder_inst[idx]), 2);
+		int idx = i * 256 * 3 + nix;
+		temp[nix] += encoder_inst[idx];
+		temp[nix + offset] += pow(abs(encoder_inst[idx]), 2);
 	}
 	GroupMemoryBarrierWithGroupSync();
-	encoder_inst[gix] = temp[gix];
+
 	if (id.y == 0) //only three threads limited is running, so dont't do mass of jobs
 	{
 		float mean = 0.0f, qrt = 0.0f;
@@ -93,9 +94,10 @@ void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex
 			mean += temp[idx];
 			qrt += temp[idx + offset];
 		}
-		float vl = 256.0f * 256.0f;
-		encoder_inst_statistic[id.z] = mean;
-		encoder_inst_statistic[id.z * 2 + 1] = qrt;
+		int len = 256 * 256;
+		mean = mean / len;
+		encoder_inst_statistic[id.z * 2] = mean;
+		encoder_inst_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);
 	}
 }
 
