@@ -160,9 +160,9 @@ public class StyleProcess : MonoBehaviour
         {
             encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
             encoderShader.Dispatch(enNorm, 1, 1, 1);
-            BufferProfile.Print("encoder_inst_statistic", 1, 1, 6);
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("encoder_inst", width, width, 3);
+            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
+            BufferProfile.Print("encoder_conv0", 286, 286, 3);
         }
     }
 
@@ -216,10 +216,8 @@ public class StyleProcess : MonoBehaviour
                     decoderConv1, decoderNormal3, decoderConv4, decoderNormal4}, item.Key, buffer);
             }
         }
-        encoderShader.SetTexture(stylePad, "source", mainTexture);
         encoderShader.SetTexture(enConv, "source", mainTexture);
         encoderShader.SetTexture(enInst, "source", mainTexture);
-        encoderShader.SetTexture(enConv, "destination", tempDestination);
         ProcessNet();
         Debug.Log("Process neural network finsih");
     }
@@ -245,6 +243,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enConv, name, cb);
         encoderShader.SetBuffer(enNorm, name, cb);
         encoderShader.SetBuffer(enInst, name, cb);
+        encoderShader.SetBuffer(stylePad, name, cb);
 
         count = 2 * 3;
         name = "encoder_inst_statistic";
