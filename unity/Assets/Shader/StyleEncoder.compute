@@ -32,7 +32,7 @@ contact: peng_huailiang@qq.com
 Texture2D<float4> source;
 RWTexture2D<float4> destination;
 RWStructuredBuffer<float> encoder_inst;
-RWStructuredBuffer<int> encoder_inst_statistic;
+RWStructuredBuffer<float> encoder_inst_statistic;
 RWStructuredBuffer<float> encoder_conv0;
 RWStructuredBuffer<float> encoder_conv1;
 RWStructuredBuffer<float> encoder_conv1_statistic;
@@ -57,7 +57,6 @@ conv4			34x34x128->
 conv5			  16x16x256		
 */
 
-
 [numthreads(8,8,3)]
 void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 {
@@ -67,70 +66,54 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 	float v = 2 * arr[id.z] - 1;
 	int idx = id.y * width * depth + id.x * depth + id.z;
 	encoder_inst[idx] = v;
-	//InterlockedAdd(encoder_inst_statistic[id.z * 2], 1, encoder_inst_statistic[id.z * 2]);
-	//encoder_inst_statistic[id.z * 2] += 1;// v;
-	//encoder_inst_statistic[id.z * 2 + 1] += 2;// pow(v, 2);
-	//DeviceMemoryBarrierWithGroupSync();
-	float mean = 0.33f * (arr[0] + arr[1] + arr[2]);
-	destination[id.xy] = float4(mean, mean, mean, 1);
-	//encoder_inst_statistic[id.x * depth + id.z] = id.x;
 }
 
-[numthreads(256,1,3)]
-void StyleEncoderNormal(uint3 id : SV_DispatchThreadID)
+groupshared float temp[2 * 256 * 3];
+
+[numthreads(1,256,3)]
+void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex)
 {
+	uint offset = 256 * 3;
+	temp[gix] = 0;
+	temp[gix + offset] = 0;
 	for (int i = 0; i < 256; i++)
 	{
-		//int idx = id.x * 256 * 3 + 0 * 3 + id.z;
-		//if (id.z < 3)
-		{
-			encoder_inst_statistic[id.x * 3 + id.z] += 1;// encoder_inst[idx];
-		}
+		int idx = i * 256 * 3 + id.y * 3 + id.z;
+		temp[gix] += encoder_inst[idx];
+		temp[gix + offset] += pow(abs(encoder_inst[idx]), 2);
 	}
-
-	//int i = id.x * 2;
-	//float vl = 256.0f * 256.0f;
-	//float mean = encoder_inst_statistic[i] / vl;
-	//float variance = encoder_inst_statistic[i + 1] / vl - pow(mean, 2);
-	//encoder_inst_statistic[i] = mean;
-	//encoder_inst_statistic[i + 1] = variance;
+	GroupMemoryBarrierWithGroupSync();
+	encoder_inst[gix] = temp[gix];
+	if (id.y == 0) //only three threads limited is running, so dont't do mass of jobs
+	{
+		float mean = 0.0f, qrt = 0.0f;
+		for (int i = 0; i < 256; i++)
+		{
+			int idx = i * 3 + id.z;
+			mean += temp[idx];
+			qrt += temp[idx + offset];
+		}
+		float vl = 256.0f * 256.0f;
+		encoder_inst_statistic[id.z] = mean;
+		encoder_inst_statistic[id.z * 2 + 1] = qrt;
+	}
 }
 
 
-[numthreads(8,8,1)]
+[numthreads(8,8,3)]
 void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 {
-	float4 color = source[int2(id.x, id.y)];
 	uint width = 256, depth = 3;
-	int z = 0;
+	float4 color = source[uint2(id.x, width - id.y)];
+	int z = id.z;
 	int idx = id.x * width * depth + id.y * depth + z;
 	float mean = encoder_inst_statistic[z * 2];
 	float variance = encoder_inst_statistic[z * 2 + 1];
 	float inv = rsqrt(variance + EPSILON);
-	float ori = (color.x - mean) * inv;
+	float normalized = (color.x - mean) * inv;
 	float scale = encoder_g_e0_bn_scale[z];
 	float offset = encoder_g_e0_bn_offset[z];
-	encoder_inst[idx]  = relu(scale * ori + offset);
-
-	z = 1;
-	idx += 1;
-	mean = encoder_inst_statistic[ z * 2];
-	variance = encoder_inst_statistic[z*2+1];
-	inv = rsqrt(variance+EPSILON);
-	ori = (color.y - mean) * inv;
-	scale = encoder_g_e0_bn_scale[z];
-	offset = encoder_g_e0_bn_offset[z];
-	encoder_inst[idx]  = relu(scale * ori + offset);
-
-	z = 2;
-	idx += 1;
-	mean = encoder_inst_statistic[ z * 2];
-	variance = encoder_inst_statistic[z*2+1];
-	inv = rsqrt(variance+EPSILON);
-	ori = (color.z - mean) * inv;
-	scale = encoder_g_e0_bn_scale[z];
-	offset = encoder_g_e0_bn_offset[z];
-	encoder_inst[idx]  = relu(scale * ori + offset);
+	encoder_inst[idx] = scale * normalized + offset;
 }
 
 
