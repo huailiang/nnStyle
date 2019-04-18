@@ -11,9 +11,8 @@ tf.set_random_seed(228)
 def write(f, key, tensor):
     """
 	write tensor to file stream
-	:param f: 	file handler
+	:param f: 	writable file handler
 	:param key: tensor name
-	:return:
 	"""
     shape = tensor.shape
     f.write(struct.pack('h', len(shape)))
@@ -31,18 +30,17 @@ def write(f, key, tensor):
 
         for i in xrange(0, shape[2]):  # input count
             for j in xrange(0, shape[3]):  # output count
-                for k in xrange(0, shape[0]):
-                    for l in xrange(0, shape[1]):
+                for k in xrange(0, shape[0]):   # kernel width
+                    for l in xrange(0, shape[1]):   # kernel height
                         byte = struct.pack('f', tensor[k, l, i, j])
                         f.write(byte)
 
 
 def movefile(srcfile, dstfile):
     """
-    the function use to move file from source to destnation
+     move file from source to destnation
     :param srcfile:  source path
     :param dstfile:  destination path
-    :return:
     """
     if not os.path.isfile(srcfile):
         print "%s not exist!" % (srcfile)
@@ -67,16 +65,12 @@ for key in var_to_shape_map:
     if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
             shape) > 0:
         tensor = str(reader.get_tensor(key))
-        line = "public float" + str(list(shape)) + " " + key.replace("/", "_") + " = \n" + tensor + "\n\n"
         # print(key.replace("/","_"),shape)
         llist.append(key.replace("/", "_") + "  " + str(shape))
         for x in shape:
             counter += x
         write(f, key.replace("/", "_"), reader.get_tensor(key))
         tensor = reader.get_tensor(key)
-        if key.startswith("encoder/g_e0_bn"):
-            print(key)
-            print(tensor)
 
 llist.sort()
 for x in llist:
