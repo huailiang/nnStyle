@@ -22,6 +22,37 @@ public class LoadCheckpoint
         }
     }
 
+    public float[] LoadLayer(string name)
+    {
+        string path = Application.dataPath + "/Resources/" + name + ".bytes";
+        float[] rst;
+        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+        {
+            var reader = new BinaryReader(fs);
+            rst = ReadLayer(reader);
+            reader.Close();
+        }
+        return rst;
+    }
+
+    private float[] ReadLayer(BinaryReader reader)
+    {
+        short shape = reader.ReadInt16();
+        if (shape != 4) { Debug.LogError("not support shape" + shape); return null; }
+        short v2 = reader.ReadInt16();
+        short v3 = reader.ReadInt16();
+        short v4 = reader.ReadInt16();
+        float[] rst = new float[v2 * v3 * v4];
+        for (int i = 0; i < v2; i++)
+            for (int j = 0; j < v3; j++)
+                for (int k = 0; k < v4; k++)
+                {
+                    int idx = i * v3 * v4 + j * v4 + k;
+                    rst[idx] = reader.ReadSingle();
+                }
+        return rst;
+    }
+
 
     private void Read(BinaryReader reader)
     {

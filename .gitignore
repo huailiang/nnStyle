@@ -27,3 +27,4 @@ python/models/
 *.DS_Store
 *.pyc
 **/args.bytes*
+**/encoder_c*.bytes*

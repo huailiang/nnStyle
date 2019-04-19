@@ -158,12 +158,17 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 200, 80, 40), "Normalize"))
         {
-            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
-            encoderShader.Dispatch(enNorm, 1, 1, 1);
-            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
-            encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
-            BufferProfile.Print("encoder_conv0");
+            //encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
+            //encoderShader.Dispatch(enNorm, 1, 1, 1);
+            //encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
+            //encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
+            //encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
+            //BufferProfile.Print("encoder_conv0");
+
+
+            float[] layer = checkpoint.LoadLayer("encoder_c1");
+            BufferPool.Get("encoder_conv1").SetData(layer);
+            BufferProfile.Print("encoder_conv1");
         }
     }
 
