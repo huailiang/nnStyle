@@ -33,7 +33,7 @@ void StdOrderSeq(int x, int y, int z, int width,int depth, out int result[9])
 }
 
 
-bool StdCheckRange(uint3 id, uint width)
+inline bool StdCheckRange(uint3 id, uint width)
 {
 	return id.x >= width || id.y >= width;
 }

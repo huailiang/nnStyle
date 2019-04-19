@@ -23,6 +23,15 @@ contact: peng_huailiang@qq.com
 #define HALF_PI         1.57079632679
 #define INV_HALF_PI     0.636619772367
 
+//compute shader features
+#define MAX_THREAD_Z	64
+#define MAX_THREAD_X	1024
+#define MAX_THREAD_Y	1024
+#define MAX_THREAD		1024
+
+#define MAX_GROUP_SHARED	8192 //globalshared's count max is 8192's float (equal 32768bytes)
+
+
 #define FLT_EPSILON     1.192092896e-07 // Smallest positive number, such that 1.0 + FLT_EPSILON != 1.0
 #define FLT_MIN         1.175494351e-38 // Minimum representable positive floating-point number
 #define FLT_MAX         3.402823466e+38 // Maximum representable floating-point number

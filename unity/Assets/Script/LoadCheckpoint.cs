@@ -65,41 +65,41 @@ public class LoadCheckpoint
     private void Read_v4(BinaryReader reader)
     {
         string key = ReadString(reader);
-        short s1 = reader.ReadInt16();
-        short s2 = reader.ReadInt16();
-        short s3 = reader.ReadInt16();
-        short s4 = reader.ReadInt16();
+        short input = reader.ReadInt16();
+        short output = reader.ReadInt16();
+        short height = reader.ReadInt16();
+        short width = reader.ReadInt16();
 
-        if (s3 == 3 && s4 == 3)
+        if (height == 3 && width == 3)
         {
-            v3_map.Add(key, new Matrix3X3[s1 * s2]);
-            for (int i = 0; i < s1; i++) //input
+            v3_map.Add(key, new Matrix3X3[input * output]);
+            for (int i = 0; i < input; i++)
             {
-                for (int j = 0; j < s2; j++) //output
+                for (int j = 0; j < output; j++)
                 {
                     Matrix3X3 mat = Matrix3X3.zero;
-                    for (int k = 0; k < s3; k++)
+                    for (int k = 0; k < height; k++)
                     {
-                        for (int l = 0; l < s4; l++)
+                        for (int l = 0; l < width; l++)
                         {
-                            mat[k, l] = reader.ReadSingle();
+                            mat[l, k] = reader.ReadSingle();
                         }
                     }
-                    v3_map[key][i * s2 + j] = mat;
+                    v3_map[key][i * output + j] = mat;
                 }
             }
         }
-        else
+        else //7X7
         {
             int indx = 0;
-            float[] array = new float[s1 * s2 * s3 * s4];
-            for (int i = 0; i < s1; i++) //input
+            float[] array = new float[input * output * height * width];
+            for (int i = 0; i < input; i++) //input
             {
-                for (int j = 0; j < s2; j++) //output
+                for (int j = 0; j < output; j++) //output
                 {
-                    for (int k = 0; k < s3; k++)
+                    for (int k = 0; k < height; k++)
                     {
-                        for (int l = 0; l < s4; l++)
+                        for (int l = 0; l < width; l++)
                         {
                             array[indx++] = reader.ReadSingle();
                         }

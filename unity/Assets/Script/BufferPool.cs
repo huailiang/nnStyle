@@ -1,14 +1,42 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+
+public struct Buffer
+{
+    public int[] shape;
+    public ComputeBuffer cb;
+}
+
 public class BufferPool
 {
-    private static Dictionary<string, ComputeBuffer> buffer = new Dictionary<string, ComputeBuffer>();
 
-    public static ComputeBuffer Get(string name, int count, int stride)
+    private static Dictionary<string, Buffer> buffer = new Dictionary<string, Buffer>();
+
+
+    private static int GetStride<T>()
     {
-        var cb = new ComputeBuffer(count, stride);
-        buffer.Add(name, cb);
+        if (typeof(T) == typeof(Matrix3X3))
+        {
+            return 9 * sizeof(float);
+        }
+        return sizeof(float);
+    }
+
+    public static ComputeBuffer Get<T>(string name, params int[] shape)
+    {
+        var cb = Get(name);
+        if (cb == null)
+        {
+            int count = shape[0];
+            for (int i = 1; i < shape.Length; i++)
+            {
+                count *= shape[i];
+            }
+            cb = new ComputeBuffer(count, GetStride<T>());
+            Buffer b = new Buffer() { cb = cb, shape = shape };
+            buffer.Add(name, b);
+        }
         return cb;
     }
 
@@ -16,16 +44,21 @@ public class BufferPool
     {
         if (buffer.ContainsKey(name))
         {
-            return buffer[name];
+            return buffer[name].cb;
         }
         return null;
+    }
+
+    public static bool TryGet(string name, out Buffer b)
+    {
+        return buffer.TryGetValue(name, out b);
     }
 
     public static void Release(string name)
     {
         if (buffer.ContainsKey(name))
         {
-            buffer[name].Release();
+            buffer[name].cb.Release();
             buffer.Remove(name);
         }
     }
@@ -34,7 +67,7 @@ public class BufferPool
     {
         foreach (var it in buffer)
         {
-            if (it.Value == cb)
+            if (it.Value.cb == cb)
             {
                 cb.Release();
                 buffer.Remove(it.Key);
@@ -47,7 +80,7 @@ public class BufferPool
     {
         foreach (var item in buffer)
         {
-            item.Value.Release();
+            item.Value.cb.Release();
         }
         buffer.Clear();
     }

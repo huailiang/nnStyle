@@ -10,25 +10,20 @@ public class BufferProfile
 {
 
     private static StringBuilder sb = new StringBuilder();
-
-
-    public static void Print(string name, params int[] shape)
+    
+    public static void Print(string name)
     {
-        int dftX = shape[0] / 2;
-        var cb = BufferPool.Get(name);
-        Print(cb, dftX, name, shape);
+        Buffer buffer;
+        if (BufferPool.TryGet(name, out buffer))
+        {
+            Print(buffer.cb, name, buffer.shape);
+        }
     }
 
-    public static void Print(int dftX, string name,  params int[] shape)
-    {
-        var cb = BufferPool.Get(name);
-        Print(cb, dftX, name, shape);
-    }
-
-    public static void Print(ComputeBuffer buffer, string name, params int[] shape)
+    public static void Print(ComputeBuffer cb, string name, params int[] shape)
     {
         int dftX = shape[0] / 2;
-        Print(buffer, dftX, name, shape);
+        Print(cb, dftX, name, shape);
     }
 
     public static void Print(ComputeBuffer buffer, int dftX, string name,  params int[] shape)

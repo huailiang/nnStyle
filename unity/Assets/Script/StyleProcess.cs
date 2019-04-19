@@ -146,9 +146,9 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 80, 80, 40), "Debug"))
         {
-            BufferProfile.Print("encoder_conv0", 286, 286, 3);
-            BufferProfile.Print("encoder_conv2", 141, 141, 32);
-            BufferProfile.Print("encoder_conv4", 34, 34, 128);
+            BufferProfile.Print("encoder_conv0");
+            BufferProfile.Print("encoder_conv2");
+            BufferProfile.Print("encoder_conv4");
             BufferProfile.Print(buffer_encoder_output, "buffer_encoder_output", 16, 16, 256);
         }
         if (GUI.Button(new Rect(20, 140, 80, 40), "Texture"))
@@ -163,7 +163,7 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
             encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
-            BufferProfile.Print("encoder_conv0", 286, 286, 3);
+            BufferProfile.Print("encoder_conv0");
         }
     }
 
@@ -173,7 +173,7 @@ public class StyleProcess : MonoBehaviour
         {
             if (item.Key.StartsWith("encoder"))
             {
-                buffer = BufferPool.Get(item.Key, item.Value.Length, sizeof(float));
+                buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
                 encoderShader.SetBuffer(enInst, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleInstance1, item.Key, buffer);
@@ -184,7 +184,7 @@ public class StyleProcess : MonoBehaviour
             }
             else if (item.Key.StartsWith("decoder"))
             {
-                buffer = BufferPool.Get(item.Key, item.Value.Length, sizeof(float));
+                buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
                 SetDecoderBuffer(new int[] { decoderConv1, deResiduleNormal1_1, deResiduleNormal1_2, decoderNormal1, decoderConv2, decoderNormal2,decoderConv3,
                 decoderNormal3, decoderNormal4}, item.Key, buffer);
@@ -195,7 +195,7 @@ public class StyleProcess : MonoBehaviour
         {
             if (item.Key.StartsWith("encoder"))
             {
-                buffer = BufferPool.Get(item.Key, item.Value.Length, 9 * sizeof(float));
+                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
                 encoderShader.SetBuffer(stylePad, item.Key, buffer);
                 encoderShader.SetBuffer(enStyleConv1, item.Key, buffer);
@@ -211,7 +211,7 @@ public class StyleProcess : MonoBehaviour
             }
             else if (item.Key.StartsWith("decoder"))
             {
-                buffer = BufferPool.Get(item.Key, item.Value.Length, 9 * sizeof(float));
+                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
                 SetDecoderBuffer(new int[] { deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2,decoderConv3,
                     decoderConv1, decoderNormal3, decoderConv4, decoderNormal4}, item.Key, buffer);
@@ -231,102 +231,81 @@ public class StyleProcess : MonoBehaviour
 
     private void ProcessEncoder()
     {
-        int count = 286 * 286 * 3;
         string name = "encoder_conv0";
-        var cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        var cb = BufferPool.Get<float>(name, 286, 286, 3);
         encoderShader.SetBuffer(stylePad, name, cb);
         encoderShader.SetBuffer(enStyleConv1, name, cb);
 
-        count = 256 * 256 * 3;
         name = "encoder_inst";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get<float>(name, 256, 256, 3);
         encoderShader.SetBuffer(enConv, name, cb);
         encoderShader.SetBuffer(enNorm, name, cb);
         encoderShader.SetBuffer(enInst, name, cb);
         encoderShader.SetBuffer(stylePad, name, cb);
 
-        count = 2 * 3;
         name = "encoder_inst_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get<float>(name, 6);
         encoderShader.SetBuffer(enNorm, name, cb);
         encoderShader.SetBuffer(enInst, name, cb);
 
-        count = 284 * 284 * 32;
         name = "encoder_conv1";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get<float>(name, 284, 284, 32);
         encoderShader.SetBuffer(enStyleConv1, name, cb);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleInstance1, name, cb);
 
 
-        count = 141 * 141 * 32;
         name = "encoder_conv2";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get<float>(name, 141, 141, 32);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleInstance2, name, cb);
 
 
-        count = 70 * 70 * 64;
         name = "encoder_conv3";
-        cb = BufferPool.Get(name, count, sizeof(float));
+        cb = BufferPool.Get<float>(name, 70, 70, 64);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleInstance3, name, cb);
 
-        count = 34 * 34 * 128;
         name = "encoder_conv4";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 34, 34, 128);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleInstance4, name, cb);
 
-        count = 16 * 16 * 256;
         name = "encoder_conv5";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 16, 16, 256);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleInstance5, name, cb);
         buffer_encoder_output = cb;
 
-        count = 32;
         name = "encoder_conv1_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count * 2);
+        cb = BufferPool.Get<float>(name, 32);
         encoderShader.SetBuffer(enStyleConv1, name, cb);
         encoderShader.SetBuffer(enStyleNorm1, name, cb);
         encoderShader.SetBuffer(enStyleInstance1, name, cb);
 
-        count = 32;
         name = "encoder_conv2_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count * 2);
+        cb = BufferPool.Get<float>(name, 32);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleNorm2, name, cb);
         encoderShader.SetBuffer(enStyleInstance2, name, cb);
 
-        count = 64;
         name = "encoder_conv3_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count * 2);
+        cb = BufferPool.Get<float>(name, 64);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleNorm3, name, cb);
         encoderShader.SetBuffer(enStyleInstance3, name, cb);
 
-        count = 128;
         name = "encoder_conv4_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count * 2);
+        cb = BufferPool.Get<float>(name, 128);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleNorm4, name, cb);
         encoderShader.SetBuffer(enStyleInstance4, name, cb);
 
-        count = 256;
         name = "encoder_conv5_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count * 2);
+        cb = BufferPool.Get<float>(name, 256);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleNorm5, name, cb);
         encoderShader.SetBuffer(enStyleInstance5, name, cb);
@@ -342,108 +321,75 @@ public class StyleProcess : MonoBehaviour
 
     private void ProcessDecoder()
     {
-        int count = 16 * 16 * 256;
         string name = "input_initial";
-        var cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        var cb = BufferPool.Get<float>(name, 16, 16, 256);
         decoderShader.SetBuffer(deResidulePad1_1, name, cb);
         buffer_decoder_input = cb;
 
         name = "input_writable";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 16, 16, 256);
         SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, deResiduleConv1_2 }, name, cb);
 
-        count = 2 * 256;
         name = "input_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 512);
         SetDecoderBuffer(new int[] { deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResidulePad1_2, deResiduleNormal1_2 }, name, cb);
 
         name = "decoder_residule";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 512);
         SetDecoderBuffer(new int[] { deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleNormal1_2, deResidulePad1_2, deResiduleConv1_2, decoderExpand1 }, name, cb);
 
-        count = 32 * 32 * 256;
         name = "decoder_conv1";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 32, 32, 256);
         SetDecoderBuffer(new int[] { decoderExpand1, deResiduleConv1_1, decoderConv1 }, name, cb);
 
-        count = 32 * 32 * 256;
         name = "decoder_conv1_conved";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 32, 32, 256);
         SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1, decoderExpand2 }, name, cb);
 
-        count = 2 * 256;
         name = "decoder_conv1_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 512);
         SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1 }, name, cb);
 
-        count = 64 * 64 * 128;
         name = "decoder_conv2";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 64, 64, 128);
         SetDecoderBuffer(new int[] { deResiduleConv1_2, decoderExpand2, decoderConv2 }, name, cb);
 
-        count = 64 * 64 * 128;
         name = "decoder_conv2_conved";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 64, 64, 128);
         SetDecoderBuffer(new int[] { deResiduleConv1_2, deResiduleNormal1_1, decoderConv2, decoderNormal2, decoderExpand3 }, name, cb);
 
-        count = 2 * 128;
         name = "decoder_conv2_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 256);
         SetDecoderBuffer(new int[] { deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2 }, name, cb);
 
-        count = 128 * 128 * 64;
         name = "decoder_conv3";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 128, 128, 64);
         SetDecoderBuffer(new int[] { decoderExpand3, decoderConv3 }, name, cb);
 
-        count = 128 * 128 * 64;
         name = "decoder_conv3_conved";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 128, 128, 64);
         SetDecoderBuffer(new int[] { decoderNormal3, decoderConv3, decoderExpand4 }, name, cb);
 
-        count = 2 * 64;
         name = "decoder_conv3_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 128);
         SetDecoderBuffer(new int[] { decoderNormal3, decoderConv3 }, name, cb);
 
-        count = 256 * 256 * 32;
         name = "decoder_conv4";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 256, 256, 32);
         SetDecoderBuffer(new int[] { decoderExpand4, decoderConv4 }, name, cb);
 
-        count = 256 * 256 * 32;
         name = "decoder_conv4_conved";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 256, 256, 32);
         SetDecoderBuffer(new int[] { decoderNormal4, decoderConv4, decoderExpand5 }, name, cb);
 
-        count = 2 * 32;
         name = "decoder_conv4_statistic";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 64);
         SetDecoderBuffer(new int[] { decoderNormal4, decoderConv4 }, name, cb);
 
-        count = 262 * 262 * 32;
         name = "decoder_conv5_pad";
-        cb = BufferPool.Get(name, count, sizeof(float));
-        cb.SetCounterValue((uint)count);
+        cb = BufferPool.Get<float>(name, 262, 262, 32);
         SetDecoderBuffer(new int[] { decoderExpand5, decoderConv5 }, name, cb);
 
         decoderShader.SetTexture(decoderConv5, "decoder_destination", tempDestination);
     }
-
 }
