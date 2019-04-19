@@ -23,14 +23,14 @@ contact: peng_huailiang@qq.com
 			int seq[9];	\
 			StdOrderSeq(id.x*stride, id.y*stride, i, input, depth1, seq);	\
 			float3x3 xsam = float3x3(encoder_conv##pidx##[seq[0]], encoder_conv##pidx##[seq[1]], encoder_conv##pidx##[seq[2]], \
-									encoder_conv##pidx##[seq[3]], encoder_conv##pidx##[seq[4]], encoder_conv##pidx##[seq[5]], \
-									encoder_conv##pidx##[seq[6]], encoder_conv##pidx##[seq[7]], encoder_conv##pidx##[seq[8]]); \
-			float3x3 conv = encoder_g_e##idx##_c_Conv_weights[output*i+j];	\
+				encoder_conv##pidx##[seq[3]], encoder_conv##pidx##[seq[4]], encoder_conv##pidx##[seq[5]], \
+				encoder_conv##pidx##[seq[6]], encoder_conv##pidx##[seq[7]], encoder_conv##pidx##[seq[8]]); \
+			float3x3 conv = encoder_g_e##idx##_c_Conv_weights[depth2 * i + j];	\
 			float3x3 imul = xsam * conv;	\
 			float3 iall = imul[0] + imul[1]+ imul[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
 		}	\
-		int indx = (output * depth2) * (id.x * stride) + depth2 * id.y * stride + j;	\
+		int indx = (output * depth2) * id.x  + depth2 * id.y  + j;	\
 		encoder_conv##idx##[indx] = v;	\
 	}
 
@@ -44,7 +44,7 @@ contact: peng_huailiang@qq.com
 	{	\
 		int idx = i * width * depth * scale + id.y * depth * scale + id.z;	\
 		temp[nix] += encoder_conv##seq##[idx];	\
-		temp[nix + offset] += pow(abs(temp[nix]), 2);	\
+		temp[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 0)	\

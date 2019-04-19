@@ -102,21 +102,24 @@ public class StyleProcess : MonoBehaviour
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
             //encoder
+            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
+            encoderShader.Dispatch(enNorm, 1, 1, 1);
+            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
             encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
             encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm1, 32 / 8, 1, 1);
+            encoderShader.Dispatch(enStyleNorm1, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
             encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm2, 32 / 8, 1, 1);
+            encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
             encoderShader.Dispatch(enStyleConv3, 72 / 8, 72 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm3, 64 / 8, 1, 1);
+            encoderShader.Dispatch(enStyleNorm3, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance3, 72 / 8, 72 / 8, 64 / 4);
             encoderShader.Dispatch(enStyleConv4, 40 / 8, 40 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm4, 128 / 8, 1, 1);
+            encoderShader.Dispatch(enStyleNorm4, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance4, 40 / 8, 40 / 8, 128 / 4);
             encoderShader.Dispatch(enStyleConv5, 16 / 8, 16 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm5, 256 / 8, 1, 1);
+            encoderShader.Dispatch(enStyleNorm5, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
             //transfer
             buffer_decoder_input = buffer_encoder_output;
@@ -151,28 +154,39 @@ public class StyleProcess : MonoBehaviour
             BufferProfile.Print("encoder_conv4");
             BufferProfile.Print(buffer_encoder_output, "buffer_encoder_output", 16, 16, 256);
         }
-        if (GUI.Button(new Rect(20, 140, 80, 40), "Texture"))
+        if (GUI.Button(new Rect(20, 140, 80, 40), "Encoder_v1"))
+        {
+            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
+            encoderShader.Dispatch(enNorm, 1, 1, 1);
+            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
+            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
+            //encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
+            BufferProfile.Print("encoder_conv0");
+        }
+        if (GUI.Button(new Rect(20, 200, 80, 40), "Encoder_v2"))
+        {
+            float[] layer = checkpoint.LoadLayer("encoder_c1");
+            BufferPool.Get("encoder_conv1").SetData(layer);
+            encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
+            BufferProfile.Print("encoder_conv2");
+            encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
+            encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
+            BufferProfile.Print("encoder_conv2_statistic");
+            BufferProfile.Print("encoder_conv2");
+        }
+        if (GUI.Button(new Rect(120, 20, 80, 40), "Test"))
+        {
+            float[] layer = checkpoint.LoadLayer("encoder_c1");
+            BufferProfile.Conv2(layer, checkpoint.GetWeights("encoder_g_e2_c_Conv_weights"));
+        }
+        if (GUI.Button(new Rect(120, 80, 80, 40), "Texture"))
         {
             var texture = Resources.Load<Texture2D>("app1");
             BufferProfile.NormalInst(texture);
         }
-        if (GUI.Button(new Rect(20, 200, 80, 40), "Normalize"))
-        {
-            //encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
-            //encoderShader.Dispatch(enNorm, 1, 1, 1);
-            //encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            //encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
-            //encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
-            //BufferProfile.Print("encoder_conv0");
-
-
-            float[] layer = checkpoint.LoadLayer("encoder_c1");
-            BufferPool.Get("encoder_conv1").SetData(layer);
-            BufferProfile.Print("encoder_conv1");
-        }
     }
 
-    void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)
+    private void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)
     {
         foreach (var item in v1)
         {
@@ -258,6 +272,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv1, name, cb);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleInstance1, name, cb);
+        encoderShader.SetBuffer(enStyleNorm1, name, cb);
 
 
         name = "encoder_conv2";
@@ -265,6 +280,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleInstance2, name, cb);
+        encoderShader.SetBuffer(enStyleNorm2, name, cb);
 
 
         name = "encoder_conv3";
@@ -272,45 +288,48 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleInstance3, name, cb);
+        encoderShader.SetBuffer(enStyleNorm3, name, cb);
 
         name = "encoder_conv4";
         cb = BufferPool.Get<float>(name, 34, 34, 128);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleInstance4, name, cb);
+        encoderShader.SetBuffer(enStyleNorm4, name, cb);
 
         name = "encoder_conv5";
         cb = BufferPool.Get<float>(name, 16, 16, 256);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleInstance5, name, cb);
+        encoderShader.SetBuffer(enStyleNorm5, name, cb);
         buffer_encoder_output = cb;
 
         name = "encoder_conv1_statistic";
-        cb = BufferPool.Get<float>(name, 32);
+        cb = BufferPool.Get<float>(name, 32 * 2);
         encoderShader.SetBuffer(enStyleConv1, name, cb);
         encoderShader.SetBuffer(enStyleNorm1, name, cb);
         encoderShader.SetBuffer(enStyleInstance1, name, cb);
 
         name = "encoder_conv2_statistic";
-        cb = BufferPool.Get<float>(name, 32);
+        cb = BufferPool.Get<float>(name, 32 * 2);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleNorm2, name, cb);
         encoderShader.SetBuffer(enStyleInstance2, name, cb);
 
         name = "encoder_conv3_statistic";
-        cb = BufferPool.Get<float>(name, 64);
+        cb = BufferPool.Get<float>(name, 64 * 2);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleNorm3, name, cb);
         encoderShader.SetBuffer(enStyleInstance3, name, cb);
 
         name = "encoder_conv4_statistic";
-        cb = BufferPool.Get<float>(name, 128);
+        cb = BufferPool.Get<float>(name, 128 * 2);
         encoderShader.SetBuffer(enStyleConv4, name, cb);
         encoderShader.SetBuffer(enStyleNorm4, name, cb);
         encoderShader.SetBuffer(enStyleInstance4, name, cb);
 
         name = "encoder_conv5_statistic";
-        cb = BufferPool.Get<float>(name, 256);
+        cb = BufferPool.Get<float>(name, 256 * 2);
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleNorm5, name, cb);
         encoderShader.SetBuffer(enStyleInstance5, name, cb);

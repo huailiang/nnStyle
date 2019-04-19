@@ -12,6 +12,17 @@ public struct Matrix3X3
         m20 = arg20; m21 = arg21; m22 = arg22;
     }
 
+    public Matrix3X3(float[] args)
+    {
+        if (args == null || args.Length != 9)
+        {
+            throw new Exception("Matrix3X3 construct error");
+        }
+        m00 = args[0]; m01 = args[1]; m02 = args[2];
+        m10 = args[3]; m11 = args[4]; m12 = args[5];
+        m20 = args[6]; m21 = args[7]; m22 = args[8];
+    }
+
     public static readonly Matrix3X3 identity = new Matrix3X3(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
     public static readonly Matrix3X3 zero = new Matrix3X3(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -27,6 +38,11 @@ public struct Matrix3X3
     public Matrix3X3 transpose
     {
         get { return new Matrix3X3(m00, m10, m20, m01, m11, m21, m02, m12, m22); }
+    }
+
+    public float Sum()
+    {
+        return m00 + m01 + m02 + m10 + m11 + m12 + m20 + m21 + m22;
     }
 
     public Vector3 GetColumn(int i)

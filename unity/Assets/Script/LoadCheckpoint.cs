@@ -22,6 +22,15 @@ public class LoadCheckpoint
         }
     }
 
+    public Matrix3X3[] GetWeights(string name)
+    {
+        if (v3_map.ContainsKey(name))
+        {
+            return v3_map[name];
+        }
+        return null;
+    }
+
     public float[] LoadLayer(string name)
     {
         string path = Application.dataPath + "/Resources/" + name + ".bytes";
