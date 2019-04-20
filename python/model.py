@@ -1,17 +1,15 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
 import time
 from glob import glob
-import tensorflow as tf
-import numpy as np
 from collections import namedtuple
 from tqdm import tqdm
 import multiprocessing
 
 from module import *
 from utils import *
+from export import *
 import prepare_dataset
 import img_augm
 
@@ -88,7 +86,7 @@ class Artgan(object):
                                                 reuse=False)
 
             # Decode obtained features
-            self.output_photo = decoder(features=self.input_photo_features[0],
+            self.output_photo = decoder(features=self.input_photo_features,
                                         options=self.options,
                                         reuse=False)
 
@@ -245,7 +243,7 @@ class Artgan(object):
                                                 reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(features=self.input_photo_features[0],
+            self.output_photo = decoder(features=self.input_photo_features,
                                         options=self.options,
                                         reuse=False)
 
@@ -478,26 +476,17 @@ class Artgan(object):
             img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
 
-            arr=normalize_arr_of_imgs(img)
-            # print(img[0][253])
-            # print(arr[0][253])
-
-            e_list = self.sess.run(
-                self.input_photo_features,
-                feed_dict={self.input_photo: normalize_arr_of_imgs(img)}
-            )
-            printf(e_list[1], "conv_c1")
-            printf(e_list[2], "conv_c2")
-            # printf(e_list[3], "conv_relu_c1")
-
             d_list = self.sess.run(
                 self.output_photo,
                 feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
 
             img = d_list[0]
 
-
-            # print(d_list[1])
+            printf(d_list[4], "decoder_dd1")
+            # printf(d_list[5], "decoder_d1")
+            export_layer(d_list[1], "decoder_r0")
+            export_layer(d_list[2], "decoder_r1")
+            export_layer(d_list[3], "decoder_r2")
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)

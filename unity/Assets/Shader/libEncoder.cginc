@@ -90,7 +90,7 @@ contact: peng_huailiang@qq.com
 		{	\
 			int idx = i * width * depth * scale + id.y * depth * scale + z;	\
 			temp[nix] += encoder_conv##seq##[idx];	\
-			temp[nix + offset] += pow(abs(temp[nix]), 2);	\
+			temp[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 		}	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\

@@ -30,10 +30,23 @@ def write(f, key, tensor):
 
         for i in xrange(0, shape[2]):  # input count
             for j in xrange(0, shape[3]):  # output count
-                for k in xrange(0, shape[0]):   # kernel width
-                    for l in xrange(0, shape[1]):   # kernel height
+                for k in xrange(0, shape[0]):  # kernel height
+                    for l in xrange(0, shape[1]):  # kernel width
                         byte = struct.pack('f', tensor[k, l, i, j])
                         f.write(byte)
+
+
+def warite_layer(f, tensor):
+    shape = tensor.shape
+    f.write(struct.pack('h', len(shape)))
+    f.write(struct.pack('h', shape[1]))
+    f.write(struct.pack('h', shape[2]))
+    f.write(struct.pack('h', shape[3]))
+    for i in xrange(0, shape[1]):
+        for j in xrange(0, shape[2]):
+            for k in xrange(0, shape[3]):
+                byte = struct.pack('f', tensor[0, i, j, k])
+                f.write(byte)
 
 
 def movefile(srcfile, dstfile):
@@ -52,34 +65,63 @@ def movefile(srcfile, dstfile):
         print "move %s -> %s" % (srcfile, dstfile)
 
 
+def move2unity(name):
+    pwd = os.getcwd()
+    project_path = os.path.abspath(os.path.dirname(pwd) + os.path.sep + ".")
+    source = project_path + "/python/" + name
+    destination = project_path + "/unity/Assets/Resources/" + name
+    movefile(source, destination)
 
-checkpoint_path = "./models/model_van-gogh/checkpoint_long/model16_van-gogh_bks10_flw100_300000.ckpt-300000"
-reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
-var_to_shape_map = reader.get_variable_to_shape_map()
-print("len: ", len(var_to_shape_map))
-counter = 0
-f = open("args.bytes", 'w')
-llist = []
-for key in var_to_shape_map:
-    shape = reader.get_tensor(key).shape
-    if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
-            shape) > 0:
-        tensor = str(reader.get_tensor(key))
-        # print(key.replace("/","_"),shape)
-        llist.append(key.replace("/", "_") + "  " + str(shape))
-        for x in shape:
-            counter += x
-        write(f, key.replace("/", "_"), reader.get_tensor(key))
-        tensor = reader.get_tensor(key)
 
-llist.sort()
-for x in llist:
-    print x
-f.write(struct.pack('h', 0))  # write 0 stands for eof
-print("network arg memory: %dMB" % ((counter * 4) / 1024))
-f.close()
-pwd = os.getcwd()
-project_path = os.path.abspath(os.path.dirname(pwd)+os.path.sep+".")
-source = project_path + "/python/args.bytes"
-destination = project_path + "/unity/Assets/Resources/args.bytes"
-movefile(source, destination)
+def print_tensor(checkpoint_path):
+    reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
+    var_to_shape_map = reader.get_variable_to_shape_map()
+    print("len: ", len(var_to_shape_map))
+    llist = []
+    for key in var_to_shape_map:
+        shape = reader.get_tensor(key).shape
+        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
+                shape) > 0:
+            print(key.replace("/", "_"), shape)
+            llist.append(key.replace("/", "_") + "  " + str(shape))
+            # tensor = reader.get_tensor(key)
+    llist.sort()
+    for x in llist:
+        print x
+
+
+def export_args(checkpoint_path):
+    reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
+    var_to_shape_map = reader.get_variable_to_shape_map()
+    print("len: ", len(var_to_shape_map))
+    counter = 0
+    name = "args.bytes"
+    f = open(name, 'w')
+    for key in var_to_shape_map:
+        shape = reader.get_tensor(key).shape
+        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
+                shape) > 0:
+            print(key.replace("/", "_"), shape)
+            for x in shape:
+                counter += x
+            write(f, key.replace("/", "_"), reader.get_tensor(key))
+    f.write(struct.pack('h', 0))  # write 0 stands for eof
+    print("done, network arg memory: %dMB" % ((counter * 4) / 1024))
+    f.close()
+    move2unity(name)
+
+
+def export_layer(tensor, name):
+    shape = tensor.shape
+    if len(shape) == 4:
+        print("\n export %s shape: %dx%dx%d" % (name, shape[1], shape[2], shape[3]))
+        f = open(name+".bytes", 'w')
+        warite_layer(f, tensor)
+        f.close()
+        print("write layer finish")
+        move2unity(name+".bytes")
+
+
+if __name__ == '__main__':
+    checkpoint_path = "./models/model_van-gogh/checkpoint_long/model16_van-gogh_bks10_flw100_300000.ckpt-300000"
+    export_args(checkpoint_path)

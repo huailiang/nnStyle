@@ -38,7 +38,7 @@ def encoder(image, options, reuse=True, name="encoder"):
         c5 = tf.nn.relu(instance_norm(conv2d(c4, options.gf_dim * 8, 3, 2, padding='VALID', name='g_e5_c'),
                                       is_training=options.is_training,
                                       name='g_e5_bn'))
-        return [c5, c1, c2]
+        return c5
 
 
 def decoder(features, options, reuse=True, name="decoder"):
@@ -79,8 +79,8 @@ def decoder(features, options, reuse=True, name="decoder"):
         r9 = residule_block(r8, num_kernels, name='g_r9')
 
         # Decode image.
-        d1 = deconv2d(r9, options.gf_dim * 8, 3, 2, name='g_d1_dc')
-        d1 = tf.nn.relu(instance_norm(input=d1,
+        dd1 = deconv2d(r9, options.gf_dim * 8, 3, 2, name='g_d1_dc')
+        d1 = tf.nn.relu(instance_norm(input=dd1,
                                       name='g_d1_bn',
                                       is_training=options.is_training))
 
@@ -101,7 +101,7 @@ def decoder(features, options, reuse=True, name="decoder"):
 
         d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
         pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c'))*2. - 1.
-        return [pred,d1]
+        return [pred, features, r1, r2, dd1, d1]
 
 
 def discriminator(image, options, reuse=True, name="discriminator"):

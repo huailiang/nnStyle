@@ -28,3 +28,5 @@ python/models/
 *.pyc
 **/args.bytes*
 **/encoder_c*.bytes*
+**/decoder_d*.bytes*
+**/decoder_r*.bytes*

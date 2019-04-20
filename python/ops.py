@@ -10,13 +10,9 @@ import tensorflow.contrib.layers as tflayers
 from utils import *
 
 
-def batch_norm(input, is_training=True, name="batch_norm"):
-    x = tflayers.batch_norm(inputs=input,
-                            scale=True,
-                            is_training=is_training,
-                            trainable=True,
-                            reuse=None)
-    return x
+def instance_normx(input, name="instance_norm"):
+    with tf.variable_scope(name):
+        return tf.nn.moments(input, axes=[1, 2], keep_dims=True)
 
 
 def instance_norm(input, name="instance_norm", is_training=True):
@@ -71,18 +67,31 @@ def printf(tensor, name):
     if len(shape) == 4:
         idx_x = shape[1] / 2
         print("\n%s shape: %dx%dx%d  indx:%d"%(name, shape[1], shape[2], shape[3], idx_x))
-        # max_y = min(80, shape[2])
-        # max_z = min(10, shape[3])
-        # o_str = ""
-        # if shape[3] > 8:
-        #     max_y = min(20, shape[2])
-        #     # max_z = shape[3]
-        # for i in range(0,max_y):
-        #     o_str += "[" + str(i) + "] "
-        #     for j in range(0, max_z):
-        #         o_str += "\t" + str(round(tensor[0][idx_x][i][j], 3))
-        #     o_str += "\n"
-        # print(o_str)
+        max_y = min(80, shape[2])
+        max_z = min(12, shape[3])
+        o_str = ""
+        if shape[3] > 8:
+            max_y = min(20, shape[2])
+        for i in range(0, max_y):
+            o_str += "[" + str(i) + "] "
+            for j in range(0, max_z):
+                o_str += "\t" + str("%.4f" % tensor[0][idx_x][i][j])
+            o_str += "\n"
+        print(o_str)
 
+
+def checkzero(tensor, name):
+    shape = tensor.shape
+    if len(shape) == 4:
+        print("\n%s shape: %dx%dx%d  indx"%(name, shape[1], shape[2], shape[3]))
+        o_str = ""
+        # for k in range(0, shape[1]):
+        for i in range(0,shape[2]):
+            for j in range(0, shape[3]):
+                check = abs(tensor[0][8][i][j]) > 1e-50
+                if check:
+                    o_str += " \t"+str(8)+"\t"+str(i)+"\t"+str(j)+"\t\t" + str('%.4f' % (tensor[0][8][i][j]))+"\n"
+
+        print(o_str)
 
 

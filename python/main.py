@@ -3,6 +3,7 @@ import tensorflow as tf
 tf.set_random_seed(228)
 from model import Artgan
 
+
 def parse_list(str_value):
     if ',' in str_value:
         str_value = str_value.split(',')
@@ -122,7 +123,6 @@ args = parser.parse_args()
 
 
 def main(_):
-
     tfconfig = tf.ConfigProto(allow_soft_placement=False)
     tfconfig.gpu_options.allow_growth = True
     with tf.Session(config=tfconfig) as sess:
@@ -144,6 +144,7 @@ def main(_):
                                   to_save_dir=args.save_dir,
                                   ckpt_nmbr=args.ckpt_nmbr)
         sess.close()
+
 
 if __name__ == '__main__':
     tf.app.run()
