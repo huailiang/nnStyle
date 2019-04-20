@@ -38,13 +38,13 @@ contact: peng_huailiang@qq.com
 #define DefineEnNormal(id, width, depth, scale, seq)	\
 	uint offset = width * depth;	\
 	uint nix = id.y * depth + id.z;	\
-	temp[nix] = 0;	\
-	temp[nix + offset] = 0;	\
+	g_cahce[nix] = 0;	\
+	g_cahce[nix + offset] = 0;	\
 	for (uint i = 0; i < width * scale; i++)	\
 	{	\
 		int idx = i * width * depth * scale + id.y * depth * scale + id.z;	\
-		temp[nix] += encoder_conv##seq##[idx];	\
-		temp[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
+		g_cahce[nix] += encoder_conv##seq##[idx];	\
+		g_cahce[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 0)	\
@@ -53,8 +53,8 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth + id.z;	\
-			mean += temp[idx];	\
-			qrt += temp[idx + offset];	\
+			mean += g_cahce[idx];	\
+			qrt += g_cahce[idx + offset];	\
 		}	\
 		int len = width * width * scale;	\
 		mean = mean / len;	\
@@ -84,13 +84,13 @@ contact: peng_huailiang@qq.com
 		uint shift = offset * i * 2;	\
 		uint z = id.z + MAX_THREAD_Z * i;	\
 		uint nix = id.y * depth / count + id.z + shift;	\
-		temp[nix] = 0;	\
-		temp[nix + offset] = 0;	\
-		for (uint i = 0; i < width * scale; i++)	\
+		g_cahce[nix] = 0;	\
+		g_cahce[nix + offset] = 0;	\
+		for (uint j = 0; j < width * scale; j++)	\
 		{	\
-			int idx = i * width * depth * scale + id.y * depth * scale + z;	\
-			temp[nix] += encoder_conv##seq##[idx];	\
-			temp[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
+			int idx = j * width * depth * scale + id.y * depth * scale + z;	\
+			g_cahce[nix] += encoder_conv##seq##[idx];	\
+			g_cahce[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 		}	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
@@ -101,8 +101,8 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth / count + id.z + shift;	\
-			mean += temp[idx];	\
-			qrt += temp[idx + offset];	\
+			mean += g_cahce[idx];	\
+			qrt += g_cahce[idx + offset];	\
 		}	\
 		int len = width * width * scale;	\
 		mean = mean / len;	\

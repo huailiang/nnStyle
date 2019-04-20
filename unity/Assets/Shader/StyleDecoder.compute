@@ -70,43 +70,44 @@ residule-block
 16x16x256->18x18x256->16x16x256
 */
 [numthreads(8,8,4)]
-void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id range(0-24)  depth rang(0,256)
+void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
+	if (StdCheckRange(id, width + 2 * pad)) return;
 	DefineResidulePad(id, width, depth, pad)
 }
 
 [numthreads(8,8,1)]
-void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) // id range(0-16) id.z = 1
+void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
 	int width = 16, depth = 256;
 	DefineResiduleConv(id, width, depth, 1, 1)
 }
 
-[numthreads(8,8,4)]
-void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id range(0-16)  depth rang(0,256)
+[numthreads(1,4,MAX_THREAD_Z)]
+void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
-	int width = 16, depth = 256;
-	DefineResiduleReinit(id, width, depth);
-	DefineResiduleNormal(id, width, depth,1, 1)
+	uint width = 4, depth = 256, scale = 2;
+	DefineResiduleDecNormal(id, width, depth, scale)
 }
 
 [numthreads(8,8,4)]
-void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id range(0-24)  depth rang(0,256)
+void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
+	if (StdCheckRange(id, width + 2 * pad)) return;
 	DefineResidulePad(id, width, depth, pad)
 }
 
 [numthreads(8,8,1)]
-void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) // id range(0-16) id.z = 1
+void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
 	int width = 16, depth = 256;
 	DefineResiduleConv(id, width, depth, 1, 2)
 }
 
 [numthreads(8,8,4)]
-void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id range(0-16)  depth rang(0,256)
+void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	int width = 16, depth = 256;
 	DefineResiduleNormal(id, width, depth,1,2)

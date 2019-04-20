@@ -10,7 +10,11 @@ contact: peng_huailiang@qq.com
 #ifndef __std__
 #define __std__
 
-groupshared float temp[2048];
+
+/*
+used in encoder & decoder
+*/
+groupshared float g_cahce[2048];
 
 
 #define StdOrderIndex(x, y, z, width, depth) \
