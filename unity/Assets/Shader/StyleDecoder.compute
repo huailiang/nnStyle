@@ -9,8 +9,10 @@ contact: peng_huailiang@qq.com
 #pragma kernel ResidulePad1_1
 #pragma kernel ResiduleConv1_1
 #pragma kernel ResiduleNormal1_1
+#pragma kernel ResiduleInst1_1
 #pragma kernel ResidulePad1_2
 #pragma kernel ResiduleConv1_2
+#pragma kernel ResiduleInst1_2
 #pragma kernel ResiduleNormal1_2
 #pragma kernel DecoderExpand1
 #pragma kernel DecoderConv1
@@ -27,15 +29,15 @@ contact: peng_huailiang@qq.com
 #pragma kernel DecoderPad5
 #pragma kernel DecoderConv5
 
-#include "libStd.cginc"
-#include "libActive.cginc"
-#include "libDecoderArgs.cginc"
-#include "libDecoder.cginc"
-
 RWStructuredBuffer<float> input_initial;
 RWStructuredBuffer<float> input_writable;
 RWStructuredBuffer<float> input_statistic;
 RWTexture2D<float4> decoder_destination;
+
+#include "libStd.cginc"
+#include "libActive.cginc"
+#include "libDecoderArgs.cginc"
+#include "libDecoder.cginc"
 
 RWStructuredBuffer<float> decoder_residule; 		//16x16x256
 RWStructuredBuffer<float> decoder_conv1;			//32x32x256
@@ -50,7 +52,7 @@ RWStructuredBuffer<float> decoder_conv3_statistic;	//64x2
 RWStructuredBuffer<float> decoder_conv4;			//256x256x32
 RWStructuredBuffer<float> decoder_conv4_conved;		//256x256x32
 RWStructuredBuffer<float> decoder_conv4_statistic;	//32x2
-RWStructuredBuffer<float> decoder_conv5_pad;	// 262x262x32
+RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
 
 /*
 ***  formula  o=(w-k+2p)/s+1  ***
@@ -92,6 +94,13 @@ void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 }
 
 [numthreads(8,8,4)]
+void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
+{
+	uint width = 16, depth = 256;
+	DeifineResiduleInst(id, width, depth, 1, 1)
+}
+
+[numthreads(8,8,4)]
 void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
@@ -111,6 +120,14 @@ void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	int width = 16, depth = 256;
 	DefineResiduleNormal(id, width, depth,1,2)
+	
+}
+
+[numthreads(8,8,4)]
+void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
+{
+	uint width = 16, depth = 256;
+	DeifineResiduleInst(id, width, depth, 1, 2)
 	decoder_residule[indx] += input_initial[indx];
 }
 

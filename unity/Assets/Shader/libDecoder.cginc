@@ -95,10 +95,17 @@ contact: peng_huailiang@qq.com
 	decoder_residule[indx] = rest;
 
 
-#define DefineResiduleReinit(id,width,depth)	\
-	int inx = width * depth * id.x + depth * id.y + id.z;	\
-	input_initial[inx] = relu(input_writable[inx]);
-
+#define DeifineResiduleInst(id, width, depth, seq, r)	\
+	int indx = width * depth * id.x + depth * id.y + id.z;	\
+	float color = input_writable[indx];	\
+	float mean = input_statistic[id.z * 2];	\
+	float variance = input_statistic[id.z * 2 + 1];	\
+	float inv = rsqrt(variance + EPSILON);	\
+	float normalized = (color - mean) * inv;	\
+	float scale = decoder_g_r##seq##_bn##r##_scale[id.z];	\
+	float offset = decoder_g_r##seq##_bn##r##_offset[id.z];	\
+	input_initial[indx] = scale * normalized + offset;		
+		
 
 #define DefineDecoderConv(id, width, depth1, depth2, stride, idx)	\
 	for(int j=0;j<depth2;j++) \
