@@ -123,7 +123,7 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
             //transfer
             buffer_decoder_input = buffer_encoder_output;
-            SetDecoderBuffer(new int[] { deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2 }, "input_initial", buffer_decoder_input);
+            SetDecoderBuffer("input_initial", buffer_decoder_input, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2);
             //decoder
             decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
@@ -206,8 +206,8 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                SetDecoderBuffer(new int[] { decoderConv1, deResiduleNormal1_1, deResiduleNormal1_2, decoderNormal1, decoderConv2, decoderNormal2,decoderConv3,
-                decoderNormal3, decoderNormal4}, item.Key, buffer);
+                SetDecoderBuffer(item.Key, buffer, decoderConv1, deResiduleNormal1_1, deResiduleNormal1_2, decoderNormal1, decoderConv2, decoderNormal2, decoderConv3,
+                decoderNormal3, decoderNormal4);
                 if (item.Key == "decoder_g_pred_c_Conv_weights") decoderShader.SetBuffer(decoderConv5, "decoder_g_pred_c_Conv_weights", buffer);
             }
         }
@@ -233,8 +233,8 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                SetDecoderBuffer(new int[] { deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2,decoderConv3,
-                    decoderConv1, decoderNormal3, decoderConv4, decoderNormal4}, item.Key, buffer);
+                SetDecoderBuffer(item.Key, buffer, deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2, decoderConv3,
+                    decoderConv1, decoderNormal3, decoderConv4, decoderNormal4);
             }
         }
         encoderShader.SetTexture(enConv, "source", mainTexture);
@@ -336,7 +336,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleInstance5, name, cb);
     }
 
-    private void SetDecoderBuffer(int[] kernels, string name, ComputeBuffer cb)
+    private void SetDecoderBuffer(string name, ComputeBuffer cb, params int[] kernels)
     {
         for (int i = 0; i < kernels.Length; i++)
         {
@@ -353,67 +353,67 @@ public class StyleProcess : MonoBehaviour
 
         name = "input_writable";
         cb = BufferPool.Get<float>(name, 16, 16, 256);
-        SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, deResiduleConv1_2 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, deResiduleConv1_2);
 
         name = "input_statistic";
         cb = BufferPool.Get<float>(name, 512);
-        SetDecoderBuffer(new int[] { deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResidulePad1_2, deResiduleNormal1_2 }, name, cb);
+        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResidulePad1_2, deResiduleNormal1_2);
 
         name = "decoder_residule";
         cb = BufferPool.Get<float>(name, 512);
-        SetDecoderBuffer(new int[] { deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleNormal1_2, deResidulePad1_2, deResiduleConv1_2, decoderExpand1 }, name, cb);
+        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleNormal1_2, deResidulePad1_2, deResiduleConv1_2, decoderExpand1);
 
         name = "decoder_conv1";
         cb = BufferPool.Get<float>(name, 32, 32, 256);
-        SetDecoderBuffer(new int[] { decoderExpand1, deResiduleConv1_1, decoderConv1 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderExpand1, deResiduleConv1_1, decoderConv1);
 
         name = "decoder_conv1_conved";
         cb = BufferPool.Get<float>(name, 32, 32, 256);
-        SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1, decoderExpand2 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1, decoderExpand2);
 
         name = "decoder_conv1_statistic";
         cb = BufferPool.Get<float>(name, 512);
-        SetDecoderBuffer(new int[] { deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1);
 
         name = "decoder_conv2";
         cb = BufferPool.Get<float>(name, 64, 64, 128);
-        SetDecoderBuffer(new int[] { deResiduleConv1_2, decoderExpand2, decoderConv2 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleConv1_2, decoderExpand2, decoderConv2);
 
         name = "decoder_conv2_conved";
         cb = BufferPool.Get<float>(name, 64, 64, 128);
-        SetDecoderBuffer(new int[] { deResiduleConv1_2, deResiduleNormal1_1, decoderConv2, decoderNormal2, decoderExpand3 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleConv1_2, deResiduleNormal1_1, decoderConv2, decoderNormal2, decoderExpand3);
 
         name = "decoder_conv2_statistic";
         cb = BufferPool.Get<float>(name, 256);
-        SetDecoderBuffer(new int[] { deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2 }, name, cb);
+        SetDecoderBuffer(name, cb, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2);
 
         name = "decoder_conv3";
         cb = BufferPool.Get<float>(name, 128, 128, 64);
-        SetDecoderBuffer(new int[] { decoderExpand3, decoderConv3 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderExpand3, decoderConv3);
 
         name = "decoder_conv3_conved";
         cb = BufferPool.Get<float>(name, 128, 128, 64);
-        SetDecoderBuffer(new int[] { decoderNormal3, decoderConv3, decoderExpand4 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderNormal3, decoderConv3, decoderExpand4);
 
         name = "decoder_conv3_statistic";
         cb = BufferPool.Get<float>(name, 128);
-        SetDecoderBuffer(new int[] { decoderNormal3, decoderConv3 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderNormal3, decoderConv3);
 
         name = "decoder_conv4";
         cb = BufferPool.Get<float>(name, 256, 256, 32);
-        SetDecoderBuffer(new int[] { decoderExpand4, decoderConv4 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderExpand4, decoderConv4);
 
         name = "decoder_conv4_conved";
         cb = BufferPool.Get<float>(name, 256, 256, 32);
-        SetDecoderBuffer(new int[] { decoderNormal4, decoderConv4, decoderExpand5 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderNormal4, decoderConv4, decoderExpand5);
 
         name = "decoder_conv4_statistic";
         cb = BufferPool.Get<float>(name, 64);
-        SetDecoderBuffer(new int[] { decoderNormal4, decoderConv4 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderNormal4, decoderConv4);
 
         name = "decoder_conv5_pad";
         cb = BufferPool.Get<float>(name, 262, 262, 32);
-        SetDecoderBuffer(new int[] { decoderExpand5, decoderConv5 }, name, cb);
+        SetDecoderBuffer(name, cb, decoderExpand5, decoderConv5);
 
         decoderShader.SetTexture(decoderConv5, "decoder_destination", tempDestination);
     }
