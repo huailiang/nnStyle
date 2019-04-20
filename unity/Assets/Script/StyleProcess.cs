@@ -8,9 +8,8 @@ public class StyleProcess : MonoBehaviour
     private RenderTexture tempDestination = null;
     private Texture mainTexture = null;
     private LoadCheckpoint checkpoint;
-    private ComputeBuffer buffer, buffer_encoder_output, buffer_decoder_input;
-    private int enConv, enNorm, enInst;
-    private int stylePad, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
+    private ComputeBuffer buffer;
+    private int enConv, enNorm, enInst, stylePad, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
     private int enStyleConv3, enStyleNorm3, enStyleInstance3, enStyleConv4, enStyleNorm4, enStyleInstance4, enStyleConv5, enStyleNorm5, enStyleInstance5;
 
     private int deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2;
@@ -121,9 +120,7 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enStyleConv5, 16 / 8, 16 / 8, 1);
             encoderShader.Dispatch(enStyleNorm5, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
-            //transfer
-            buffer_decoder_input = buffer_encoder_output;
-            SetDecoderBuffer("input_initial", buffer_decoder_input, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2);
+
             //decoder
             decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
@@ -149,10 +146,10 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 80, 80, 40), "Decoder_r1"))
         {
-            // BufferProfile.Print(buffer_encoder_output, "buffer_encoder_output", 16, 16, 256);
             float[] layer = checkpoint.LoadLayer("decoder_r0");
-            BufferPool.Get("encoder_conv3").SetData(layer);
-            BufferProfile.Print("encoder_conv3");
+            BufferPool.Get("input_initial").SetData(layer);
+            BufferProfile.CheckZero("encoder_conv5");
+            BufferProfile.CheckZero("input_initial");
         }
         if (GUI.Button(new Rect(20, 140, 80, 40), "Encoder_v1"))
         {
@@ -303,7 +300,7 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv5, name, cb);
         encoderShader.SetBuffer(enStyleInstance5, name, cb);
         encoderShader.SetBuffer(enStyleNorm5, name, cb);
-        buffer_encoder_output = cb;
+        // buffer_encoder_output = cb;
 
         name = "encoder_conv1_statistic";
         cb = BufferPool.Get<float>(name, 32 * 2);
@@ -347,9 +344,8 @@ public class StyleProcess : MonoBehaviour
     private void ProcessDecoder()
     {
         string name = "input_initial";
-        var cb = BufferPool.Get<float>(name, 16, 16, 256);
-        decoderShader.SetBuffer(deResidulePad1_1, name, cb);
-        buffer_decoder_input = cb;
+        var cb = BufferPool.Inference("encoder_conv5", name);
+        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2);
 
         name = "input_writable";
         cb = BufferPool.Get<float>(name, 16, 16, 256);

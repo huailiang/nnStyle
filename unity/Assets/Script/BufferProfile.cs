@@ -21,6 +21,31 @@ public class BufferProfile
         Print(cb, dftX, name, shape);
     }
 
+    public static void CheckZero(string name)
+    {
+        Buffer buffer;
+        if (BufferPool.TryGet(name, out buffer))
+        {
+            ComputeBuffer cb = buffer.cb;
+            int[] shape = buffer.shape;
+            if (shape.Length == 3)
+            {
+                int x = shape[0], y = shape[1], z = shape[2];
+                float[] array = new float[x * y * z];
+                cb.GetData(array);
+                int counter = 0;
+                for (int i = 0; i < x; i++)
+                    for (int j = 0; j < y; j++)
+                        for (int k = 0; k < z; k++)
+                        {
+                            int idx = i * y * z + j * z + k;
+                            if (array[idx] > 1e-4) counter++;
+                        }
+                Debug.Log(name + " has none-zero counter: " + counter);
+            }
+        }
+    }
+
     public static void Print(ComputeBuffer buffer, int dftX, string name, params int[] shape)
     {
         sb.Length = 0;
@@ -33,7 +58,7 @@ public class BufferProfile
             int y = shape[1];
             int z = shape[2];
             int max_y = z <= 8 ? 80 : 20;
-            int max_z = z <= 8 ? z : 12;
+            int max_z = z <= 8 ? z : 20;
             float[] array = new float[x * y * z];
             buffer.GetData(array);
             sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, x / 2);
@@ -245,40 +270,5 @@ public class BufferProfile
             sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, statistic[k * 2].ToString("f4"), statistic[k * 2 + 1].ToString("f4"));
         }
         Debug.Log(sb);
-
-        //float EPSILON = 1e-5f;
-        //float[] x_offset = { 0.14529803f, -0.21076468f, -0.06774432f };
-        //float[] x_scale = { 0.6957419f, 0.8511919f, 1.3949857f };
-        //for (int j = 0; j < output; j++)
-        //{
-        //    for (int i = 0; i < output; i++)
-        //    {
-        //        for (int k = 0; k < depth2; k++)
-        //        {
-        //            int idx = (int)(i * output * depth2 + j * depth2 + k);
-        //            float mean = statistic[k*2];
-        //            float variance = statistic[k*2+1];
-        //            float inv = 1f / Mathf.Sqrt(variance + EPSILON);
-        //            float normalized = (array[idx] - mean) * inv;
-        //            float scale = x_scale[0];
-        //            float offset = x_offset[0];
-        //            array[idx] = scale * normalized + offset;
-        //        }
-        //    }
-        //}
-
-        //sb.Length = 0;
-        //sb.Append("output:\n");
-        //for (int j = 0; j < 20; j++)
-        //{
-        //    sb.Append("[" + j + "] ");
-        //    for (int k = 0; k < 12; k++)
-        //    {
-        //        sb.Append("\t");
-        //        sb.Append(array[70 * output * depth2 + j * depth2 + k].ToString("f4"));
-        //    }
-        //    sb.Append("\n");
-        //}
-        //Debug.Log(sb);
     }
 }

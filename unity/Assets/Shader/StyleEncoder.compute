@@ -68,7 +68,6 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 	encoder_inst[idx] = v;
 }
 
-groupshared float temp[2048];
 
 [numthreads(1, 64, 3)]
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex)

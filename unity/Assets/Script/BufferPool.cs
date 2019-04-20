@@ -54,6 +54,13 @@ public class BufferPool
         return buffer.TryGetValue(name, out b);
     }
 
+    public static ComputeBuffer Inference(string from, string to)
+    {
+        var br = buffer[from];
+        if (!buffer.ContainsKey(to)) buffer.Add(to, br);
+        return br.cb;
+    }
+
     public static void Release(string name)
     {
         if (buffer.ContainsKey(name))

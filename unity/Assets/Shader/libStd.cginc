@@ -10,6 +10,8 @@ contact: peng_huailiang@qq.com
 #ifndef __std__
 #define __std__
 
+groupshared float temp[2048];
+
 
 #define StdOrderIndex(x, y, z, width, depth) \
 	((width) * (depth) * (x) + (depth) * (y) + z)

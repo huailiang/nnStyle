@@ -476,6 +476,9 @@ class Artgan(object):
             img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
 
+            c5 = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
+            export_layer(c5, "encoder_c5")
+
             d_list = self.sess.run(
                 self.output_photo,
                 feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
@@ -484,9 +487,9 @@ class Artgan(object):
 
             printf(d_list[4], "decoder_dd1")
             # printf(d_list[5], "decoder_d1")
-            export_layer(d_list[1], "decoder_r0")
-            export_layer(d_list[2], "decoder_r1")
-            export_layer(d_list[3], "decoder_r2")
+            # export_layer(d_list[1], "decoder_r0")
+            # export_layer(d_list[2], "decoder_r1")
+            # export_layer(d_list[3], "decoder_r2")
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)
