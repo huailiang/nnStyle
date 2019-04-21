@@ -34,7 +34,7 @@ def conv2d(input_, output_dim, ks=4, s=2, stddev=0.02, padding='SAME', name="con
                            biases_initializer=None)
 
 
-def deconv2d(input_, output_dim, ks=4, s=2, stddev=0.02, name="deconv2d"):
+def deconv2d(input_, output_dim, ks=4, name="deconv2d"):
     # Upsampling procedure, like suggested in this article:
     # https://distill.pub/2016/deconv-checkerboard/. At first upsample
     # tensor like an image and then apply convolutions.

@@ -12,7 +12,7 @@ public class StyleProcess : MonoBehaviour
     private int enConv, enNorm, enInst, stylePad, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
     private int enStyleConv3, enStyleNorm3, enStyleInstance3, enStyleConv4, enStyleNorm4, enStyleInstance4, enStyleConv5, enStyleNorm5, enStyleInstance5;
 
-    private int deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2;
+    private int deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleInst1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2, deResiduleInst1_2;
     private int decoderExpand1, decoderConv1, decoderNormal1, decoderExpand2, decoderConv2, decoderNormal2;
     private int decoderExpand3, decoderConv3, decoderNormal3, decoderExpand4, decoderConv4, decoderNormal4, decoderExpand5, decoderConv5;
 
@@ -67,9 +67,11 @@ public class StyleProcess : MonoBehaviour
         deResidulePad1_1 = decoderShader.FindKernel("ResidulePad1_1");
         deResiduleConv1_1 = decoderShader.FindKernel("ResiduleConv1_1");
         deResiduleNormal1_1 = decoderShader.FindKernel("ResiduleNormal1_1");
+        deResiduleInst1_1 = decoderShader.FindKernel("ResiduleInst1_1");
         deResidulePad1_2 = decoderShader.FindKernel("ResidulePad1_2");
         deResiduleConv1_2 = decoderShader.FindKernel("ResiduleConv1_2");
         deResiduleNormal1_2 = decoderShader.FindKernel("ResiduleNormal1_2");
+        deResiduleInst1_2 = decoderShader.FindKernel("ResiduleInst1_2");
         decoderExpand1 = decoderShader.FindKernel("DecoderExpand1");
         decoderConv1 = decoderShader.FindKernel("DecoderConv1");
         decoderNormal1 = decoderShader.FindKernel("DecoderNormal1");
@@ -124,10 +126,12 @@ public class StyleProcess : MonoBehaviour
             //decoder
             decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_1, 16 / 8, 16 / 8, 256 / 4);
+            decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 1);
+            decoderShader.Dispatch(deResiduleInst1_1, 16 / 8, 16 / 8, 256 / 4);
             decoderShader.Dispatch(deResidulePad1_2, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_2, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_2, 16 / 8, 16 / 8, 256 / 4);
+            decoderShader.Dispatch(deResiduleNormal1_2, 1, 1, 1);
+            decoderShader.Dispatch(deResiduleInst1_2, 16 / 8, 16 / 8, 256 / 4);
             decoderShader.Dispatch(decoderExpand1, 16 / 8, 16 / 8, 256 / 4);
             decoderShader.Dispatch(decoderConv1, 32 / 8, 32 / 8, 1);
             decoderShader.Dispatch(decoderNormal1, 32 / 8, 32 / 8, 256 / 4);

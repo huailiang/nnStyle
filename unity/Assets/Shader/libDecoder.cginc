@@ -27,8 +27,7 @@ contact: peng_huailiang@qq.com
 	x_id = x_array[x_id];	\
 	y_id = y_array[y_id];	\
 	int indx = StdIndex(x_id, y_id, id.z, width, depth); \
-	int indx2 = StdID(id, (width+pad*2), depth);	\
-	decoder_residule[indx2] = input_initial[indx];	
+	int indx2 = StdID(id, (width+pad*2), depth);	
 
 
 #define DefineResiduleConv(id, width, depth, r, idx) \
@@ -42,7 +41,7 @@ contact: peng_huailiang@qq.com
 			float3x3 sample = float3x3(decoder_residule[seq[0]], decoder_residule[seq[1]],decoder_residule[seq[2]],	\
 									decoder_residule[seq[3]],decoder_residule[seq[4]],decoder_residule[seq[5]],	\
 									decoder_residule[seq[6]],decoder_residule[seq[7]],decoder_residule[seq[8]]);	\
-			float3x3 kernel = decoder_g_r##r##_c##idx##_Conv_weights[depth * j + i];	\
+			float3x3 kernel = decoder_g_r##r##_c##idx##_Conv_weights[depth * i + j];	\
 			float3x3 conv = sample * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
@@ -52,7 +51,7 @@ contact: peng_huailiang@qq.com
 	}
 
 
-#define DefineResiduleDecNormal(id, width, depth, scale) \
+#define DefineResiduleNormal(id, width, depth, scale) \
 	uint count = depth / MAX_THREAD_Z;	\
 	uint offset = width * depth / count;	\
 	for (uint i = 0; i < count; i++) {	\
@@ -83,18 +82,6 @@ contact: peng_huailiang@qq.com
 	}
 
 
-#define DefineResiduleNormal(id, width,depth,r,idx)	\
-	float mean = input_statistic[id.z*2];	\
-	float variance = input_statistic[id.z*2+1];	\
-	float inv = rsqrt(variance + EPSILON);	\
-	int indx = StdID(id, width, depth);	\
-	float normalize =  (decoder_residule[indx] - mean) * inv;	\
-	float scale  = decoder_g_r##r##_bn##idx##_scale[id.z];	\
-	float offset = decoder_g_r##r##_bn##idx##_offset[id.z];	\
-	float rest = scale * normalize + offset;	\
-	decoder_residule[indx] = rest;
-
-
 #define DeifineResiduleInst(id, width, depth, seq, r)	\
 	int indx = StdID(id, width, depth);	\
 	float color = input_writable[indx];	\
@@ -104,21 +91,23 @@ contact: peng_huailiang@qq.com
 	float normalized = (color - mean) * inv;	\
 	float scale = decoder_g_r##seq##_bn##r##_scale[id.z];	\
 	float offset = decoder_g_r##seq##_bn##r##_offset[id.z];	\
-	input_initial[indx] = scale * normalized + offset;		
+	input_writable[indx] = scale * normalized + offset;		
 		
 
-#define DefineDecoderConv(id, width, depth1, depth2, stride, idx)	\
-	for(int j=0;j<depth2;j++) \
+
+
+#define DefineDecoderConv(id, width, depth1, depth2, idx, pidx)	\
+	for(int j = 0; j < depth2; j++) \
 	{ 	\
 		float v = 0.0f;	\
-		for(int i=0;i<depth1;i++)	\
+		for(int i = 0; i < depth1; i++)	\
 		{	\
 			int seq[9];	\
-			StdSeq(id.x*stride, id.y*stride, i, width, depth1, seq);	\
-			float3x3 sample = float3x3(decoder_conv##idx##[seq[0]], decoder_conv##idx##[seq[1]], decoder_conv##idx##[seq[2]], \
-									decoder_conv##idx##[seq[3]], decoder_conv##idx##[seq[4]], decoder_conv##idx##[seq[5]], \
-									decoder_conv##idx##[seq[6]], decoder_conv##idx##[seq[7]], decoder_conv##idx##[seq[8]]); \
-			float3x3 kernel = decoder_g_d1_dc_conv2d_Conv_weights[depth1*j+i];	\
+			StdSeq(id.x, id.y, i, width, depth1, seq);	\
+			float3x3 sample = float3x3(decoder_conv##pidx##[seq[0]], decoder_conv##pidx##[seq[1]], decoder_conv##pidx##[seq[2]], \
+									decoder_conv##pidx##[seq[3]], decoder_conv##pidx##[seq[4]], decoder_conv##pidx##[seq[5]], \
+									decoder_conv##pidx##[seq[6]], decoder_conv##pidx##[seq[7]], decoder_conv##pidx##[seq[8]]); \
+			float3x3 kernel = decoder_g_d##idx##_dc_conv2d_Conv_weights[depth2 * i + j];	\
 			float3x3 conv = sample * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
@@ -135,7 +124,7 @@ contact: peng_huailiang@qq.com
 	float variance = decoder_conv##idx##_statistic[id.z*2+1];	\
 	float inv = rsqrt(variance + EPSILON);	\
 	int indx = StdID(id, width, depth);	\
-	float normalize =  (decoder_conv##idx##_conved[indx] - mean) * inv;	\
+	float normalize = (decoder_conv##idx##_conved[indx] - mean) * inv;	\
 	float scale  = decoder_g_d##idx##_bn_scale[id.z];		\
 	float offset = decoder_g_d##idx##_bn_offset[id.z];	\
 	float rest = scale * normalize + offset;	\

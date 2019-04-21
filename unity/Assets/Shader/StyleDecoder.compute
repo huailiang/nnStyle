@@ -12,8 +12,8 @@ contact: peng_huailiang@qq.com
 #pragma kernel ResiduleInst1_1
 #pragma kernel ResidulePad1_2
 #pragma kernel ResiduleConv1_2
-#pragma kernel ResiduleInst1_2
 #pragma kernel ResiduleNormal1_2
+#pragma kernel ResiduleInst1_2
 #pragma kernel DecoderExpand1
 #pragma kernel DecoderConv1
 #pragma kernel DecoderNormal1
@@ -40,6 +40,7 @@ RWTexture2D<float4> decoder_destination;
 #include "libDecoder.cginc"
 
 RWStructuredBuffer<float> decoder_residule; 		//16x16x256
+RWStructuredBuffer<float> decoder_conv0;			//32x32x256
 RWStructuredBuffer<float> decoder_conv1;			//32x32x256
 RWStructuredBuffer<float> decoder_conv1_conved;		//32x32x256
 RWStructuredBuffer<float> decoder_conv1_statistic; 	//256x2
@@ -77,6 +78,7 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
 	DefineResidulePad(id, width, depth, pad)
+	decoder_residule[indx2] = input_initial[indx];	
 }
 
 [numthreads(8,8,1)]
@@ -90,7 +92,7 @@ void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 4, depth = 256, scale = 2;
-	DefineResiduleDecNormal(id, width, depth, scale)
+	DefineResiduleNormal(id, width, depth, scale)
 }
 
 [numthreads(8,8,4)]
@@ -106,6 +108,7 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
 	DefineResidulePad(id, width, depth, pad)
+	decoder_residule[indx2] = input_writable[indx];	
 }
 
 [numthreads(8,8,1)]
@@ -118,8 +121,8 @@ void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
-	int width = 16, depth = 256;
-	DefineResiduleNormal(id, width, depth,1,2)
+	uint width = 4, depth = 256, scale = 2;
+	DefineResiduleNormal(id, width, depth, scale)
 }
 
 [numthreads(8,8,4)]
@@ -130,9 +133,8 @@ void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 	decoder_residule[indx] += input_initial[indx];
 }
 
-
 [numthreads(8,8,4)]
-void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id range(0-16)  depth rang(0,256)
+void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x256
 {
 	//  decoder_residule->decoder_conv1 (16x16x256->32x32x256)
 	int width = 16, depth = 256;
@@ -142,22 +144,21 @@ void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id range(0-16)  depth rang(
 	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;
 	int ninx3 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y) + id.z;
 	int ninx4 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y + 1) + id.z;
-	decoder_conv1[ninx1] = v;
-	decoder_conv1[ninx2] = v;
-	decoder_conv1[ninx3] = v;
-	decoder_conv1[ninx4] = v;
+	decoder_conv0[ninx1] = v;
+	decoder_conv0[ninx2] = v;
+	decoder_conv0[ninx3] = v;
+	decoder_conv0[ninx4] = v;
 }
-
 
 [numthreads(8,8,1)]
-void DecoderConv1(uint3 id: SV_DispatchThreadID) //id range(0-16) id.z = 1 stride=2
+void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
 {
 	int width = 32, depth1 = 256, depth2 = 256;
-	DefineDecoderConv(id, width, depth1, depth2, 2, 1);
+	DefineDecoderConv(id, width, depth1, depth2, 1, 0);
 }
 
-[numthreads(8,8,4)]
-void DecoderNormal1(uint3 id: SV_DispatchThreadID) 
+[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
+void DecoderNormal1(uint3 id: SV_DispatchThreadID) //32x32x256
 {
 	//decoder_conv1_conved 32x32x256
 	int width = 32, depth = 256;
