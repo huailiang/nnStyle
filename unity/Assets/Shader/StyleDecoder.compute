@@ -86,7 +86,7 @@ void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 	DefineResiduleConv(id, width, depth, 1, 1)
 }
 
-[numthreads(1,4,MAX_THREAD_Z)]
+[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 4, depth = 256, scale = 2;
@@ -100,7 +100,7 @@ void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 	DeifineResiduleInst(id, width, depth, 1, 1)
 }
 
-[numthreads(8,8,4)]
+[numthreads(8, 8, 4)]
 void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
@@ -115,12 +115,11 @@ void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 	DefineResiduleConv(id, width, depth, 1, 2)
 }
 
-[numthreads(8,8,4)]
+[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	int width = 16, depth = 256;
 	DefineResiduleNormal(id, width, depth,1,2)
-	
 }
 
 [numthreads(8,8,4)]
@@ -137,7 +136,7 @@ void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id range(0-16)  depth rang(
 {
 	//  decoder_residule->decoder_conv1 (16x16x256->32x32x256)
 	int width = 16, depth = 256;
-	int indx = width * depth * id.x + depth * id.y + id.z;
+	int indx = StdID(id, width, depth);
 	float v = decoder_residule[indx];
 	int ninx1 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y) + id.z;
 	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;
@@ -258,7 +257,7 @@ float DotConv7x7(uint3 id, uint width, uint depth,uint z, int d_indx)
 	{
 		for(int j = 0; j < 7; j++)
 		{
-			int c_indx = StdOrderIndex(id.x + j, id.y, z, width, depth); 
+			int c_indx = StdIndex(id.x + j, id.y, z, width, depth); 
 			v += decoder_conv5_pad[c_indx] * decoder_g_pred_c_Conv_weights[d_indx];
 			d_indx++;
 		}

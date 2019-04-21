@@ -21,7 +21,7 @@ contact: peng_huailiang@qq.com
 		for(uint i = 0; i < depth1; i++)	\
 		{	\
 			int seq[9];	\
-			StdOrderSeq(id.x*stride, id.y*stride, i, input, depth1, seq);	\
+			StdSeq(id.x*stride, id.y*stride, i, input, depth1, seq);	\
 			float3x3 xsam = float3x3(encoder_conv##pidx##[seq[0]], encoder_conv##pidx##[seq[1]], encoder_conv##pidx##[seq[2]], \
 				encoder_conv##pidx##[seq[3]], encoder_conv##pidx##[seq[4]], encoder_conv##pidx##[seq[5]], \
 				encoder_conv##pidx##[seq[6]], encoder_conv##pidx##[seq[7]], encoder_conv##pidx##[seq[8]]); \
@@ -64,7 +64,7 @@ contact: peng_huailiang@qq.com
 
 
 #define DefineEnInstRelu(id, width, depth, seq)	\
-	int inx = StdOrderID(id, width, depth);	\
+	int inx = StdID(id, width, depth);	\
 	float color = encoder_conv##seq##[inx];	\
 	float mean = encoder_conv##seq##_statistic[id.z * 2];	\
 	float variance = encoder_conv##seq##_statistic[id.z * 2 + 1];	\

@@ -108,7 +108,7 @@ void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 	float4 color = source[uint2(id.x, width - id.y - 1)];
 	float arr[3] = { color.x, color.y, color.z };
 	int z = id.z;
-	int idx = StdOrderID(id, width, depth);
+	int idx = StdID(id, width, depth);
 	float mean = encoder_inst_statistic[z * 2];
 	float variance = encoder_inst_statistic[z * 2 + 1];
 	float inv = rsqrt(variance + EPSILON);
@@ -142,7 +142,7 @@ void StylePad(uint3 id : SV_DispatchThreadID) //id.xy=288
 	y_id = y_array[y_id];
 	int indx = x_id * width * depth + y_id * depth + id.z;
 	float color = encoder_inst[indx];
-	indx = StdOrderID(id, nwidth, depth);
+	indx = StdID(id, nwidth, depth);
 	encoder_conv0[indx] = color;
 }
 
@@ -200,7 +200,7 @@ void StyleConv3 (uint3 id : SV_DispatchThreadID) //id.xy=72 141x141x32->70x70x64
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 3, 2)
 }
 
-[numthreads(1,16,64)]
+[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void StyleNormal3 (uint3 id : SV_DispatchThreadID)  // 70x70x64
 {
 	uint width = 16, depth = 64, scale = 4;
@@ -223,7 +223,7 @@ void StyleConv4 (uint3 id : SV_DispatchThreadID) //id.xy=40 70x70x64->34x34x128
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 4, 3);
 }
 
-[numthreads(1,16, MAX_THREAD_Z)] 
+[numthreads(1,REV_THREAD_Z, MAX_THREAD_Z)] 
 void StyleNormal4(uint3 id : SV_DispatchThreadID) //34x34x128
 {
 	uint width = 8, depth = 128, scale = 4;
@@ -246,7 +246,7 @@ void StyleConv5(uint3 id : SV_DispatchThreadID) //id.xy=40 34x34x128->16x16x256
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 5, 4);
 }
 
-[numthreads(1,4, MAX_THREAD_Z)]
+[numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
 void StyleNormal5(uint3 id : SV_DispatchThreadID)  //16x16x256
 {
 	uint width = 4, depth = 256, scale = 2;

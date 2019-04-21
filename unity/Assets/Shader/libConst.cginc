@@ -28,6 +28,7 @@ contact: peng_huailiang@qq.com
 #define MAX_THREAD_X	1024
 #define MAX_THREAD_Y	1024
 #define MAX_THREAD		1024
+#define REV_THREAD_Z    16  // as 1024/64
 
 #define MAX_GROUP_SHARED	8192 //globalshared's count max is 8192's float (equal 32768bytes)
 

@@ -26,8 +26,8 @@ contact: peng_huailiang@qq.com
 	int y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);	\
 	x_id = x_array[x_id];	\
 	y_id = y_array[y_id];	\
-	int indx = StdOrderIndex(x_id, y_id, id.z, width, depth); \
-	int indx2 = StdOrderID(id, (width+pad*2), depth);	\
+	int indx = StdIndex(x_id, y_id, id.z, width, depth); \
+	int indx2 = StdID(id, (width+pad*2), depth);	\
 	decoder_residule[indx2] = input_initial[indx];	
 
 
@@ -38,7 +38,7 @@ contact: peng_huailiang@qq.com
 		for(int i= 0; i < depth; i++)	\
 		{	\
 			int seq[9]; \
-			StdOrderSeq(id.x, id.y, i, width, depth, seq);	\
+			StdSeq(id.x, id.y, i, width, depth, seq);	\
 			float3x3 sample = float3x3(decoder_residule[seq[0]], decoder_residule[seq[1]],decoder_residule[seq[2]],	\
 									decoder_residule[seq[3]],decoder_residule[seq[4]],decoder_residule[seq[5]],	\
 									decoder_residule[seq[6]],decoder_residule[seq[7]],decoder_residule[seq[8]]);	\
@@ -87,7 +87,7 @@ contact: peng_huailiang@qq.com
 	float mean = input_statistic[id.z*2];	\
 	float variance = input_statistic[id.z*2+1];	\
 	float inv = rsqrt(variance + EPSILON);	\
-	int indx = width * depth * id.x + depth * id.y + id.z;	\
+	int indx = StdID(id, width, depth);	\
 	float normalize =  (decoder_residule[indx] - mean) * inv;	\
 	float scale  = decoder_g_r##r##_bn##idx##_scale[id.z];	\
 	float offset = decoder_g_r##r##_bn##idx##_offset[id.z];	\
@@ -96,7 +96,7 @@ contact: peng_huailiang@qq.com
 
 
 #define DeifineResiduleInst(id, width, depth, seq, r)	\
-	int indx = width * depth * id.x + depth * id.y + id.z;	\
+	int indx = StdID(id, width, depth);	\
 	float color = input_writable[indx];	\
 	float mean = input_statistic[id.z * 2];	\
 	float variance = input_statistic[id.z * 2 + 1];	\
@@ -114,7 +114,7 @@ contact: peng_huailiang@qq.com
 		for(int i=0;i<depth1;i++)	\
 		{	\
 			int seq[9];	\
-			StdOrderSeq(id.x*stride, id.y*stride, i, width, depth1, seq);	\
+			StdSeq(id.x*stride, id.y*stride, i, width, depth1, seq);	\
 			float3x3 sample = float3x3(decoder_conv##idx##[seq[0]], decoder_conv##idx##[seq[1]], decoder_conv##idx##[seq[2]], \
 									decoder_conv##idx##[seq[3]], decoder_conv##idx##[seq[4]], decoder_conv##idx##[seq[5]], \
 									decoder_conv##idx##[seq[6]], decoder_conv##idx##[seq[7]], decoder_conv##idx##[seq[8]]); \
@@ -134,7 +134,7 @@ contact: peng_huailiang@qq.com
 	float mean = decoder_conv##idx##_statistic[id.z*2];	\
 	float variance = decoder_conv##idx##_statistic[id.z*2+1];	\
 	float inv = rsqrt(variance + EPSILON);	\
-	int indx = width * depth * id.x + depth * id.y + id.z;	\
+	int indx = StdID(id, width, depth);	\
 	float normalize =  (decoder_conv##idx##_conved[indx] - mean) * inv;	\
 	float scale  = decoder_g_d##idx##_bn_scale[id.z];		\
 	float offset = decoder_g_d##idx##_bn_offset[id.z];	\
@@ -143,7 +143,7 @@ contact: peng_huailiang@qq.com
 
 
 #define DefineDecoderExpand(id, width, depth, idx, pidx) \
-	int indx = width * depth * id.x + depth * id.y + id.z;	\
+	int indx = StdID(id, width, depth);	\
 	float v = decoder_conv##pidx##_conved[indx];	\
 	int ninx1 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y) + id.z;	\
 	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;	\
