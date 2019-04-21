@@ -20,12 +20,15 @@ contact: peng_huailiang@qq.com
 #pragma kernel DecoderExpand2
 #pragma kernel DecoderConv2
 #pragma kernel DecoderNormal2
+#pragma kernel DecoderInstance2
 #pragma kernel DecoderExpand3
 #pragma kernel DecoderConv3
 #pragma kernel DecoderNormal3
+#pragma kernel DecoderInstance3
 #pragma kernel DecoderExpand4
 #pragma kernel DecoderConv4
 #pragma kernel DecoderNormal4
+#pragma kernel DecoderInstance4
 #pragma kernel DecoderPad5
 #pragma kernel DecoderConv5
 
@@ -40,7 +43,7 @@ RWTexture2D<float4> decoder_destination;
 #include "libDecoder.cginc"
 
 RWStructuredBuffer<float> decoder_residule; 		//16x16x256
-RWStructuredBuffer<float> decoder_conv0;			//32x32x256
+RWStructuredBuffer<float> decoder_conv0_conved;		//32x32x256
 RWStructuredBuffer<float> decoder_conv1;			//32x32x256
 RWStructuredBuffer<float> decoder_conv1_conved;		//32x32x256
 RWStructuredBuffer<float> decoder_conv1_statistic; 	//256x2
@@ -51,7 +54,7 @@ RWStructuredBuffer<float> decoder_conv3;			//128x128x64
 RWStructuredBuffer<float> decoder_conv3_conved;		//128x128x64
 RWStructuredBuffer<float> decoder_conv3_statistic;	//64x2
 RWStructuredBuffer<float> decoder_conv4;			//256x256x32
-RWStructuredBuffer<float> decoder_conv4_conved;		//256x256x32
+RWStructuredBuffer<float> decoder_conv4_conved;		
 RWStructuredBuffer<float> decoder_conv4_statistic;	//32x2
 RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
 
@@ -144,88 +147,115 @@ void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x2
 	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;
 	int ninx3 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y) + id.z;
 	int ninx4 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y + 1) + id.z;
-	decoder_conv0[ninx1] = v;
-	decoder_conv0[ninx2] = v;
-	decoder_conv0[ninx3] = v;
-	decoder_conv0[ninx4] = v;
+	decoder_conv0_conved[ninx1] = v;
+	decoder_conv0_conved[ninx2] = v;
+	decoder_conv0_conved[ninx3] = v;
+	decoder_conv0_conved[ninx4] = v;
 }
 
 [numthreads(8,8,1)]
 void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
 {
-	int width = 32, depth1 = 256, depth2 = 256;
-	DefineDecoderConv(id, width, depth1, depth2, 1, 0);
+	uint width = 32, depth1 = 256, depth2 = 256;
+	DefineDecoderConv(id, width, depth1, depth2, 1);
 }
 
-[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
+[numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
 void DecoderNormal1(uint3 id: SV_DispatchThreadID) //32x32x256
 {
-	//decoder_conv1_conved 32x32x256
-	int width = 32, depth = 256;
-	DefineDecoderNormal(id, width, depth, 1);
+	uint width = 4, depth = 256, scale = 8;
+	DefineDecoderNormalMaxZ(id, width, depth, scale, 1)
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand2(uint3 id: SV_DispatchThreadID) 
+void DecoderInstance1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256
+{
+	uint width = 32, depth = 256;
+	DefineDecoderInstRelu(id, width, depth, 1)
+}
+
+[numthreads(8,8,4)]
+void DecoderExpand2(uint3 id: SV_DispatchThreadID) //id.xy=32, 32x32x256->64x64x256
 {
 	int width = 32, depth = 256;
 	DefineDecoderExpand(id, width, depth, 2, 1);
 }
 
 [numthreads(8,8,1)]
-void DecoderConv2(uint3 id: SV_DispatchThreadID) 
+void DecoderConv2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x256->64x64x128
 {
-	int width = 64, depth1 = 256, depth2 = 128;
-	DefineDecoderConv(id, width, depth1, depth2, 2, 2);
+	uint width = 64, depth1 = 256, depth2 = 128;
+	DefineDecoderConv(id, width, depth1, depth2, 2);
+}
+
+[numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
+void DecoderNormal2(uint3 id: SV_DispatchThreadID) //64x64x128
+{
+	uint width = 8, depth = 128, scale = 8;
+	DefineDecoderNormalMaxZ(id, width, depth, scale, 2);
 }
 
 [numthreads(8,8,4)]
-void DecoderNormal2(uint3 id: SV_DispatchThreadID) 
+void DecoderInstance2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x128
 {
-	int width = 64, depth = 128;
-	DefineDecoderNormal(id, width, depth, 2);
+	uint width = 64, depth = 128;
+	DefineDecoderInstRelu(id, width, depth, 2)
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand3(uint3 id: SV_DispatchThreadID)
+void DecoderExpand3(uint3 id: SV_DispatchThreadID)//id.xy=64 64x64x128->128x128x128 
 {
 	int width = 64, depth = 128;
 	DefineDecoderExpand(id, width, depth, 3, 2);
 }
 
 [numthreads(8,8,1)]
-void DecoderConv3(uint3 id: SV_DispatchThreadID) 
+void DecoderConv3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x128->128x128x64
 {
-	int width = 128, depth1 = 128, depth2 = 64;
-	DefineDecoderConv(id, width, depth1, depth2, 2, 3);
+	uint width = 128, depth1 = 128, depth2 = 64;
+	DefineDecoderConv(id, width, depth1, depth2, 3);
+}
+
+[numthreads(1,16,64)]
+void DecoderNormal3(uint3 id: SV_DispatchThreadID) //128x128x64
+{
+	uint width = 16, depth = 64, scale = 8;
+	DefineDecoderNormal(id, width, depth, scale, 3);
 }
 
 [numthreads(8,8,4)]
-void DecoderNormal3(uint3 id: SV_DispatchThreadID) 
+void DecoderInstance3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64
 {
-	int width = 128, depth = 64;
-	DefineDecoderNormal(id, width, depth, 3);
+	uint width = 128, depth = 64;
+	DefineDecoderInstRelu(id, width, depth, 2)
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand4(uint3 id: SV_DispatchThreadID) 
+void DecoderExpand4(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64->256x256x64
 {
 	int width = 128, depth = 64;
 	DefineDecoderExpand(id, width, depth, 4, 3);
 }
 
 [numthreads(8,8,1)]
-void DecoderConv4(uint3 id: SV_DispatchThreadID) 
+void DecoderConv4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x64->256x256x32
 {
-	int width = 256, depth1 = 64, depth2 = 32;
-	DefineDecoderConv(id, width, depth1, depth2, 2, 4);
+	uint width = 256, depth1 = 64, depth2 = 32;
+	DefineDecoderConv(id, width, depth1, depth2, 4);
+}
+
+[numthreads(1,32,32)]
+void DecoderNormal4(uint3 id: SV_DispatchThreadID) //256x256x32
+{
+	uint width = 32, depth = 32, scale = 8;
+	DefineDecoderNormal(id, width, depth, scale, 4);
 }
 
 [numthreads(8,8,4)]
-void DecoderNormal4(uint3 id: SV_DispatchThreadID) 
+void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 {
-	int width = 256, depth = 32;
-	DefineDecoderNormal(id, width, depth, 4);
+	uint width = 256, depth = 32;
+	DefineDecoderInstRelu(id, width, depth, 2)
 }
 
 [numthreads(8,8,4)]

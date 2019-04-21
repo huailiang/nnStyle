@@ -203,7 +203,7 @@ void StyleConv3 (uint3 id : SV_DispatchThreadID) //id.xy=72 141x141x32->70x70x64
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void StyleNormal3 (uint3 id : SV_DispatchThreadID)  // 70x70x64
 {
-	uint width = 16, depth = 64, scale = 4;
+	uint width = REV_THREAD_Z, depth = 64, scale = 4;
 	DefineEnNormal(id, width, depth, scale, 3);
 }
 
@@ -249,7 +249,7 @@ void StyleConv5(uint3 id : SV_DispatchThreadID) //id.xy=40 34x34x128->16x16x256
 [numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
 void StyleNormal5(uint3 id : SV_DispatchThreadID)  //16x16x256
 {
-	uint width = 4, depth = 256, scale = 2;
+	uint width = 4, depth = 256, scale = 4;
 	DefineEnNormalMaxZ(id, width, depth, scale, 5);
 }
 

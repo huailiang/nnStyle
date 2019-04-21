@@ -30,6 +30,17 @@ The file is store arguments about neural network trained in the tensorflow.
 
 The file format is not protobuf, defined self.
 
+## Comment
+
+If encoder or decoder network, group will be z's thread at first. 
+
+For example,  `StyleNormal1` in encoder thread-z is set as 32 at first. and thread-y must be less than 32, because of max threads is 1024, that is 32x32. But the layer is 284x284x32, so scale is 284/32 = 8, while width is set 32.
+
+if thread-z more than 64, width should be set 1024/depth, for example `StyleNormal5` shape is 16x16x256, width is 1024/256 = 4, scale = 16 / 4 = 4.
+This is due to g_cache limited.
+
+
+
 
 ## Active Function
 
