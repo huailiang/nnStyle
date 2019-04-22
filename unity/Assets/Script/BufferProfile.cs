@@ -271,8 +271,8 @@ public class BufferProfile
         sb.Append("statistic:\n");
         for (int k = 0; k < depth; k++)
         {
-            float mean = statistic[k * 2] / len;
-            float qrt = statistic[k * 2 + 1] / len - mean * mean;
+            float mean = statistic[k * 2];
+            float qrt = statistic[k * 2 + 1];
             sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, mean.ToString("f4"), qrt.ToString("f4"));
         }
         Debug.Log(sb);

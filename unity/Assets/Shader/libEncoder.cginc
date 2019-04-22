@@ -37,19 +37,20 @@ contact: peng_huailiang@qq.com
 
 #define InnerEncoderNormal(seq)	\
 {	\
-	for (uint i = 0; i < scale; i++)	\
+	for (uint i = 0; i < intvl; i++)	\
 	{	\
-		int idx = i * nwidth * depth + (id.y * scale + i) *depth + id.z;	\
+		int idx = i * nwidth * depth + (id.y + width * i) * depth + id.z;	\
 		g_cache[nix] += encoder_conv##seq##[idx];	\
 		g_cache[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 	}	\
 }
 
 
-#define DefineEnNormal(id, width, depth, scale, seq)	\
+#define DefineEnNormal(id, width, seq)	\
 	uint offset = width * depth;	\
 	uint nix = id.y * depth + id.z;	\
-	uint nwidth = width * scale;	\
+	uint scale = nwidth / width;	\
+	uint intvl = id.y == nwidth - width * scale ?  scale + 1 : scale;	\
 	g_cache[nix] = 0;	\
 	g_cache[nix + offset] = 0;	\
 	for (uint i = 0; i < nwidth; i++)	\
@@ -67,9 +68,9 @@ contact: peng_huailiang@qq.com
 			qrt += g_cache[idx + offset];	\
 		}	\
 		int len = nwidth * nwidth;	\
-		mean = mean / len;	\
+		mean = mean;	\
 		encoder_conv##seq##_statistic[id.z * 2] = mean;	\
-		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);	\
+		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt;	\
 	}
 
 

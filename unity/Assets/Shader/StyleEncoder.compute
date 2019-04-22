@@ -157,8 +157,8 @@ void StyleConv1 (uint3 id : SV_DispatchThreadID) //id.xy=288 286x286x3->284x284x
 [numthreads(1, 32, 32)]
 void StyleNormal1(uint3 id : SV_DispatchThreadID) //284x284x32
 {
-	uint width = 32, depth = 32, scale = 8;
-	DefineEnNormal(id, width, depth, scale, 1);
+	uint width = 32, depth = 32, nwidth = 284;
+	DefineEnNormal(id, width, 1);
 }
 
 [numthreads(8, 8, 4)]
@@ -180,8 +180,8 @@ void StyleConv2(uint3 id : SV_DispatchThreadID) //id.xy=144 284x284x32->141x141x
 [numthreads(1,32,32)]
 void StyleNormal2(uint3 id : SV_DispatchThreadID)  //141x141x32 
 {
-	uint width = 32, depth = 32, scale = 4;
-	DefineEnNormal(id, width, depth, scale, 2);
+	uint width = 32, depth = 32, nwidth = 141;
+	DefineEnNormal(id, width, 2);
 }
 
 [numthreads(8,8,4)]
@@ -201,10 +201,10 @@ void StyleConv3 (uint3 id : SV_DispatchThreadID) //id.xy=72 141x141x32->70x70x64
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
-void StyleNormal3 (uint3 id : SV_DispatchThreadID)  // 70x70x64
+void StyleNormal3(uint3 id : SV_DispatchThreadID)  // 70x70x64
 {
-	uint width = REV_THREAD_Z, depth = 64, scale = 4;
-	DefineEnNormal(id, width, depth, scale, 3);
+	uint width = REV_THREAD_Z, depth = 64, nwidth = 70;
+	DefineEnNormal(id, width, 3);
 }
 
 [numthreads(8,8,4)]
