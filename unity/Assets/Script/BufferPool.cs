@@ -6,6 +6,18 @@ public struct Buffer
 {
     public int[] shape;
     public ComputeBuffer cb;
+
+    public int count
+    {
+        get
+        {
+            int v = 1;
+            if (shape != null)
+                for (int i = 0; i < shape.Length; i++)
+                    v *= shape[i];
+            return v;
+        }
+    }
 }
 
 public class BufferPool
@@ -45,6 +57,18 @@ public class BufferPool
         if (buffer.ContainsKey(name))
         {
             return buffer[name].cb;
+        }
+        return null;
+    }
+
+    public static float[] GetData(string name)
+    {
+        if (buffer.ContainsKey(name))
+        {
+            int count = buffer[name].count;
+            float[] rst = new float[count];
+            buffer[name].cb.GetData(rst);
+            return rst;
         }
         return null;
     }

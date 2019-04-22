@@ -58,12 +58,12 @@ contact: peng_huailiang@qq.com
 		uint shift = offset * i * 2;	\
 		uint z = id.z + MAX_THREAD_Z * i;	\
 		uint nix = id.y * depth / count + id.z + shift;	\
-		g_cahce[nix] = 0;	\
-		g_cahce[nix + offset] = 0;	\
+		g_cache[nix] = 0;	\
+		g_cache[nix + offset] = 0;	\
 		for (uint j = 0; j < width * scale; j++) { \
 			int idx = j * width * depth * scale + id.y * depth * scale + z;		\
-			g_cahce[nix] += input_writable[idx];	\
-			g_cahce[nix + offset] += pow(abs(input_writable[idx]), 2);	\
+			g_cache[nix] += input_writable[idx];	\
+			g_cache[nix + offset] += pow(abs(input_writable[idx]), 2);	\
 		}	\
 	} 	\
 	GroupMemoryBarrierWithGroupSync();	\
@@ -72,8 +72,8 @@ contact: peng_huailiang@qq.com
 		int shift = width * depth * id.y * 2 / count;	\
 		for (uint i = 0; i < width; i++) {	\
 			int idx = i * depth / count + id.z + shift;	\
-			mean += g_cahce[idx];	\
-			qrt += g_cahce[idx + offset];	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
 		}	\
 		int len = width * width * scale;	\
 		mean = mean / len;	\
@@ -92,8 +92,6 @@ contact: peng_huailiang@qq.com
 	float scale = decoder_g_r##seq##_bn##r##_scale[id.z];	\
 	float offset = decoder_g_r##seq##_bn##r##_offset[id.z];	\
 	input_writable[indx] = scale * normalized + offset;		
-		
-
 
 
 #define DefineDecoderConv(id, width, depth1, depth2, idx)	\
@@ -117,16 +115,26 @@ contact: peng_huailiang@qq.com
 	}
 
 
+#define InnerDecoderNormal(seq)	\
+{	\
+	for (uint i = 0; i < scale; i++)	\
+	{	\
+		int idx = i * nwidth * depth + (id.y * scale + i) * depth + id.z;	\
+		g_cache[nix] += decoder_conv##seq##[idx];	\
+		g_cache[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
+	}	\
+}
+
+
 #define DefineDecoderNormal(id, width, depth, scale, seq)	\
 	uint offset = width * depth;	\
 	uint nix = id.y * depth + id.z;	\
-	g_cahce[nix] = 0;	\
-	g_cahce[nix + offset] = 0;	\
-	for (uint i = 0; i < width * scale; i++)	\
+	uint nwidth = width * scale;	\
+	g_cache[nix] = 0;	\
+	g_cache[nix + offset] = 0;	\
+	for (uint i = 0; i < nwidth; i++)	\
 	{	\
-		int idx = i * width * depth * scale + id.y * depth * scale + id.z;	\
-		g_cahce[nix] += decoder_conv##seq##[idx];	\
-		g_cahce[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
+		InnerDecoderNormal(seq)	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 0)	\
@@ -135,10 +143,10 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth + id.z;	\
-			mean += g_cahce[idx];	\
-			qrt += g_cahce[idx + offset];	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
 		}	\
-		int len = width * width * scale;	\
+		int len = nwidth * nwidth;	\
 		mean = mean / len;	\
 		decoder_conv##seq##_statistic[id.z * 2] = mean;	\
 		decoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);	\
@@ -153,13 +161,13 @@ contact: peng_huailiang@qq.com
 		uint shift = offset * i * 2;	\
 		uint z = id.z + MAX_THREAD_Z * i;	\
 		uint nix = id.y * depth / count + id.z + shift;	\
-		g_cahce[nix] = 0;	\
-		g_cahce[nix + offset] = 0;	\
+		g_cache[nix] = 0;	\
+		g_cache[nix + offset] = 0;	\
 		for (uint j = 0; j < width * scale; j++)	\
 		{	\
 			int idx = j * width * depth * scale + id.y * depth * scale + z;	\
-			g_cahce[nix] += decoder_conv##seq##[idx];	\
-			g_cahce[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
+			g_cache[nix] += decoder_conv##seq##[idx];	\
+			g_cache[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
 		}	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
@@ -170,8 +178,8 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth / count + id.z + shift;	\
-			mean += g_cahce[idx];	\
-			qrt += g_cahce[idx + offset];	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
 		}	\
 		int len = width * width * scale;	\
 		mean = mean / len;	\
@@ -194,14 +202,14 @@ contact: peng_huailiang@qq.com
 
 #define DefineDecoderExpand(id, width, depth, idx, pidx) \
 	int indx = StdID(id, width, depth);	\
-	float v = decoder_conv##pidx##_conved[indx];	\
+	float v = decoder_conv##pidx##[indx];	\
 	int ninx1 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y) + id.z;	\
 	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;	\
 	int ninx3 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y) + id.z;	\
 	int ninx4 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y + 1) + id.z;	\
-	decoder_conv##idx##[ninx1] = v;	\
-	decoder_conv##idx##[ninx2] = v;	\
-	decoder_conv##idx##[ninx3] = v;	\
-	decoder_conv##idx##[ninx4] = v;
+	decoder_conv##idx##_conved[ninx1] = v;	\
+	decoder_conv##idx##_conved[ninx2] = v;	\
+	decoder_conv##idx##_conved[ninx3] = v;	\
+	decoder_conv##idx##_conved[ninx4] = v;
 
 #endif

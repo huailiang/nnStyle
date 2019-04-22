@@ -75,13 +75,13 @@ void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex
 	uint width = 64, depth = 3, scale = 4;
 	uint offset = width * depth;
 	uint nix = id.y * depth + id.z;
-	g_cahce[nix] = 0.0f;
-	g_cahce[nix + offset] = 0;
+	g_cache[nix] = 0.0f;
+	g_cache[nix + offset] = 0;
 	for (uint i = 0; i < width * scale; i++)
 	{
 		int idx = i * width * scale * depth + id.y * depth * scale + id.z;
-		g_cahce[nix] += encoder_inst[idx];
-		g_cahce[nix + offset] += pow(abs(encoder_inst[idx]), 2);
+		g_cache[nix] += encoder_inst[idx];
+		g_cache[nix + offset] += pow(abs(encoder_inst[idx]), 2);
 	}
 	GroupMemoryBarrierWithGroupSync();
 
@@ -91,8 +91,8 @@ void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex
 		for (uint i = 0; i < width; i++)
 		{
 			int idx = i * depth + id.z;
-			mean += g_cahce[idx];
-			qrt += g_cahce[idx + offset];
+			mean += g_cache[idx];
+			qrt += g_cache[idx + offset];
 		}
 		int len = width * width * scale;
 		mean = mean / len;

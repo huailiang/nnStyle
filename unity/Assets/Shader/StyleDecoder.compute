@@ -17,6 +17,7 @@ contact: peng_huailiang@qq.com
 #pragma kernel DecoderExpand1
 #pragma kernel DecoderConv1
 #pragma kernel DecoderNormal1
+#pragma kernel DecoderInstance1
 #pragma kernel DecoderExpand2
 #pragma kernel DecoderConv2
 #pragma kernel DecoderNormal2
@@ -288,7 +289,7 @@ float DotConv7x7(uint3 id, uint width, uint depth,uint z, int d_indx)
 	{
 		for(int j = 0; j < 7; j++)
 		{
-			int c_indx = StdIndex(id.x + j, id.y, z, width, depth); 
+			int c_indx = StdIndex(id.x + j, id.y + i, z, width, depth);
 			v += decoder_conv5_pad[c_indx] * decoder_g_pred_c_Conv_weights[d_indx];
 			d_indx++;
 		}
@@ -304,11 +305,10 @@ void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.x=256
 	float rgb[3];
 	for(uint i = 0; i < depth2; i++)
 	{
-		rgb[i] = 0;
 		float v= 0.0f;
 		for(uint j = 0; j < depth1; j++)
 		{
-			int d_indx = (depth1 *i + j)* ks * ks ;
+			int d_indx = (depth2 * j + i)* ks * ks;
 			v += DotConv7x7(id, width, depth1, j, d_indx);
 		}
 		rgb[i] = v;

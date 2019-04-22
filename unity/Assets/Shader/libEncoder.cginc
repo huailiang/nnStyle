@@ -35,16 +35,26 @@ contact: peng_huailiang@qq.com
 	}
 
 
+#define InnerEncoderNormal(seq)	\
+{	\
+	for (uint i = 0; i < scale; i++)	\
+	{	\
+		int idx = i * nwidth * depth + (id.y * scale + i) *depth + id.z;	\
+		g_cache[nix] += encoder_conv##seq##[idx];	\
+		g_cache[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
+	}	\
+}
+
+
 #define DefineEnNormal(id, width, depth, scale, seq)	\
 	uint offset = width * depth;	\
 	uint nix = id.y * depth + id.z;	\
-	g_cahce[nix] = 0;	\
-	g_cahce[nix + offset] = 0;	\
-	for (uint i = 0; i < width * scale; i++)	\
+	uint nwidth = width * scale;	\
+	g_cache[nix] = 0;	\
+	g_cache[nix + offset] = 0;	\
+	for (uint i = 0; i < nwidth; i++)	\
 	{	\
-		int idx = i * width * depth * scale + id.y * depth * scale + id.z;	\
-		g_cahce[nix] += encoder_conv##seq##[idx];	\
-		g_cahce[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
+		InnerEncoderNormal(seq)	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 0)	\
@@ -53,10 +63,10 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth + id.z;	\
-			mean += g_cahce[idx];	\
-			qrt += g_cahce[idx + offset];	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
 		}	\
-		int len = width * width * scale;	\
+		int len = nwidth * nwidth;	\
 		mean = mean / len;	\
 		encoder_conv##seq##_statistic[id.z * 2] = mean;	\
 		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);	\
@@ -84,13 +94,13 @@ contact: peng_huailiang@qq.com
 		uint shift = offset * i * 2;	\
 		uint z = id.z + MAX_THREAD_Z * i;	\
 		uint nix = id.y * depth / count + id.z + shift;	\
-		g_cahce[nix] = 0;	\
-		g_cahce[nix + offset] = 0;	\
+		g_cache[nix] = 0;	\
+		g_cache[nix + offset] = 0;	\
 		for (uint j = 0; j < width * scale; j++)	\
 		{	\
 			int idx = j * width * depth * scale + id.y * depth * scale + z;	\
-			g_cahce[nix] += encoder_conv##seq##[idx];	\
-			g_cahce[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
+			g_cache[nix] += encoder_conv##seq##[idx];	\
+			g_cache[nix + offset] += pow(abs(encoder_conv##seq##[idx]), 2);	\
 		}	\
 	}	\
 	GroupMemoryBarrierWithGroupSync();	\
@@ -101,8 +111,8 @@ contact: peng_huailiang@qq.com
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth / count + id.z + shift;	\
-			mean += g_cahce[idx];	\
-			qrt += g_cahce[idx + offset];	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
 		}	\
 		int len = width * width * scale;	\
 		mean = mean / len;	\

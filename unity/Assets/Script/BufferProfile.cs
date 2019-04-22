@@ -13,6 +13,10 @@ public class BufferProfile
         {
             Print(buffer.cb, name, buffer.shape);
         }
+        else
+        {
+            Debug.LogError("Not found buffer " + name);
+        }
     }
 
     public static void Print(ComputeBuffer cb, string name, params int[] shape)
@@ -58,7 +62,7 @@ public class BufferProfile
             int y = shape[1];
             int z = shape[2];
             int max_y = z <= 8 ? 80 : 20;
-            int max_z = z <= 8 ? z : 20;
+            int max_z = z <= 8 ? z : 14;
             float[] array = new float[x * y * z];
             buffer.GetData(array);
             sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, x / 2);
@@ -247,28 +251,31 @@ public class BufferProfile
         }
         Debug.Log(sb);
 
-        float[] statistic = new float[depth2 * 2];
-        for (int i = 0; i < output; i++)
-            for (int j = 0; j < output; j++)
-                for (int k = 0; k < depth2; k++)
+        CalcuteNormal(array, (int)output, (int)depth2);
+    }
+
+    public static void CalcuteNormal(float[] array, int width, int depth)
+    {
+        long len = width * width;
+        float[] statistic = new float[depth * 2];
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < width; j++)
+                for (int k = 0; k < depth; k++)
                 {
-                    int idx = (int)(i * output * depth2 + j * depth2 + k);
+                    int idx = (int)(i * width * depth + j * depth + k);
                     statistic[k * 2] += array[idx];
                     statistic[k * 2 + 1] += Mathf.Pow(array[idx], 2);
                 }
-        long len = output * output;
-        for (int k = 0; k < depth2; k++)
-        {
-            float mean = statistic[k * 2] / len;
-            statistic[k * 2] = mean;
-            statistic[k * 2 + 1] = statistic[k * 2 + 1] / len - mean * mean;
-        }
+
         sb.Length = 0;
         sb.Append("statistic:\n");
-        for (int k = 0; k < depth2; k++)
+        for (int k = 0; k < depth; k++)
         {
-            sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, statistic[k * 2].ToString("f4"), statistic[k * 2 + 1].ToString("f4"));
+            float mean = statistic[k * 2] / len;
+            float qrt = statistic[k * 2 + 1] / len - mean * mean;
+            sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, mean.ToString("f4"), qrt.ToString("f4"));
         }
         Debug.Log(sb);
     }
+
 }
