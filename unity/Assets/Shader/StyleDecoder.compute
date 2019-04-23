@@ -81,7 +81,7 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	DefineResidulePad(id, width, depth, pad)
+	DefineResidulePad(id)
 	decoder_residule[indx2] = input_initial[indx];	
 }
 
@@ -89,21 +89,21 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
 	int width = 16, depth = 256;
-	DefineResiduleConv(id, width, depth, 1, 1)
+	DefineResiduleConv(id, 1, 1)
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 4, depth = 256, scale = 2;
-	DefineResiduleNormal(id, width, depth, scale)
+	DefineResiduleNormal(id)
 }
 
 [numthreads(8,8,4)]
 void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 16, depth = 256;
-	DeifineResiduleInst(id, width, depth, 1, 1)
+	DeifineResiduleInst(id, 1, 1)
 }
 
 [numthreads(8, 8, 4)]
@@ -111,7 +111,7 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	DefineResidulePad(id, width, depth, pad)
+	DefineResidulePad(id)
 	decoder_residule[indx2] = input_writable[indx];	
 }
 
@@ -119,21 +119,21 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
 	int width = 16, depth = 256;
-	DefineResiduleConv(id, width, depth, 1, 2)
+	DefineResiduleConv(id, 1, 2)
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 4, depth = 256, scale = 2;
-	DefineResiduleNormal(id, width, depth, scale)
+	DefineResiduleNormal(id)
 }
 
 [numthreads(8,8,4)]
 void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 16, depth = 256;
-	DeifineResiduleInst(id, width, depth, 1, 2)
+	DeifineResiduleInst(id, 1, 2)
 	decoder_residule[indx] += input_initial[indx];
 }
 
@@ -171,7 +171,7 @@ void DecoderNormal1(uint3 id: SV_DispatchThreadID) //32x32x256
 void DecoderInstance1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256
 {
 	uint width = 32, depth = 256;
-	DefineDecoderInstRelu(id, width, depth, 1)
+	DefineDecoderInstRelu(id, 1)
 }
 
 [numthreads(8,8,4)]
@@ -199,7 +199,7 @@ void DecoderNormal2(uint3 id: SV_DispatchThreadID) //64x64x128
 void DecoderInstance2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x128
 {
 	uint width = 64, depth = 128;
-	DefineDecoderInstRelu(id, width, depth, 2)
+	DefineDecoderInstRelu(id, 2)
 }
 
 [numthreads(8,8,4)]
@@ -227,7 +227,7 @@ void DecoderNormal3(uint3 id: SV_DispatchThreadID) //128x128x64
 void DecoderInstance3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64
 {
 	uint width = 128, depth = 64;
-	DefineDecoderInstRelu(id, width, depth, 3)
+	DefineDecoderInstRelu(id, 3)
 }
 
 [numthreads(8,8,4)]
@@ -255,7 +255,7 @@ void DecoderNormal4(uint3 id: SV_DispatchThreadID) //256x256x32
 void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 {
 	uint width = 256, depth = 32;
-	DefineDecoderInstRelu(id, width, depth, 4)
+	DefineDecoderInstRelu(id, 4)
 }
 
 [numthreads(8,8,4)]

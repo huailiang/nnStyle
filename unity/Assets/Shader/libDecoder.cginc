@@ -13,7 +13,7 @@ contact: peng_huailiang@qq.com
 #include "libStd.cginc"
 #include "libActive.cginc"
 
-#define DefineResidulePad(id, width, depth, pad) \
+#define DefineResidulePad(id) \
 	int low =   width - id.x - 1;	\
 	int mid =  id.x - pad;	\
 	int high = 2 * pad + width - 1 - id.x;	\
@@ -30,7 +30,7 @@ contact: peng_huailiang@qq.com
 	int indx2 = StdID(id, (width+pad*2), depth);	
 
 
-#define DefineResiduleConv(id, width, depth, r, idx) \
+#define DefineResiduleConv(id, r, idx) \
 	for(int j = 0;j < depth; j++) \
 	{ 	\
 		float v = 0.0f;	\
@@ -51,7 +51,7 @@ contact: peng_huailiang@qq.com
 	}
 
 
-#define DefineResiduleNormal(id, width, depth, scale) \
+#define DefineResiduleNormal(id) \
 	uint count = depth / MAX_THREAD_Z;	\
 	uint offset = width * depth / count;	\
 	for (uint i = 0; i < count; i++) {	\
@@ -82,7 +82,7 @@ contact: peng_huailiang@qq.com
 	}
 
 
-#define DeifineResiduleInst(id, width, depth, seq, r)	\
+#define DeifineResiduleInst(id, seq, r)	\
 	int indx = StdID(id, width, depth);	\
 	float color = input_writable[indx];	\
 	float mean = input_statistic[id.z * 2];	\
@@ -121,7 +121,7 @@ for (uint j = 0; j < nwidth; j++)	\
 	[unroll]	\
 	for (uint i = 0; i < intvl; i++)	\
 	{	\
-		int idx = j * nwidth * depth + (id.y + width + i) * depth + id.z;	\
+		int idx = j * nwidth * depth + (id.y + width * i) * depth + id.z;	\
 		g_cache[nix] += decoder_conv##seq##[idx];	\
 		g_cache[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
 	}	\
@@ -149,7 +149,7 @@ for (uint j = 0; j < nwidth; j++)	\
 		mean = mean / len;	\
 		decoder_conv##seq##_statistic[id.z * 2] = mean;	\
 		decoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - mean * mean;	\
-	}
+	}	\
 
 
 #define DefineDecoderNormalMaxZ(id, width, depth, scale, seq)	\
@@ -187,7 +187,7 @@ for (uint j = 0; j < nwidth; j++)	\
 	}
 
 
-#define DefineDecoderInstRelu(id, width, depth, seq)	\
+#define DefineDecoderInstRelu(id, seq)	\
 	int inx = StdID(id, width, depth);	\
 	float color = decoder_conv##seq##[inx];	\
 	float mean = decoder_conv##seq##_statistic[id.z * 2];	\

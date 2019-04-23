@@ -26,9 +26,9 @@ def encoder(image, options, reuse=True, name="encoder"):
         c1 = tf.nn.relu(instance_norm(input=conv2d(c0, options.gf_dim, 3, 1, padding='VALID', name='g_e1_c'),
                                       is_training=options.is_training,
                                       name='g_e1_bn'))
-        cv2 = conv2d(c1, options.gf_dim, 3, 2, padding='VALID', name='g_e2_c')
-        mean, variance = tf.nn.moments(cv2, axes=[1, 2], keep_dims=True)
-        c2 = tf.nn.relu(instance_norm(input=cv2,
+        # cv2 =conv2d(c1, options.gf_dim, 3, 2, padding='VALID', name='g_e2_c')
+        # mean, variance = tf.nn.moments(cv2, axes=[1, 2], keep_dims=True)
+        c2 = tf.nn.relu(instance_norm(input=conv2d(c1, options.gf_dim, 3, 2, padding='VALID', name='g_e2_c'),
                                       is_training=options.is_training,
                                       name='g_e2_bn'))
         c3 = tf.nn.relu(instance_norm(conv2d(c2, options.gf_dim * 2, 3, 2, padding='VALID', name='g_e3_c'),
@@ -40,7 +40,7 @@ def encoder(image, options, reuse=True, name="encoder"):
         c5 = tf.nn.relu(instance_norm(conv2d(c4, options.gf_dim * 8, 3, 2, padding='VALID', name='g_e5_c'),
                                       is_training=options.is_training,
                                       name='g_e5_bn'))
-        return [c5, c1, c2, c3, c4, cv2, mean, variance]
+        return [c5, c1, c2, c3, c4]
 
 
 def decoder(features, options, reuse=True, name="decoder"):
@@ -85,14 +85,13 @@ def decoder(features, options, reuse=True, name="decoder"):
                                       name='g_d1_bn',
                                       is_training=options.is_training))
 
-        dd2 = deconv2d(d1, options.gf_dim * 4, 3, 2, name='g_d2_dc')
-        mean, variance = tf.nn.moments(dd2, axes=[1, 2], keep_dims=True)
-        d2 = tf.nn.relu(instance_norm(input=dd2,
+        d2 = tf.nn.relu(instance_norm(input=deconv2d(d1, options.gf_dim * 4, 3, 2, name='g_d2_dc'),
                                       name='g_d2_bn',
                                       is_training=options.is_training))
 
-        d3 = deconv2d(d2, options.gf_dim * 2, 3, 2, name='g_d3_dc')
-        d3 = tf.nn.relu(instance_norm(input=d3,
+        dd3 = deconv2d(d2, options.gf_dim * 2, 3, 2, name='g_d3_dc')
+        mean, variance = tf.nn.moments(dd3, axes=[1, 2], keep_dims=True)
+        d3 = tf.nn.relu(instance_norm(input=dd3,
                                       name='g_d3_bn',
                                       is_training=options.is_training))
 
@@ -103,7 +102,7 @@ def decoder(features, options, reuse=True, name="decoder"):
 
         d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
         pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c'))*2. - 1.
-        return [pred, d1, d2, d3, d4, r1]
+        return [pred, d1, d2, d3, d4, dd3, mean, variance]
 
 
 def discriminator(image, options, reuse=True, name="discriminator"):

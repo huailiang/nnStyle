@@ -277,25 +277,4 @@ public class BufferProfile
         Debug.Log(sb);
     }
 
-    public static void CalNormal(float[] array)
-    {
-        uint nwidth = 141, width = 32, depth = 32, scale = nwidth / width;
-        float mean = 0;
-        for (uint y = 0; y < width; y++)
-        {
-            uint itvl = y < nwidth % width ? scale + 1 : scale;
-            float g_cache = 0;
-            for (uint i = 0; i < nwidth; i++)
-            {
-                for (uint j = 0; j < itvl; j++)
-                {
-                    uint idx = i * nwidth * depth + (y + width * j) * depth;
-                    g_cache += array[idx];
-                }
-            }
-            mean += g_cache;
-        }
-        Debug.Log(string.Format("[{0}]\t{1}\n", 0, mean.ToString("f4")));
-    }
-    
 }
