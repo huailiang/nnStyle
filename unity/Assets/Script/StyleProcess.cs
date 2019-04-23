@@ -17,6 +17,7 @@ public class StyleProcess : MonoBehaviour
     private int decoderExpand3, decoderConv3, decoderNormal3, decoderInstance3, decoderExpand4, decoderConv4, decoderNormal4, decoderInstance4, decoderExpand5, decoderConv5;
 
     private const int width = 256;
+    private bool drawGui = true;
 
     void Start()
     {
@@ -104,6 +105,7 @@ public class StyleProcess : MonoBehaviour
 
     private void OnGUI()
     {
+        if (!drawGui) return;
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
             //encoder
@@ -202,13 +204,16 @@ public class StyleProcess : MonoBehaviour
             decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
             BufferProfile.Print("decoder_conv3");
         }
-        if (GUI.Button(new Rect(120, 200, 80, 40), "Decoder_v3"))
+        if (GUI.Button(new Rect(120, 200, 80, 40), "Output"))
         {
             float[] layer = checkpoint.LoadLayer("decoder_d4");
-            BufferPool.Get("decoder_conv5_pad").SetData(layer);
-            BufferProfile.Print("decoder_conv5_pad");
+            BufferPool.Get("decoder_conv4").SetData(layer);
+            BufferProfile.Print("decoder_conv4");
+            decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
             decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
+            BufferProfile.Print("decoder_conv5_pad");
             tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
+            drawGui = false;
         }
     }
 

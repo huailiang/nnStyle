@@ -260,6 +260,7 @@ void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 [numthreads(8,8,4)]
 void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 262x262x32
 {
+	if(StdCheckRange(id, 262)) return;
 	uint pad = 3, width = 256, depth = 32;
 	uint low =   width - id.x - 1;	
 	uint mid =  id.x - pad;	
@@ -275,7 +276,7 @@ void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 262x262x32
 	y_id = y_array[y_id];	
 	uint indx = width * depth * x_id + depth * y_id + id.z;	
 	uint indx2 = (width+pad*2) * depth * id.x + depth * id.y + id.z;	
-	decoder_conv5_pad[indx2] = decoder_conv4_conved[indx];	
+	decoder_conv5_pad[indx2] = decoder_conv4[indx];	
 }
 
 
