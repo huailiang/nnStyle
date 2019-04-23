@@ -254,65 +254,40 @@ public class BufferProfile
         CalcuteNormal(array, (int)output, (int)depth2);
     }
 
-    public static void CalcuteNormal(float[] array, int width, int depth)
+    public static void CalcuteNormal(float[] array, int nwidth, int depth)
     {
-        long len = width * width;
-        float[] statistic = new float[depth * 2];
-        for (int i = 0; i < width; i++)
-            for (int j = 0; j < width; j++)
-                for (int k = 0; k < depth; k++)
-                {
-                    int idx = (int)(i * width * depth + j * depth + k);
-                    statistic[k * 2] += array[idx];
-                    statistic[k * 2 + 1] += Mathf.Pow(array[idx], 2);
-                }
-
-        sb.Length = 0;
-        sb.AppendFormat("statistic length:{0}\n", len);
-        for (int k = 0; k < depth; k++)
-        {
-            float mean = statistic[k * 2];
-            float qrt = statistic[k * 2 + 1];
-            sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, mean.ToString("f4"), qrt.ToString("f4"));
-        }
-        Debug.Log(sb);
+        long len = nwidth * nwidth;
+        float mean = 0;
+        for (int i = 0; i < nwidth; i++)
+            for (int j = 0; j < nwidth; j++)
+            {
+                int idx = (int)(i * nwidth * depth + j * depth);
+                mean += array[idx];
+            }
+        
+        Debug.Log(string.Format("mean length:{0} mean:{1}\n", len, mean));
     }
 
-    static float[] g_cache = new float[2048];
     public static void CalNormal(float[] array)
     {
-        uint offset = 1024, nwidth = 141, width = 32, depth = 32;
-        sb.Length = 0;
-        sb.AppendFormat("statistic :\n");
+        uint nwidth = 141, width = 32, depth = 32, scale = nwidth / width;
+        float mean = 0;
         for (uint y = 0; y < width; y++)
-            for (uint z = 0; z < depth; z++)
-            {
-                uint nix = (uint)(y * depth + z);
-                uint scale = nwidth / width;
-                uint itvl = y < nwidth % width ? scale + 1 : scale;
-                g_cache[nix] = 0;
-                g_cache[nix + offset] = 0;
-                for (uint j = 0; j < nwidth; j++)
-                    for (uint i = 0; i < itvl; i++)
-                    {
-                        uint idx = j * nwidth * depth + (y + width * i) * depth + z;
-                        g_cache[nix] += array[idx];
-                        g_cache[nix + offset] += array[idx] * array[idx];
-                    }
-            }
-
-        for (uint z = 0; z < depth; z++)
         {
-            float mean = 0, qrt = 0;
-            for (int i = 0; i < width; i++)
+            int nix = (int)(y * depth);
+            uint itvl = y < nwidth % width ? scale + 1 : scale;
+            float g_cache = 0;
+            for (uint i = 0; i < nwidth; i++)
             {
-                long idx = i * depth + z;
-                mean += g_cache[idx];
-                qrt += g_cache[idx + offset];
+                for (uint j = 0; j < itvl; j++)
+                {
+                    uint idx = i * nwidth * depth + (y + width * j) * depth;
+                    g_cache += array[idx];
+                }
             }
-            sb.AppendFormat("[{0}]\t{1}\t{2}\n", z, mean.ToString("f4"), qrt.ToString("f4"));
+            mean += g_cache;
         }
-        Debug.Log(sb);
+        Debug.Log(string.Format("[{0}]\t{1}\n", 0, mean.ToString("f4")));
     }
 
     static void DebugList(List<int> list, float[] array)

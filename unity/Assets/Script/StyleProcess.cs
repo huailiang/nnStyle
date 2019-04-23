@@ -182,11 +182,10 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
             BufferProfile.Print("encoder_conv2");
             float[] array = BufferPool.GetData("encoder_conv2");
-           
-            BufferProfile.CalcuteNormal(array, 141, 32);
+            //BufferProfile.CalcuteNormal(array, 141, 32);
             BufferProfile.CalNormal(array);
-            encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
-            BufferProfile.Print("encoder_conv2_statistic");
+            //encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
+            //BufferProfile.Print("encoder_conv2_statistic");
         }
         if (GUI.Button(new Rect(120, 20, 80, 40), "Conv"))
         {
