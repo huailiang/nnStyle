@@ -179,15 +179,14 @@ public class StyleProcess : MonoBehaviour
         {
             float[] layer = checkpoint.LoadLayer("encoder_c1");
             BufferPool.Get("encoder_conv1").SetData(layer);
-            BufferProfile.Print("encoder_conv1");
             encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
             BufferProfile.Print("encoder_conv2");
             float[] array = BufferPool.GetData("encoder_conv2");
+           
             BufferProfile.CalcuteNormal(array, 141, 32);
+            BufferProfile.CalNormal(array);
             encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
-            //encoderShader.Dispatch(enStyleInstance3, 144 / 8, 144 / 8, 32 / 4);
             BufferProfile.Print("encoder_conv2_statistic");
-            //BufferProfile.Print("encoder_conv3");
         }
         if (GUI.Button(new Rect(120, 20, 80, 40), "Conv"))
         {

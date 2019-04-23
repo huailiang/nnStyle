@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class BufferProfile
@@ -267,7 +268,7 @@ public class BufferProfile
                 }
 
         sb.Length = 0;
-        sb.AppendFormat("statistic length:{0}\n ", len);
+        sb.AppendFormat("statistic length:{0}\n", len);
         for (int k = 0; k < depth; k++)
         {
             float mean = statistic[k * 2];
@@ -277,5 +278,54 @@ public class BufferProfile
         Debug.Log(sb);
     }
 
+    static float[] g_cache = new float[2048];
+    public static void CalNormal(float[] array)
+    {
+        uint offset = 1024, nwidth = 141, width = 32, depth = 32;
+        sb.Length = 0;
+        sb.AppendFormat("statistic :\n");
+        for (uint y = 0; y < width; y++)
+            for (uint z = 0; z < depth; z++)
+            {
+                uint nix = (uint)(y * depth + z);
+                uint scale = nwidth / width;
+                uint itvl = y < nwidth % width ? scale + 1 : scale;
+                g_cache[nix] = 0;
+                g_cache[nix + offset] = 0;
+                for (uint j = 0; j < nwidth; j++)
+                    for (uint i = 0; i < itvl; i++)
+                    {
+                        uint idx = j * nwidth * depth + (y + width * i) * depth + z;
+                        g_cache[nix] += array[idx];
+                        g_cache[nix + offset] += array[idx] * array[idx];
+                    }
+            }
 
+        for (uint z = 0; z < depth; z++)
+        {
+            float mean = 0, qrt = 0;
+            for (int i = 0; i < width; i++)
+            {
+                long idx = i * depth + z;
+                mean += g_cache[idx];
+                qrt += g_cache[idx + offset];
+            }
+            sb.AppendFormat("[{0}]\t{1}\t{2}\n", z, mean.ToString("f4"), qrt.ToString("f4"));
+        }
+        Debug.Log(sb);
+    }
+
+    static void DebugList(List<int> list, float[] array)
+    {
+        list.Sort();
+        sb.Length = 0;
+        sb.AppendFormat("list len:{0}", list.Count);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (i % 12 == 0) sb.AppendFormat("\n[{0}]\t", (i / 12));
+            sb.Append(list[i]);
+            sb.Append("\t");
+        }
+        Debug.Log(sb);
+    }
 }
