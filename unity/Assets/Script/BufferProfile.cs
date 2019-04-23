@@ -253,18 +253,28 @@ public class BufferProfile
         CalcuteNormal(array, (int)output, (int)depth2);
     }
 
-    public static void CalcuteNormal(float[] array, int nwidth, int depth)
+    public static void CalcuteNormal(float[] array, int width, int depth)
     {
-        long len = nwidth * nwidth;
-        float mean = 0;
-        for (int i = 0; i < nwidth; i++)
-            for (int j = 0; j < nwidth; j++)
-            {
-                int idx = (int)(i * nwidth * depth + j * depth);
-                mean += array[idx];
-            }
-        
-        Debug.Log(string.Format("mean length:{0} mean:{1}\n", len, mean));
+        long len = width * width;
+        float[] statistic = new float[depth * 2];
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < width; j++)
+                for (int k = 0; k < depth; k++)
+                {
+                    int idx = (int)(i * width * depth + j * depth + k);
+                    statistic[k * 2] += array[idx];
+                    statistic[k * 2 + 1] += Mathf.Pow(array[idx], 2);
+                }
+
+        sb.Length = 0;
+        sb.AppendFormat("statistic length:{0}\n", len);
+        for (int k = 0; k < depth; k++)
+        {
+            float mean = statistic[k * 2] / len;
+            float qrt = statistic[k * 2 + 1] / len - mean * mean;
+            sb.AppendFormat("[{0}]\t{1}\t{2}\n", k, mean.ToString("f4"), qrt.ToString("f4"));
+        }
+        Debug.Log(sb);
     }
 
     public static void CalNormal(float[] array)

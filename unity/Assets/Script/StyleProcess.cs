@@ -199,8 +199,15 @@ public class StyleProcess : MonoBehaviour
             BufferProfile.Print("decoder_conv3");
             decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
             BufferProfile.Print("decoder_conv3_statistic");
-            decoderShader.Dispatch(decoderInstance3, 64 / 8, 64 / 8, 128 / 4);
-            BufferProfile.Print("decoder_conv2");
+            //decoderShader.Dispatch(decoderInstance3, 64 / 8, 64 / 8, 128 / 4);
+            //BufferProfile.Print("decoder_conv2");
+        }
+        if (GUI.Button(new Rect(120, 200, 80, 40), "Decoder_v3"))
+        {
+            float[] layer = checkpoint.LoadLayer("decoder_dd3");
+            BufferPool.Get("decoder_conv3").SetData(layer);
+            float[] array = BufferPool.GetData("decoder_conv3");
+            BufferProfile.CalcuteNormal(array, 128, 64);
         }
     }
 
