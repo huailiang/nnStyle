@@ -30,7 +30,6 @@ contact: peng_huailiang@qq.com
 #include "libEncoderArgs.cginc"
 
 Texture2D<float4> source;
-RWTexture2D<float4> destination;
 RWStructuredBuffer<float> encoder_inst;
 RWStructuredBuffer<float> encoder_inst_statistic;
 RWStructuredBuffer<float> encoder_conv0;

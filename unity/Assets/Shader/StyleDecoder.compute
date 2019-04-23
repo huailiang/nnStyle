@@ -39,7 +39,6 @@ RWStructuredBuffer<float> input_statistic;
 RWTexture2D<float4> decoder_destination;
 
 #include "libStd.cginc"
-#include "libActive.cginc"
 #include "libDecoderArgs.cginc"
 #include "libDecoder.cginc"
 
@@ -259,7 +258,7 @@ void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 }
 
 [numthreads(8,8,4)]
-void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.x=(0,264) id.z=1
+void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 262x262x32
 {
 	uint pad = 3, width = 256, depth = 32;
 	uint low =   width - id.x - 1;	
@@ -297,7 +296,7 @@ float DotConv7x7(uint3 id, uint width, uint depth,uint z, int d_indx)
 }
 
 [numthreads(8,8,1)]
-void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.x=256
+void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.xy=256
 {
 	//conv: （262x262x32) ->（256x256x3）
 	uint width = 262, depth1 = 32, depth2 =3, ks = 7, stride = 1;
@@ -310,7 +309,8 @@ void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.x=256
 			int d_indx = (depth2 * j + i)* ks * ks;
 			v += DotConv7x7(id, width, depth1, j, d_indx);
 		}
-		rgb[i] = v;
+		rgb[i] = sigmod(v);
 	}
-	decoder_destination[id.xy] = float4(rgb[0], rgb[1], rgb[2], 1);
+	uint2 coord = uint2(width - ks + stride - id.x, id.y);
+	decoder_destination[coord] = float4(rgb[0], rgb[1], rgb[2], 1);
 }
