@@ -116,26 +116,25 @@ contact: peng_huailiang@qq.com
 
 
 #define InnerDecoderNormal(seq)	\
+for (uint j = 0; j < nwidth; j++)	\
 {	\
-	for (uint i = 0; i < scale; i++)	\
+	[unroll]	\
+	for (uint i = 0; i < intvl; i++)	\
 	{	\
-		int idx = i * nwidth * depth + (id.y * scale + i) * depth + id.z;	\
+		int idx = j * nwidth * depth + (id.y + width + i) * depth + id.z;	\
 		g_cache[nix] += decoder_conv##seq##[idx];	\
 		g_cache[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
 	}	\
-}
+}	\
 
-
-#define DefineDecoderNormal(id, width, depth, scale, seq)	\
-	uint offset = width * depth;	\
+#define DefineDecoderNormal(id, width, seq)	\
+	uint offset = CACHE_HALF;	\
 	uint nix = id.y * depth + id.z;	\
-	uint nwidth = width * scale;	\
+	uint scale = nwidth / width;	\
+	uint intvl = id.y < nwidth % width ?  scale + 1 : scale;	\
 	g_cache[nix] = 0;	\
 	g_cache[nix + offset] = 0;	\
-	for (uint i = 0; i < nwidth; i++)	\
-	{	\
-		InnerDecoderNormal(seq)	\
-	}	\
+	InnerDecoderNormal(seq)	\
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 0)	\
 	{	\
@@ -149,7 +148,7 @@ contact: peng_huailiang@qq.com
 		int len = nwidth * nwidth;	\
 		mean = mean / len;	\
 		decoder_conv##seq##_statistic[id.z * 2] = mean;	\
-		decoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);	\
+		decoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - mean * mean;	\
 	}
 
 
