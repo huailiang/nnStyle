@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using UnityEngine;
 
 public class BufferProfile
@@ -274,7 +273,6 @@ public class BufferProfile
         float mean = 0;
         for (uint y = 0; y < width; y++)
         {
-            int nix = (int)(y * depth);
             uint itvl = y < nwidth % width ? scale + 1 : scale;
             float g_cache = 0;
             for (uint i = 0; i < nwidth; i++)
@@ -289,18 +287,5 @@ public class BufferProfile
         }
         Debug.Log(string.Format("[{0}]\t{1}\n", 0, mean.ToString("f4")));
     }
-
-    static void DebugList(List<int> list, float[] array)
-    {
-        list.Sort();
-        sb.Length = 0;
-        sb.AppendFormat("list len:{0}", list.Count);
-        for (int i = 0; i < list.Count; i++)
-        {
-            if (i % 12 == 0) sb.AppendFormat("\n[{0}]\t", (i / 12));
-            sb.Append(list[i]);
-            sb.Append("\t");
-        }
-        Debug.Log(sb);
-    }
+    
 }

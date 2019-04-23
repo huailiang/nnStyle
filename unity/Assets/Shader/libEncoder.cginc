@@ -38,6 +38,7 @@ contact: peng_huailiang@qq.com
 #define InnerEncoderNormal(seq)	\
 for (uint j = 0; j < nwidth; j++)	\
 {	\
+	[unroll]	\
 	for (uint i = 0; i < intvl; i++)	\
 	{	\
 		int idx = j * nwidth * depth + (id.y + width * i) * depth + id.z;	\
@@ -66,23 +67,10 @@ for (uint j = 0; j < nwidth; j++)	\
 			qrt += g_cache[idx + offset];	\
 		}	\
 		int len = nwidth * nwidth;	\
-		mean = mean;	\
+		mean = mean / len;	\
 		encoder_conv##seq##_statistic[id.z * 2] = mean;	\
-		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt;	\
+		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - mean * mean;	\
 	}	\
-
-#define DefineEnInstRelu(id, width, depth, seq)	\
-	int inx = StdID(id, width, depth);	\
-	float color = encoder_conv##seq##[inx];	\
-	float mean = encoder_conv##seq##_statistic[id.z * 2];	\
-	float variance = encoder_conv##seq##_statistic[id.z * 2 + 1];	\
-	float inv = rsqrt(variance + EPSILON);	\
-	float normalized = (color - mean) * inv;	\
-	float scale = encoder_g_e##seq##_bn_scale[id.z];	\
-	float offset = encoder_g_e##seq##_bn_offset[id.z];	\
-	encoder_conv##seq##[inx] = relu(scale * normalized + offset);
-
-
 
 #define DefineEnNormalMaxZ(id, width, depth, scale, seq)	\
 	uint count = depth / MAX_THREAD_Z;	\
@@ -117,5 +105,21 @@ for (uint j = 0; j < nwidth; j++)	\
 		encoder_conv##seq##_statistic[id.z * 2 + shift] = mean;	\
 		encoder_conv##seq##_statistic[id.z * 2 + 1 + shift] = qrt / len - pow(abs(mean), 2);	\
 	}
+
+
+#define DefineEnInstRelu(id, width, depth, seq)	\
+	int inx = StdID(id, width, depth);	\
+	float color = encoder_conv##seq##[inx];	\
+	float mean = encoder_conv##seq##_statistic[id.z * 2];	\
+	float variance = encoder_conv##seq##_statistic[id.z * 2 + 1];	\
+	float inv = rsqrt(variance + EPSILON);	\
+	float normalized = (color - mean) * inv;	\
+	float scale = encoder_g_e##seq##_bn_scale[id.z];	\
+	float offset = encoder_g_e##seq##_bn_offset[id.z];	\
+	encoder_conv##seq##[inx] = relu(scale * normalized + offset);
+
+
+
+
 
 #endif

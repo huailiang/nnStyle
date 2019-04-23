@@ -72,32 +72,35 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 [numthreads(1, 64, 3)]
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex)
 {
-	uint width = 64, depth = 3, scale = 4;
+	uint width = 64, depth = 3, nwidth = 256, scale = nwidth / width;
 	uint offset = width * depth;
 	uint nix = id.y * depth + id.z;
 	g_cache[nix] = 0.0f;
 	g_cache[nix + offset] = 0;
-	for (uint i = 0; i < width * scale; i++)
+	for (uint i = 0; i < nwidth; i++)
 	{
-		int idx = i * width * scale * depth + id.y * depth * scale + id.z;
-		g_cache[nix] += encoder_inst[idx];
-		g_cache[nix + offset] += pow(abs(encoder_inst[idx]), 2);
+		[unroll]
+		for (uint j = 0; j < scale; j++)
+		{
+			int idx = i * nwidth  * depth + (id.y + width * j) * depth + id.z;
+			g_cache[nix] += encoder_inst[idx];
+			g_cache[nix + offset] += pow(abs(encoder_inst[idx]), 2);
+		}
 	}
 	GroupMemoryBarrierWithGroupSync();
-
 	if (id.y == 0) //3 threads limited 
 	{
-		float mean = 0.0f, qrt = 0.0f;
+		float mean = 0, qrt = 0;
 		for (uint i = 0; i < width; i++)
 		{
 			int idx = i * depth + id.z;
 			mean += g_cache[idx];
 			qrt += g_cache[idx + offset];
 		}
-		int len = width * width * scale;
+		int len = nwidth * nwidth;
 		mean = mean / len;
 		encoder_inst_statistic[id.z * 2] = mean;
-		encoder_inst_statistic[id.z * 2 + 1] = qrt / len - pow(abs(mean), 2);
+		encoder_inst_statistic[id.z * 2 + 1] = qrt / len - mean * mean;
 	}
 }
 

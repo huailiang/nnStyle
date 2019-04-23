@@ -228,7 +228,7 @@ void DecoderNormal3(uint3 id: SV_DispatchThreadID) //128x128x64
 void DecoderInstance3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64
 {
 	uint width = 128, depth = 64;
-	DefineDecoderInstRelu(id, width, depth, 2)
+	DefineDecoderInstRelu(id, width, depth, 3)
 }
 
 [numthreads(8,8,4)]
@@ -256,7 +256,7 @@ void DecoderNormal4(uint3 id: SV_DispatchThreadID) //256x256x32
 void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 {
 	uint width = 256, depth = 32;
-	DefineDecoderInstRelu(id, width, depth, 2)
+	DefineDecoderInstRelu(id, width, depth, 4)
 }
 
 [numthreads(8,8,4)]
