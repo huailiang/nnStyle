@@ -25,10 +25,20 @@ contact: peng_huailiang@qq.com
 
 //compute shader features
 #define MAX_THREAD_Z	64
+
+#ifdef SHADER_API_METAL  //ios or mac 
+#define MAX_THREAD		512
+#define MAX_THREAD_X	512
+#define MAX_THREAD_Y	512
+#define REV_THREAD_Z    8  // as MAX_THREAD/MAX_THREAD_Z
+#define THREAD_Y_32Z    16 //MAX_THREAD/32
+#else
+#define MAX_THREAD		1024
 #define MAX_THREAD_X	1024
 #define MAX_THREAD_Y	1024
-#define MAX_THREAD		1024
 #define REV_THREAD_Z    16  // as 1024/64
+#define THREAD_Y_32Z    32
+#endif
 
 #define MAX_GROUP_SHARED	8192 //globalshared's count max is 8192's float (equal 32768bytes)
 

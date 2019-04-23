@@ -47,10 +47,10 @@ contact: peng_huailiang@qq.com
 
 
 #define DefineEnNormal(id, width, seq)	\
-	uint offset = width * depth;	\
+	uint offset = CACHE_HALF;	\
 	uint nix = id.y * depth + id.z;	\
 	uint scale = nwidth / width;	\
-	uint intvl = id.y == nwidth - width * scale ?  scale + 1 : scale;	\
+	uint intvl = id.y < nwidth % width ?  scale + 1 : scale;	\
 	g_cache[nix] = 0;	\
 	g_cache[nix + offset] = 0;	\
 	for (uint i = 0; i < nwidth; i++)	\
@@ -71,8 +71,7 @@ contact: peng_huailiang@qq.com
 		mean = mean;	\
 		encoder_conv##seq##_statistic[id.z * 2] = mean;	\
 		encoder_conv##seq##_statistic[id.z * 2 + 1] = qrt;	\
-	}
-
+	}	
 
 #define DefineEnInstRelu(id, width, depth, seq)	\
 	int inx = StdID(id, width, depth);	\

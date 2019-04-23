@@ -243,7 +243,7 @@ class Artgan(object):
                                                 reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(features=self.input_photo_features,
+            self.output_photo = decoder(features=self.input_photo_features[0],
                                         options=self.options,
                                         reuse=False)
 
@@ -474,29 +474,41 @@ class Artgan(object):
             # Resize the smallest side of the image to the self.image_size
             alpha = float(self.image_size) / float(min(img_shape))
             img = scipy.misc.imresize(img, size=alpha)
+            img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
 
-            c5 = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
-            export_layer(c5, "encoder_c5")
+            e_list = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
+            printf(e_list[2], "encoder_c2")
+            printf(e_list[5], "encoder_cv2")
+            printf(e_list[6], "encoder_mean")
+            printf(e_list[7], "encoder_variance")
+            # export_layer(e_list[1], "encoder_c1")
+            # export_layer(e_list[2], "encoder_c2")
+            # export_layer(e_list[3], "encoder_c3")
+            # export_layer(e_list[4], "encoder_c4")
+            # export_layer(e_list[0], "encoder_c0")
 
             d_list = self.sess.run(
                 self.output_photo,
                 feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
 
             img = d_list[0]
-
-            printf(d_list[4], "decoder_dd1")
-            # printf(d_list[5], "decoder_d1")
-            # export_layer(d_list[1], "decoder_r0")
-            # export_layer(d_list[2], "decoder_r1")
-            # export_layer(d_list[3], "decoder_r2")
+            #
+            # printf(d_list[1], "decoder_d1")
+            # printf(d_list[2], "decoder_dd2")
+            # printf(d_list[3], "decoder_d2")
+            # printf(d_list[4], "decoder_mean")
+            # printf(d_list[5], "decoder_variance")
+            # export_layer(d_list[1], "decoder_d1")
+            # export_layer(d_list[2], "decoder_d2")
+            # export_layer(d_list[3], "decoder_d3")
+            # export_layer(d_list[4], "decoder_d4")
+            # export_layer(d_list[5], "decoder_r1")
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)
             if resize_to_original:
                 img = scipy.misc.imresize(img, size=img_shape)
-            else:
-                pass
             img_name = os.path.basename(img_path)
             scipy.misc.imsave(os.path.join(to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
 

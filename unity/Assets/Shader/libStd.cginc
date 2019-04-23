@@ -14,7 +14,11 @@ contact: peng_huailiang@qq.com
 /*
 used in encoder & decoder
 */
-groupshared float g_cache[2048];
+
+#define CACHE_MAX 2048
+#define CACHE_HALF 1024
+
+groupshared float g_cache[CACHE_MAX];
 
 
 #define StdIndex(x, y, z, width, depth) \
@@ -23,9 +27,6 @@ groupshared float g_cache[2048];
 
 #define StdID(id, width, depth)	\
 	(width * depth * id.x + depth * id.y + id.z)
-
-
-
 
 
 void StdSeq(int x, int y, int z, int width,int depth, out int result[9])

@@ -34,6 +34,8 @@ def write(f, key, tensor):
                     for l in xrange(0, shape[1]):  # kernel width
                         byte = struct.pack('f', tensor[k, l, i, j])
                         f.write(byte)
+    else:
+        print("not handle shape: "+shape)
 
 
 def warite_layer(f, tensor):

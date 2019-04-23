@@ -154,10 +154,10 @@ void StyleConv1 (uint3 id : SV_DispatchThreadID) //id.xy=288 286x286x3->284x284x
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 1, 0);
 }
 
-[numthreads(1, 32, 32)]
+[numthreads(1, THREAD_Y_32Z, 32)]
 void StyleNormal1(uint3 id : SV_DispatchThreadID) //284x284x32
 {
-	uint width = 32, depth = 32, nwidth = 284;
+	uint width = THREAD_Y_32Z, depth = 32, nwidth = 284;
 	DefineEnNormal(id, width, 1);
 }
 
@@ -177,10 +177,10 @@ void StyleConv2(uint3 id : SV_DispatchThreadID) //id.xy=144 284x284x32->141x141x
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 2, 1);
 }
 
-[numthreads(1,32,32)]
+[numthreads(1,THREAD_Y_32Z,32)]
 void StyleNormal2(uint3 id : SV_DispatchThreadID)  //141x141x32 
 {
-	uint width = 32, depth = 32, nwidth = 141;
+	uint width = THREAD_Y_32Z, depth = 32, nwidth = 141;
 	DefineEnNormal(id, width, 2);
 }
 

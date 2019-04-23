@@ -302,14 +302,14 @@ public class StyleProcess : MonoBehaviour
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleInstance1, name, cb);
         encoderShader.SetBuffer(enStyleNorm1, name, cb);
-        
+
         name = "encoder_conv2";
         cb = BufferPool.Get<float>(name, 141, 141, 32);
         encoderShader.SetBuffer(enStyleConv2, name, cb);
         encoderShader.SetBuffer(enStyleConv3, name, cb);
         encoderShader.SetBuffer(enStyleInstance2, name, cb);
         encoderShader.SetBuffer(enStyleNorm2, name, cb);
-        
+
         name = "encoder_conv3";
         cb = BufferPool.Get<float>(name, 70, 70, 64);
         encoderShader.SetBuffer(enStyleConv3, name, cb);

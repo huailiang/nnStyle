@@ -250,7 +250,6 @@ public class BufferProfile
             sb.Append("\n");
         }
         Debug.Log(sb);
-
         CalcuteNormal(array, (int)output, (int)depth2);
     }
 
@@ -268,7 +267,7 @@ public class BufferProfile
                 }
 
         sb.Length = 0;
-        sb.Append("statistic:\n");
+        sb.AppendFormat("statistic length:{0}\n ", len);
         for (int k = 0; k < depth; k++)
         {
             float mean = statistic[k * 2];
@@ -277,5 +276,6 @@ public class BufferProfile
         }
         Debug.Log(sb);
     }
+
 
 }
