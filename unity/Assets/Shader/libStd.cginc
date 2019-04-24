@@ -42,7 +42,7 @@ groupshared float g_cache[CACHE_MAX];
 	uint y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);	\
 	x_id = x_array[x_id];	\
 	y_id = y_array[y_id];	\
-	uint indx = width * depth * x_id + depth * y_id + id.z;	\
+	uint indx = StdIndex(x_id, y_id, id.z, width, depth);	\
 	uint indx2 = StdID(id, width + pad * 2, depth);	\
 
 

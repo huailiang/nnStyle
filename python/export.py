@@ -1,6 +1,7 @@
 # encoding=utf8
 
-import os, shutil
+import os
+import shutil
 import tensorflow as tf
 import struct
 from tensorflow.python import pywrap_tensorflow
@@ -10,16 +11,16 @@ tf.set_random_seed(228)
 
 def write(f, key, tensor):
     """
-	write tensor to file stream
-	:param f: 	writable file handler
-	:param key: tensor name
-	"""
+        write tensor to file stream
+        :param f: 	writable file handler
+        :param key: tensor name
+        """
     shape = tensor.shape
     f.write(struct.pack('h', len(shape)))
     f.write(struct.pack('h' + str(len(key)) + 's', len(key), key))
     if len(shape) == 1:
         f.write(struct.pack('h', shape[0]))
-        for x in xrange(0, shape[0]):
+        for x in range(0, shape[0]):
             byte = struct.pack('f', tensor[x])
             f.write(byte)
     elif len(shape) == 4:
@@ -28,14 +29,14 @@ def write(f, key, tensor):
         f.write(struct.pack('h', shape[0]))
         f.write(struct.pack('h', shape[1]))
 
-        for i in xrange(0, shape[2]):  # input count
-            for j in xrange(0, shape[3]):  # output count
-                for k in xrange(0, shape[0]):  # kernel height
-                    for l in xrange(0, shape[1]):  # kernel width
+        for i in range(0, shape[2]):  # input count
+            for j in range(0, shape[3]):  # output count
+                for k in range(0, shape[0]):  # kernel height
+                    for l in range(0, shape[1]):  # kernel width
                         byte = struct.pack('f', tensor[k, l, i, j])
                         f.write(byte)
     else:
-        print("not handle shape: "+shape)
+        print("not handle shape: " + shape)
 
 
 def warite_layer(f, tensor):
@@ -58,13 +59,13 @@ def movefile(srcfile, dstfile):
     :param dstfile:  destination path
     """
     if not os.path.isfile(srcfile):
-        print "%s not exist!" % (srcfile)
+        print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(dstfile)  # 分离文件名和路径
         if not os.path.exists(fpath):
             os.makedirs(fpath)  # 创建路径
         shutil.move(srcfile, dstfile)  # 移动文件
-        print "move %s -> %s" % (srcfile, dstfile)
+        print("move %s -> %s" % (srcfile, dstfile))
 
 
 def move2unity(name):
@@ -82,14 +83,14 @@ def print_tensor(checkpoint_path):
     llist = []
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
-        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
-                shape) > 0:
+        if not key.endswith("Adam_1") and not key.endswith(
+                "Adam") and not key.startswith("discriminator") and len(shape) > 0:
             print(key.replace("/", "_"), shape)
             llist.append(key.replace("/", "_") + "  " + str(shape))
             # tensor = reader.get_tensor(key)
     llist.sort()
     for x in llist:
-        print x
+        print(x)
 
 
 def export_args(checkpoint_path):
@@ -101,8 +102,8 @@ def export_args(checkpoint_path):
     f = open(name, 'w')
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
-        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
-                shape) > 0:
+        if not key.endswith("Adam_1") and not key.endswith(
+                "Adam") and not key.startswith("discriminator") and len(shape) > 0:
             print(key.replace("/", "_"), shape)
             for x in shape:
                 counter += x
@@ -116,12 +117,13 @@ def export_args(checkpoint_path):
 def export_layer(tensor, name):
     shape = tensor.shape
     if len(shape) == 4:
-        print("\n export %s shape: %dx%dx%d" % (name, shape[1], shape[2], shape[3]))
-        f = open(name+".bytes", 'w')
+        print("\n export %s shape: %dx%dx%d" %
+              (name, shape[1], shape[2], shape[3]))
+        f = open(name + ".bytes", 'w')
         warite_layer(f, tensor)
         f.close()
         print("write layer finish")
-        move2unity(name+".bytes")
+        move2unity(name + ".bytes")
 
 
 if __name__ == '__main__':

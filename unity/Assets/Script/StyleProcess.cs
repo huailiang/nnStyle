@@ -103,6 +103,8 @@ public class StyleProcess : MonoBehaviour
         BufferPool.ReleaseAll();
     }
 
+    private void Update() { if (Input.GetKeyUp(KeyCode.Space)) drawGui = !drawGui; }
+
     private void OnGUI()
     {
         if (!drawGui) return;
@@ -189,44 +191,59 @@ public class StyleProcess : MonoBehaviour
             var texture = Resources.Load<Texture2D>("app1");
             BufferProfile.NormalInst(texture);
         }
-        if (GUI.Button(new Rect(120, 80, 80, 40), "Decoder"))
+        if (GUI.Button(new Rect(120, 80, 80, 40), "Decoder_V3"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_d1");
-            BufferPool.Get("decoder_conv1").SetData(layer);
+            float[] layer = checkpoint.LoadLayer("decoder_d2");
+            BufferPool.Get("decoder_conv2").SetData(layer);
             //BufferProfile.Print("decoder_residule");
             //decoderShader.Dispatch(decoderExpand1, 16 / 8, 16 / 8, 256 / 4);
             //decoderShader.Dispatch(decoderConv1, 32 / 8, 32 / 8, 1);
             //decoderShader.Dispatch(decoderNormal1, 1, 1, 4);
             //decoderShader.Dispatch(decoderInstance1, 32 / 8, 32 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderExpand2, 32 / 8, 32 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
-            decoderShader.Dispatch(decoderNormal2, 1, 1, 2);
-            decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
+            //BufferProfile.Print("decoder_conv1");
+            //decoderShader.Dispatch(decoderExpand2, 32 / 8, 32 / 8, 256 / 4);
+            //decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
+            //decoderShader.Dispatch(decoderNormal2, 1, 1, 2);
+            //decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
+            BufferProfile.Print("decoder_conv2");
             decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
             decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
             decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
             decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-            decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
-            decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
-            decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
-            decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
-            decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
-            decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("decoder_conv5_pad");
-            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
-            drawGui = false;
+            BufferProfile.Print("decoder_conv3");
+            DrawDecoderV4();
         }
-        if (GUI.Button(new Rect(120, 140, 80, 40), "Output"))
+        if (GUI.Button(new Rect(120, 140, 80, 40), "Decoder_V4"))
+        {
+            float[] layer = checkpoint.LoadLayer("decoder_d3");
+            BufferPool.Get("decoder_conv3").SetData(layer);
+            DrawDecoderV4();
+        }
+        if (GUI.Button(new Rect(120, 200, 80, 40), "Output"))
         {
             float[] layer = checkpoint.LoadLayer("decoder_d4");
             BufferPool.Get("decoder_conv4").SetData(layer);
-            BufferProfile.PrintH("decoder_conv4",2);
-            decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
-            decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
-            BufferProfile.PrintH("decoder_conv5_pad", 2);
-            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
-            drawGui = false;
+            BufferProfile.PrintH("decoder_conv4", 2);
+            DrawRender();
         }
+    }
+
+    private void DrawDecoderV4()
+    {
+        decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
+        decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
+        decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
+        decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
+        BufferProfile.Print("decoder_conv4");
+        DrawRender();
+    }
+
+    private void DrawRender()
+    {
+        decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
+        decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
+        BufferProfile.PrintH("decoder_conv5_pad", 2);
+        tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
     }
 
     private void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)

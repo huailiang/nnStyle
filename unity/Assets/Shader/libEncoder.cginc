@@ -119,7 +119,4 @@ for (uint j = 0; j < nwidth; j++)	\
 	encoder_conv##seq##[inx] = relu(scale * normalized + offset);
 
 
-
-
-
 #endif
