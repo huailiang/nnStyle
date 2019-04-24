@@ -160,10 +160,11 @@ void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
 }
 
 [numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
-void DecoderNormal1(uint3 id: SV_DispatchThreadID) //32x32x256
+void DecoderNormal1(uint3 id: SV_DispatchThreadID) //id.z=256 32x32x256
 {
-	uint width = 4, depth = 256, scale = 8;
-	DefineDecoderNormalMaxZ(id, width, depth, scale, 1)
+	uint width = 4, depth = 256, nwidth = 32;
+	//DefineDecoderNormalMaxZ(id, width, depth, scale, 1)
+	DefineDecoderNormal(id, width, 1)
 }
 
 [numthreads(8,8,4)]
@@ -188,10 +189,10 @@ void DecoderConv2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x256->64x64x128
 }
 
 [numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
-void DecoderNormal2(uint3 id: SV_DispatchThreadID) //64x64x128
+void DecoderNormal2(uint3 id: SV_DispatchThreadID) //id.z=MAX_THREAD_Z*2 64x64x128
 {
-	uint width = 8, depth = 128, scale = 8;
-	DefineDecoderNormalMaxZ(id, width, depth, scale, 2);
+	uint width = 8, depth = 128, nwidth = 64;
+	DefineDecoderNormal(id, width, 2)
 }
 
 [numthreads(8,8,4)]

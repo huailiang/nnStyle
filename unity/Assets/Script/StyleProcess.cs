@@ -191,9 +191,20 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(120, 80, 80, 40), "Decoder"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_d2");
-            BufferPool.Get("decoder_conv2").SetData(layer);
-            BufferProfile.Print("decoder_conv2");
+            //float[] layer = checkpoint.LoadLayer("decoder_r9");
+            //BufferPool.Get("decoder_residule").SetData(layer);
+            //BufferProfile.Print("decoder_residule");
+            //decoderShader.Dispatch(decoderExpand1, 16 / 8, 16 / 8, 256 / 4);
+            //decoderShader.Dispatch(decoderConv1, 32 / 8, 32 / 8, 1);
+            //decoderShader.Dispatch(decoderNormal1, 1, 1, 4);
+            //decoderShader.Dispatch(decoderInstance1, 32 / 8, 32 / 8, 256 / 4);
+
+            float[] layer = checkpoint.LoadLayer("decoder_d1");
+            BufferPool.Get("decoder_conv1").SetData(layer);
+            decoderShader.Dispatch(decoderExpand2, 32 / 8, 32 / 8, 256 / 4);
+            decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
+            decoderShader.Dispatch(decoderNormal2, 1, 1, 2);
+            decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
             decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
             decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
             decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
@@ -390,7 +401,7 @@ public class StyleProcess : MonoBehaviour
         SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleInst1_1, deResiduleConv1_2, deResidulePad1_2, deResiduleNormal1_2, deResiduleInst1_2);
 
         name = "decoder_residule";
-        cb = BufferPool.Get<float>(name, 512);
+        cb = BufferPool.Get<float>(name, 16, 16, 256);
         SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleNormal1_2, deResidulePad1_2, deResiduleConv1_2, decoderExpand1, deResiduleInst1_2);
 
         name = "decoder_conv0_conved";
