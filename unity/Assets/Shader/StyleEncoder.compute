@@ -124,28 +124,9 @@ void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 void StylePad(uint3 id : SV_DispatchThreadID) //id.xy=288
 {
 	uint pad = 15, width = 256, depth = 3;
-	uint nwidth = width + 2 * pad; // 286
-
-	if (StdCheckRange(id, nwidth)) return;
-
-	int low = width - id.x - 1;
-	int mid = id.x - pad;
-	int high = 2 * pad + width - 1 - id.x;
-	int x_array[3] = { low, mid, high };
-
-	low = width - id.y - 1;
-	mid = id.y - pad;
-	high = nwidth - 1 - id.y;
-	int y_array[3] = { low, mid, high };
-
-	int x_id = id.x > (pad + width) ? 2 : saturate(id.x / pad);
-	int y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);
-	x_id = x_array[1];
-	y_id = y_array[y_id];
-	int indx = x_id * width * depth + y_id * depth + id.z;
-	float color = encoder_inst[indx];
-	indx = StdID(id, nwidth, depth);
-	encoder_conv0[indx] = color;
+	if (StdCheckRange(id, width + 2 * pad)) return;
+	StdPad(id, width, depth, pad)
+	encoder_conv0[indx] = encoder_inst[indx];
 }
 
 [numthreads(8,8,1)]

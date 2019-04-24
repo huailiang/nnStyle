@@ -80,7 +80,7 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	DefineResidulePad(id)
+	StdPad(id, width, depth, pad)
 	decoder_residule[indx2] = input_initial[indx];	
 }
 
@@ -110,7 +110,7 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	DefineResidulePad(id)
+	StdPad(id, width, depth, pad)
 	decoder_residule[indx2] = input_writable[indx];	
 }
 
@@ -136,20 +136,17 @@ void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 	decoder_residule[indx] += input_initial[indx];
 }
 
+
+/***********************************************************************/
+
+
 [numthreads(8,8,4)]
 void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x256
 {
 	int width = 16, depth = 256;
 	int indx = StdID(id, width, depth);
 	float v = decoder_residule[indx];
-	int ninx1 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y) + id.z;
-	int ninx2 = (2 * width) * depth * (2 * id.x) + depth * (2* id.y + 1) + id.z;
-	int ninx3 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y) + id.z;
-	int ninx4 = (2 * width) * depth * (2 * id.x+1) + depth * (2* id.y + 1) + id.z;
-	decoder_conv0_conved[ninx1] = v;
-	decoder_conv0_conved[ninx2] = v;
-	decoder_conv0_conved[ninx3] = v;
-	decoder_conv0_conved[ninx4] = v;
+	DefineDecoderPad(id, 1)
 }
 
 [numthreads(8,8,1)]
@@ -163,7 +160,6 @@ void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
 void DecoderNormal1(uint3 id: SV_DispatchThreadID) //id.z=256 32x32x256
 {
 	uint width = 4, depth = 256, nwidth = 32;
-	//DefineDecoderNormalMaxZ(id, width, depth, scale, 1)
 	DefineDecoderNormal(id, width, 1)
 }
 
@@ -178,7 +174,7 @@ void DecoderInstance1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256
 void DecoderExpand2(uint3 id: SV_DispatchThreadID) //id.xy=32, 32x32x256->64x64x256
 {
 	int width = 32, depth = 256;
-	DefineDecoderExpand(id, width, depth, 2, 1);
+	DefineDecoderExpand(id, 2, 1);
 }
 
 [numthreads(8,8,1)]
@@ -206,7 +202,7 @@ void DecoderInstance2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x128
 void DecoderExpand3(uint3 id: SV_DispatchThreadID)//id.xy=64 64x64x128->128x128x128 
 {
 	int width = 64, depth = 128;
-	DefineDecoderExpand(id, width, depth, 3, 2);
+	DefineDecoderExpand(id, 3, 2);
 }
 
 [numthreads(8,8,1)]
@@ -234,7 +230,7 @@ void DecoderInstance3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64
 void DecoderExpand4(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64->256x256x64
 {
 	int width = 128, depth = 64;
-	DefineDecoderExpand(id, width, depth, 4, 3);
+	DefineDecoderExpand(id, 4, 3);
 }
 
 [numthreads(8,8,1)]
@@ -259,25 +255,12 @@ void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
 }
 
 [numthreads(8,8,4)]
-void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 262x262x32
+void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 256x256x32->262x262x32
 {
-	if(StdCheckRange(id, 262)) return;
 	uint pad = 3, width = 256, depth = 32;
-	uint low =   width - id.x - 1;	
-	uint mid =  id.x - pad;	
-	uint high = 2 * pad + width - 1 - id.x;	
-	uint x_array[3] = { low, mid, high };	
-	low =  width - id.y - 1;	
-	mid =  id.y - pad;	
-	high = 2 * pad + width - 1 - id.y;	
-	uint y_array[3] = { low, mid, high };	
-	uint x_id = id.x > (pad + width) ? 2 : saturate(id.x / pad);	
-	uint y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);	
-	x_id = x_array[x_id];	
-	y_id = y_array[y_id];	
-	uint indx = width * depth * x_id + depth * y_id + id.z;	
-	uint indx2 = (width+pad*2) * depth * id.x + depth * id.y + id.z;	
-	decoder_conv5_pad[indx2] = decoder_conv4[indx];	
+	if (StdCheckRange(id, width + 2 * pad)) return;
+	StdPad(id, width, depth, pad)
+	decoder_conv5_pad[indx2] = decoder_conv4[indx];
 }
 
 

@@ -26,7 +26,24 @@ groupshared float g_cache[CACHE_MAX];
 
 
 #define StdID(id, width, depth)	\
-	(width * depth * id.x + depth * id.y + id.z)
+	((width) * (depth) * id.x + (depth) * id.y + id.z)
+
+
+#define StdPad(id, width, depth, pad)	\
+	uint low = pad - id.x;	\
+	uint mid = id.x - pad;	\
+	uint high = 2 * width + pad - id.x;	\
+	uint x_array[3] = { low, mid, high };	\
+	low = pad - id.y;	\
+	mid = id.y - pad;	\
+	high = 2 * width + pad - id.y;	\
+	uint y_array[3] = { low, mid, high };	\
+	uint x_id = id.x > (pad + width) ? 2 : saturate(id.x / pad);	\
+	uint y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);	\
+	x_id = x_array[x_id];	\
+	y_id = y_array[y_id];	\
+	uint indx = width * depth * x_id + depth * y_id + id.z;	\
+	uint indx2 = StdID(id, width + pad * 2, depth);	\
 
 
 void StdSeq(int x, int y, int z, int width,int depth, out int result[9])
