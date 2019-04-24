@@ -184,27 +184,31 @@ public class StyleProcess : MonoBehaviour
             BufferProfile.Print("encoder_conv2_statistic");
             BufferProfile.Print("encoder_conv2");
         }
-        if (GUI.Button(new Rect(120, 20, 80, 40), "Conv"))
-        {
-            float[] layer = checkpoint.LoadLayer("encoder_c1");
-            BufferProfile.Conv2(layer, checkpoint.GetWeights("encoder_g_e2_c_Conv_weights"));
-        }
-        if (GUI.Button(new Rect(120, 80, 80, 40), "Texture"))
+        if (GUI.Button(new Rect(120, 20, 80, 40), "Texture"))
         {
             var texture = Resources.Load<Texture2D>("app1");
             BufferProfile.NormalInst(texture);
         }
-        if (GUI.Button(new Rect(120, 140, 80, 40), "Decoder"))
+        if (GUI.Button(new Rect(120, 80, 80, 40), "Decoder"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_dd3");
-            BufferPool.Get("decoder_conv3").SetData(layer);
-            BufferProfile.Print("decoder_conv3");
+            float[] layer = checkpoint.LoadLayer("decoder_d2");
+            BufferPool.Get("decoder_conv2").SetData(layer);
+            BufferProfile.Print("decoder_conv2");
+            decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
+            decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
             decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
-            BufferProfile.Print("decoder_conv3_statistic");
             decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-            BufferProfile.Print("decoder_conv3");
+            decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
+            decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
+            decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
+            decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
+            decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
+            decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
+            BufferProfile.Print("decoder_conv5_pad");
+            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
+            drawGui = false;
         }
-        if (GUI.Button(new Rect(120, 200, 80, 40), "Output"))
+        if (GUI.Button(new Rect(120, 140, 80, 40), "Output"))
         {
             float[] layer = checkpoint.LoadLayer("decoder_d4");
             BufferPool.Get("decoder_conv4").SetData(layer);
