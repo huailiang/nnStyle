@@ -46,17 +46,49 @@ groupshared float g_cache[CACHE_MAX];
 	uint indx2 = StdID(id, width + pad * 2, depth);	\
 
 
-void StdSeq(int x, int y, int z, int width,int depth, out int result[9])
+void StdSeq(int x, int y, int z, int width,int depth, out int res[9])
 {
-	result[0] = StdIndex(x,	y,	 z,	width,	depth);
-	result[1] = StdIndex(x+1,	y,	 z,	width,	depth);
-	result[2] = StdIndex(x+2,	y,	 z,	width,	depth);
-	result[3] = StdIndex(x,	y+1, z,	width,	depth);
-	result[4] = StdIndex(x+1,	y+1, z,	width,	depth);
-	result[5] = StdIndex(x+2,	y+1, z,	width,	depth);
-	result[6] = StdIndex(x,	y+2, z,	width,	depth);
-	result[7] = StdIndex(x+1,	y+2, z,	width,	depth);
-	result[8] = StdIndex(x+2,  y+2, z,	width,	depth);
+	res[0] = StdIndex(x,	y,	 z,	width,	depth);
+	res[1] = StdIndex(x+1,	y,	 z,	width,	depth);
+	res[2] = StdIndex(x+2,	y,	 z,	width,	depth);
+	res[3] = StdIndex(x,	y+1, z,	width,	depth);
+	res[4] = StdIndex(x+1,	y+1, z,	width,	depth);
+	res[5] = StdIndex(x+2,	y+1, z,	width,	depth);
+	res[6] = StdIndex(x,	y+2, z,	width,	depth);
+	res[7] = StdIndex(x+1,	y+2, z,	width,	depth);
+	res[8] = StdIndex(x+2,  y+2, z,	width,	depth);
+}
+
+
+/*
+conv2d with valid padding
+*/
+float3x3 StdSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int width, int depth)
+{
+	int sq[9];
+	StdSeq(x, y, z, width, depth, sq);
+	return float3x3(buffer[sq[0]], buffer[sq[1]], buffer[sq[2]],
+		buffer[sq[3]], buffer[sq[4]], buffer[sq[5]],
+		buffer[sq[6]], buffer[sq[7]], buffer[sq[8]]);
+}
+
+/*
+conv2d with same padding 
+xy range section will be filled with zero
+*/
+float3x3 StdSlowSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int width, int depth)
+{
+	float a[9];
+	a[0] = buffer[StdIndex(x, y, z, width, depth)];
+	a[1] = x + 1 < width ? buffer[StdIndex(x + 1, y, z, width, depth)] : 0;
+	a[2] = x + 2 < width ? buffer[StdIndex(x + 2, y, z, width, depth)] : 0;
+	a[3] = y + 1 < width ? buffer[StdIndex(x, y + 1, z, width, depth)] : 0;
+	a[4] = x + 1 < width ? buffer[StdIndex(x + 1, y + 1, z, width, depth)] : 0;
+	a[5] = x + 2 < width ? buffer[StdIndex(x + 2, y + 1, z, width, depth)] : 0;
+	a[6] = y + 2 < width ? buffer[StdIndex(x, y + 2, z, width, depth)] : 0;
+	a[7] = x + 1 < width ? buffer[StdIndex(x + 1, y + 2, z, width, depth)] : 0;
+	a[8] = x + 2 < width ? buffer[StdIndex(x + 2, y + 2, z, width, depth)] : 0;
+	return float3x3(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
 }
 
 

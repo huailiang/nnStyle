@@ -78,7 +78,6 @@ void StyleEncoderNormal(uint3 id : SV_DispatchThreadID, uint gix : SV_GroupIndex
 	g_cache[nix + offset] = 0;
 	for (uint i = 0; i < nwidth; i++)
 	{
-		[unroll]
 		for (uint j = 0; j < scale; j++)
 		{
 			int idx = i * nwidth  * depth + (id.y + width * j) * depth + id.z;

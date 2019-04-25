@@ -40,23 +40,39 @@ class Augmentor():
 
     def __call__(self, image, is_inference=False):
         if is_inference:
-            return cv2.resize(image, None, fx=self.crop_size[0], fy=self.crop_size[1], interpolation=cv2.INTER_CUBIC)
+            return cv2.resize(
+                image,
+                None,
+                fx=self.crop_size[0],
+                fy=self.crop_size[1],
+                interpolation=cv2.INTER_CUBIC)
 
         # If not inference stage apply the pipeline of augmentations.
         if self.scale_augm_prb > np.random.uniform():
-            image = self.scale(image=image,
-                               scale_x=1. + np.random.uniform(low=-self.scale_augm_range, high=-self.scale_augm_range),
-                               scale_y=1. + np.random.uniform(low=-self.scale_augm_range, high=-self.scale_augm_range)
-                               )
-
+            image = self.scale(
+                image=image,
+                scale_x=1. +
+                np.random.uniform(
+                    low=-
+                    self.scale_augm_range,
+                    high=-
+                    self.scale_augm_range),
+                scale_y=1. +
+                np.random.uniform(
+                    low=-
+                    self.scale_augm_range,
+                    high=-
+                    self.scale_augm_range))
 
         rows, cols, ch = image.shape
-        image = np.pad(array=image, pad_width=[[rows // 4, rows // 4], [cols // 4, cols // 4], [0, 0]], mode='reflect')
+        image = np.pad(array=image, pad_width=[
+                       [rows // 4, rows // 4], [cols // 4, cols // 4], [0, 0]], mode='reflect')
         if self.rotation_augm_prb > np.random.uniform():
-            image = self.rotate(image=image,
-                                angle=np.random.uniform(low=-self.rotation_augm_range*90.,
-                                                        high=self.rotation_augm_range*90.)
-                                )
+            image = self.rotate(
+                image=image,
+                angle=np.random.uniform(
+                    low=-self.rotation_augm_range * 90.,
+                    high=self.rotation_augm_range * 90.))
 
         if self.affine_trnsfm_prb > np.random.uniform():
             image = self.affine(image=image,
@@ -70,12 +86,13 @@ class Augmentor():
                           )
 
         if self.hsv_augm_prb > np.random.uniform():
-            image = self.hsv_transform(image=image,
-                                       hue_shift=self.hue_augm_shift,
-                                       saturation_shift=self.saturation_augm_shift,
-                                       saturation_scale=self.saturation_augm_scale,
-                                       value_shift=self.value_augm_shift,
-                                       value_scale=self.value_augm_scale)
+            image = self.hsv_transform(
+                image=image,
+                hue_shift=self.hue_augm_shift,
+                saturation_shift=self.saturation_augm_shift,
+                saturation_scale=self.saturation_augm_scale,
+                value_shift=self.value_augm_shift,
+                value_scale=self.value_augm_scale)
 
         if self.horizontal_flip_prb > np.random.uniform():
             image = self.horizontal_flip(image)
@@ -93,7 +110,12 @@ class Augmentor():
             scale_y: float positive value. New vertical scale
         Returns:
         """
-        image = cv2.resize(image, None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_CUBIC)
+        image = cv2.resize(
+            image,
+            None,
+            fx=scale_x,
+            fy=scale_y,
+            interpolation=cv2.INTER_CUBIC)
         return image
 
     def rotate(self, image, angle):
@@ -114,7 +136,7 @@ class Augmentor():
         x = int(np.random.uniform(low=0, high=max(0, rows - crop_size[0])))
         y = int(np.random.uniform(low=0, high=max(0, cols - crop_size[1])))
 
-        image = image[x:x+crop_size[0], y:y+crop_size[1], :]
+        image = image[x:x + crop_size[0], y:y + crop_size[1], :]
         # If the input image was too small to comprise patch of size crop_size,
         # resize obtained patch to desired size.
         if image.shape[0] < crop_size[0] or image.shape[1] < crop_size[1]:
@@ -135,9 +157,13 @@ class Augmentor():
 
         # do the scalings & shiftings
         hsv[..., 0] += np.random.uniform(-hue_shift, hue_shift)
-        hsv[..., 1] *= np.random.uniform(1. / (1. + saturation_scale), 1. + saturation_scale)
+        hsv[..., 1] *= np.random.uniform(1. /
+                                         (1. +
+                                          saturation_scale), 1. +
+                                         saturation_scale)
         hsv[..., 1] += np.random.uniform(-saturation_shift, saturation_shift)
-        hsv[..., 2] *= np.random.uniform(1. / (1. + value_scale), 1. + value_scale)
+        hsv[..., 2] *= np.random.uniform(1. /
+                                         (1. + value_scale), 1. + value_scale)
         hsv[..., 2] += np.random.uniform(-value_shift, value_shift)
 
         # cut off invalid values
@@ -149,13 +175,24 @@ class Augmentor():
         # convert back to rgb image
         return np.asarray(Image.fromarray(hsv, "HSV").convert("RGB"))
 
-
     def affine(self, image, rng):
         rows, cols, ch = image.shape
         pts1 = np.float32([[0., 0.], [0., 1.], [1., 0.]])
-        [x0, y0] = [0. + np.random.uniform(low=-rng, high=rng), 0. + np.random.uniform(low=-rng, high=rng)]
-        [x1, y1] = [0. + np.random.uniform(low=-rng, high=rng), 1. + np.random.uniform(low=-rng, high=rng)]
-        [x2, y2] = [1. + np.random.uniform(low=-rng, high=rng), 0. + np.random.uniform(low=-rng, high=rng)]
+        [x0, y0] = [0. +
+                    np.random.uniform(low=-
+                                      rng, high=rng), 0. +
+                    np.random.uniform(low=-
+                                      rng, high=rng)]
+        [x1, y1] = [0. +
+                    np.random.uniform(low=-
+                                      rng, high=rng), 1. +
+                    np.random.uniform(low=-
+                                      rng, high=rng)]
+        [x2, y2] = [1. +
+                    np.random.uniform(low=-
+                                      rng, high=rng), 0. +
+                    np.random.uniform(low=-
+                                      rng, high=rng)]
         pts2 = np.float32([[x0, y0], [x1, y1], [x2, y2]])
         affine_M = cv2.getAffineTransform(pts1, pts2)
         image = cv2.warpAffine(image, affine_M, (cols, rows))
@@ -167,4 +204,3 @@ class Augmentor():
 
     def vertical_flip(self, image):
         return image[::-1, :, :]
-

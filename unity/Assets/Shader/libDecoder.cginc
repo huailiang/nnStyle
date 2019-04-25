@@ -19,13 +19,9 @@ contact: peng_huailiang@qq.com
 		float v = 0.0f;	\
 		for(int i= 0; i < depth; i++)	\
 		{	\
-			int seq[9]; \
-			StdSeq(id.x, id.y, i, width, depth, seq);	\
-			float3x3 sample = float3x3(decoder_residule[seq[0]], decoder_residule[seq[1]],decoder_residule[seq[2]],	\
-									decoder_residule[seq[3]],decoder_residule[seq[4]],decoder_residule[seq[5]],	\
-									decoder_residule[seq[6]],decoder_residule[seq[7]],decoder_residule[seq[8]]);	\
+			float3x3 stdsamp = StdSample(decoder_residule, id.x, id.y, i, width, depth);	\
 			float3x3 kernel = decoder_g_r##r##_c##idx##_Conv_weights[depth * i + j];	\
-			float3x3 conv = sample * kernel;	\
+			float3x3 conv = stdsamp * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
 		}	\
@@ -83,13 +79,9 @@ contact: peng_huailiang@qq.com
 		float v = 0.0f;	\
 		for(uint i = 0; i < depth1; i++)	\
 		{	\
-			int seq[9];	\
-			StdSeq(id.x, id.y, i, width, depth1, seq);	\
-			float3x3 sample = float3x3(decoder_conv##idx##_conved[seq[0]], decoder_conv##idx##_conved[seq[1]], decoder_conv##idx##_conved[seq[2]], \
-									decoder_conv##idx##_conved[seq[3]], decoder_conv##idx##_conved[seq[4]], decoder_conv##idx##_conved[seq[5]], \
-									decoder_conv##idx##_conved[seq[6]], decoder_conv##idx##_conved[seq[7]], decoder_conv##idx##_conved[seq[8]]); \
+			float3x3 stdsamp = StdSlowSample(decoder_conv##idx##_conved, id.x, id.y, i, width, depth1);	\
 			float3x3 kernel = decoder_g_d##idx##_dc_conv2d_Conv_weights[depth2 * i + j];	\
-			float3x3 conv = sample * kernel;	\
+			float3x3 conv = stdsamp * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
 		}	\

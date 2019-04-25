@@ -14,17 +14,14 @@ contact: peng_huailiang@qq.com
 #include "libStd.cginc"
 
 
+
 #define DefineEncoderConv(id, input, output, depth1, depth2, stride, idx, pidx)	\
 	for(uint j = 0; j < depth2; j++)	\
 	{	\
 		float v = 0.0f;	\
 		for(uint i = 0; i < depth1; i++)	\
 		{	\
-			int seq[9];	\
-			StdSeq(id.x*stride, id.y*stride, i, input, depth1, seq);	\
-			float3x3 xsam = float3x3(encoder_conv##pidx##[seq[0]], encoder_conv##pidx##[seq[1]], encoder_conv##pidx##[seq[2]], \
-				encoder_conv##pidx##[seq[3]], encoder_conv##pidx##[seq[4]], encoder_conv##pidx##[seq[5]], \
-				encoder_conv##pidx##[seq[6]], encoder_conv##pidx##[seq[7]], encoder_conv##pidx##[seq[8]]); \
+			float3x3 xsam = StdSample(encoder_conv##pidx##, id.x*stride, id.y*stride, i, input, depth1);	\
 			float3x3 conv = encoder_g_e##idx##_c_Conv_weights[depth2 * i + j];	\
 			float3x3 imul = xsam * conv;	\
 			float3 iall = imul[0] + imul[1]+ imul[2];	\

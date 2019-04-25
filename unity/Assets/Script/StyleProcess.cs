@@ -172,19 +172,19 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
             encoderShader.Dispatch(enNorm, 1, 1, 1);
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            BufferProfile.Print("encoder_inst_statistic");
-            BufferProfile.Print("encoder_inst");
+            BufferProfile.Printf("encoder_inst_statistic");
+            BufferProfile.Printf("encoder_inst");
         }
         if (GUI.Button(new Rect(20, 200, 80, 40), "Encoder_v4"))
         {
             float[] layer = checkpoint.LoadLayer("encoder_c1");
             BufferPool.Get("encoder_conv1").SetData(layer);
             encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
-            BufferProfile.Print("encoder_conv2");
+            BufferProfile.Printf("encoder_conv2");
             encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
             encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
-            BufferProfile.Print("encoder_conv2_statistic");
-            BufferProfile.Print("encoder_conv2");
+            BufferProfile.Printf("encoder_conv2_statistic");
+            BufferProfile.Printf("encoder_conv2");
         }
         if (GUI.Button(new Rect(120, 20, 80, 40), "Texture"))
         {
@@ -205,36 +205,38 @@ public class StyleProcess : MonoBehaviour
             //decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
             //decoderShader.Dispatch(decoderNormal2, 1, 1, 2);
             //decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
-            BufferProfile.Print("decoder_conv2");
+            BufferProfile.Printf("decoder_conv2");
             decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
             decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
             decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
             decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-            BufferProfile.Print("decoder_conv3");
+            BufferProfile.Printf("decoder_conv3");
             DrawDecoderV4();
         }
         if (GUI.Button(new Rect(120, 140, 80, 40), "Decoder_V4"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_d3");
-            BufferPool.Get("decoder_conv3").SetData(layer);
+            float[] layer = checkpoint.LoadLayer("decoder_dd4");
+            BufferPool.Get("decoder_conv4_conved").SetData(layer);
+            BufferProfile.Printf("decoder_conv4_conved");
             DrawDecoderV4();
         }
         if (GUI.Button(new Rect(120, 200, 80, 40), "Output"))
         {
             float[] layer = checkpoint.LoadLayer("decoder_d4");
             BufferPool.Get("decoder_conv4").SetData(layer);
-            BufferProfile.PrintH("decoder_conv4", 2);
+            BufferProfile.Printh("decoder_conv4", 2);
             DrawRender();
         }
     }
 
     private void DrawDecoderV4()
     {
-        decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
         decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
+        BufferProfile.Printf("decoder_conv4");
         decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
+        BufferProfile.Printf("decoder_conv4_statistic");
         decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
-        BufferProfile.Print("decoder_conv4");
+        BufferProfile.Printf("decoder_conv4");
         DrawRender();
     }
 
@@ -242,7 +244,7 @@ public class StyleProcess : MonoBehaviour
     {
         decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
         decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
-        BufferProfile.PrintH("decoder_conv5_pad", 2);
+        BufferProfile.Printh("decoder_conv5_pad", 2);
         tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
     }
 

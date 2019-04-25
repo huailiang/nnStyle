@@ -20,18 +20,18 @@ public class BufferProfile
         }
     }
 
-    public static void Print(string name)
+    public static void Printf(string name)
     {
-        LookupPool(name, Print);
+        LookupPool(name, Printf);
     }
 
-    public static void Print(ComputeBuffer cb, string name, params int[] shape)
+    public static void Printf(ComputeBuffer cb, string name, params int[] shape)
     {
         int dftX = shape[0] / 2;
-        Print(cb, dftX, name, shape);
+        Printf(cb, dftX, name, shape);
     }
     
-    public static void Print(ComputeBuffer buffer, int dftX, string name, params int[] shape)
+    public static void Printf(ComputeBuffer buffer, int dftX, string name, params int[] shape)
     {
         HandleLog(name, (x, y, z) =>
         {
@@ -39,7 +39,13 @@ public class BufferProfile
             int max_z = z <= 8 ? z : 14;
             float[] array = new float[x * y * z];
             buffer.GetData(array);
-            sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, x / 2);
+            float max = 0;int cnt = 0;
+            for (int i = 0; i < x * y * z; i++)
+            {
+                if (array[i] > max) max = array[i];
+                if (array[i] > 100) cnt++;
+            }
+            sb.AppendFormat("({0}x{1}x{2})  indx:{3} cnt:{4}\n", x, y, z, max, cnt);
             for (int i = 0; i < Mathf.Min(max_y, y); i++)
             {
                 sb.Append("[" + i + "] ");
@@ -53,22 +59,22 @@ public class BufferProfile
         }, (x) => LogV1(x, buffer), shape);
     }
     
-    public static void PrintH(string name)
+    public static void Printh(string name)
     {
-        LookupPool(name, PrintH);
+        LookupPool(name, Printh);
     }
 
-    public static void PrintH(string name, int dftZ)
+    public static void Printh(string name, int dftZ)
     {
-        LookupPool(name, (buffer, na, shape) => PrintH(buffer, name, dftZ, shape));
+        LookupPool(name, (buffer, na, shape) => Printh(buffer, name, dftZ, shape));
     }
 
-    public static void PrintH(ComputeBuffer buffer, string name, params int[] shape)
+    public static void Printh(ComputeBuffer buffer, string name, params int[] shape)
     {
-        PrintH(buffer, name, -1, shape);
+        Printh(buffer, name, -1, shape);
     }
 
-    public static void PrintH(ComputeBuffer buffer, string name, int dftZ, params int[] shape)
+    public static void Printh(ComputeBuffer buffer, string name, int dftZ, params int[] shape)
     {
         HandleLog(name, (x, y, z) =>
         {
