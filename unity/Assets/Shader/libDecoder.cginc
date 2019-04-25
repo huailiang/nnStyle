@@ -13,19 +13,19 @@ contact: peng_huailiang@qq.com
 #include "libStd.cginc"
 #include "libActive.cginc"
 
-#define DefineResiduleConv(id, r, idx) \
+#define DefineResiduleConv(id, input, output, seq, idx) \
 	for(int j = 0;j < depth; j++) \
 	{ 	\
 		float v = 0.0f;	\
 		for(int i= 0; i < depth; i++)	\
 		{	\
-			float3x3 stdsamp = StdSample(decoder_residule, id.x, id.y, i, width, depth);	\
-			float3x3 kernel = decoder_g_r##r##_c##idx##_Conv_weights[depth * i + j];	\
-			float3x3 conv = stdsamp * kernel;	\
+			float3x3 xsamp = StdSample(decoder_residule, id.x, id.y, i, input, depth);	\
+			float3x3 kernel = decoder_g_r##seq##_c##idx##_Conv_weights[depth * i + j];	\
+			float3x3 conv = xsamp * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
 		}	\
-		int indx = (width * depth) * id.x + depth * id.y + j;	\
+		int indx = (output * depth) * id.x + depth * id.y + j;	\
 		input_writable[indx] = v;	\
 	}
 
@@ -79,9 +79,9 @@ contact: peng_huailiang@qq.com
 		float v = 0.0f;	\
 		for(uint i = 0; i < depth1; i++)	\
 		{	\
-			float3x3 stdsamp = StdSlowSample(decoder_conv##idx##_conved, id.x, id.y, i, width, depth1);	\
+			float3x3 xsamp = StdSlowSample(decoder_conv##idx##_conved, id.x, id.y, i, width, depth1);	\
 			float3x3 kernel = decoder_g_d##idx##_dc_conv2d_Conv_weights[depth2 * i + j];	\
-			float3x3 conv = stdsamp * kernel;	\
+			float3x3 conv = xsamp * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
 			v += iall[0] + iall[1] + iall[2];	\
 		}	\

@@ -23,7 +23,7 @@ public struct Buffer
 public class BufferPool
 {
 
-    private static Dictionary<string, Buffer> buffer = new Dictionary<string, Buffer>();
+    static Dictionary<string, Buffer> buffer = new Dictionary<string, Buffer>();
 
 
     private static int GetStride<T>()
@@ -61,6 +61,15 @@ public class BufferPool
         return null;
     }
 
+    public static int[] GetShape(string name)
+    {
+        if (buffer.ContainsKey(name))
+        {
+            return buffer[name].shape;
+        }
+        return null;
+    }
+
     public static float[] GetData(string name)
     {
         if (buffer.ContainsKey(name))
@@ -89,7 +98,7 @@ public class BufferPool
     {
         if (buffer.ContainsKey(name))
         {
-            buffer[name].cb.Release();
+            buffer[name].cb.Dispose();
             buffer.Remove(name);
         }
     }
@@ -100,7 +109,7 @@ public class BufferPool
         {
             if (it.Value.cb == cb)
             {
-                cb.Release();
+                cb.Dispose();
                 buffer.Remove(it.Key);
                 break;
             }
@@ -109,10 +118,12 @@ public class BufferPool
 
     public static void ReleaseAll()
     {
-        foreach (var item in buffer)
+        var itr = buffer.GetEnumerator();
+        while (itr.MoveNext())
         {
-            item.Value.cb.Release();
+            itr.Current.Value.cb.Dispose();
         }
+        itr.Dispose();
         buffer.Clear();
     }
 

@@ -30,7 +30,7 @@ public class BufferProfile
         int dftX = shape[0] / 2;
         Printf(cb, dftX, name, shape);
     }
-    
+
     public static void Printf(ComputeBuffer buffer, int dftX, string name, params int[] shape)
     {
         HandleLog(name, (x, y, z) =>
@@ -39,13 +39,7 @@ public class BufferProfile
             int max_z = z <= 8 ? z : 14;
             float[] array = new float[x * y * z];
             buffer.GetData(array);
-            float max = 0;int cnt = 0;
-            for (int i = 0; i < x * y * z; i++)
-            {
-                if (array[i] > max) max = array[i];
-                if (array[i] > 100) cnt++;
-            }
-            sb.AppendFormat("({0}x{1}x{2})  indx:{3} cnt:{4}\n", x, y, z, max, cnt);
+            sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, dftX);
             for (int i = 0; i < Mathf.Min(max_y, y); i++)
             {
                 sb.Append("[" + i + "] ");
@@ -58,7 +52,7 @@ public class BufferProfile
             }
         }, (x) => LogV1(x, buffer), shape);
     }
-    
+
     public static void Printh(string name)
     {
         LookupPool(name, Printh);
@@ -76,21 +70,21 @@ public class BufferProfile
 
     public static void Printh(ComputeBuffer buffer, string name, int dftZ, params int[] shape)
     {
-        HandleLog(name, (x, y, z) =>
+        HandleLog(name, (height, width, depth) =>
         {
             int max_x = 20;
             int max_y = 14;
-            if (dftZ == -1) dftZ = z / 2;
-            float[] array = new float[x * y * z];
+            if (dftZ == -1) dftZ = depth / 2;
+            float[] array = new float[height * width * depth];
             buffer.GetData(array);
-            sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, dftZ);
-            for (int i = 0; i < Mathf.Min(max_x, x); i++)
+            sb.AppendFormat("({0}x{1}x{2})  indz:{3}\n", height, width, depth, dftZ);
+            for (int i = 0; i < Mathf.Min(max_x, height); i++)
             {
                 sb.Append("[" + i + "] ");
-                for (int j = 0; j < Mathf.Min(max_y, y); j++)
+                for (int j = 0; j < Mathf.Min(max_y, width); j++)
                 {
                     sb.Append("\t");
-                    sb.Append(array[i * y * z + j * z + dftZ].ToString("f4"));
+                    sb.Append(array[i * width * depth + j * depth + dftZ].ToString("f4"));
                 }
                 sb.Append("\n");
             }
@@ -149,13 +143,12 @@ public class BufferProfile
                         for (int k = 0; k < z; k++)
                         {
                             int idx = i * y * z + j * z + k;
-                            if (array[idx] > 1e-4) counter++;
+                            if (array[idx] > 1e-2) counter++;
                         }
                 Debug.Log(name + " has none-zero counter: " + counter);
             }
         }
     }
-
 
     private static float[] TransfColor(Color color)
     {
@@ -164,6 +157,48 @@ public class BufferProfile
         rst[1] = ((color.g) * 255) / 127.5f - 1.0f;
         rst[2] = ((color.b) * 255) / 127.5f - 1.0f;
         return rst;
+    }
+
+
+    private static int StdIndex(int x, int y, int z, int width, int depth)
+    {
+        return width * depth * x + depth * y + z;
+    }
+
+    private static int[] StdSeq(int x, int y, int z, int width, int depth)
+    {
+        int[] a = new int[9];
+        a[0] = StdIndex(x, y, z, width, depth);
+        a[1] = StdIndex(x + 1, y, z, width, depth);
+        a[2] = StdIndex(x + 2, y, z, width, depth);
+        a[3] = StdIndex(x, y + 1, z, width, depth);
+        a[4] = StdIndex(x + 1, y + 1, z, width, depth);
+        a[5] = StdIndex(x + 2, y + 1, z, width, depth);
+        a[6] = StdIndex(x, y + 2, z, width, depth);
+        a[7] = StdIndex(x + 1, y + 2, z, width, depth);
+        a[8] = StdIndex(x + 2, y + 2, z, width, depth);
+        return a;
+    }
+
+    public static void Conv2d(int z, Matrix3X3 weight, float[] layer, int[] shape)
+    {
+        int width = shape[0], depth = shape[2];
+        int max = Mathf.Min(width - 2, 14);
+        sb.Length = 0;
+        sb.Append("Conv2d:\n");
+        for (int x = 0; x < max; x++)
+        {
+            sb.AppendFormat("\n[{0}]\t", x);
+            for (int y = 0; y < max; y++)
+            {
+                int[] sq = StdSeq(x, y, z, width, depth);
+                Matrix3X3 sample = new Matrix3X3(layer[sq[0]], layer[sq[1]], layer[sq[2]],
+                    layer[sq[3]], layer[sq[4]], layer[sq[5]],
+                    layer[sq[6]], layer[sq[7]], layer[sq[8]]);
+                sb.AppendFormat("{0}\t", (sample * weight).Sum());
+            }
+        }
+        Debug.Log(sb);
     }
 
     public static void NormalInst(Texture2D texture)
@@ -254,7 +289,7 @@ public class BufferProfile
         }
         Debug.Log(str);
     }
-    
+
     public static void CalcuteNormal(float[] array, int width, int depth)
     {
         long len = width * width;

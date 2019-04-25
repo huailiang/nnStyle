@@ -120,7 +120,7 @@ void StyleEncoderInstance(uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(8, 8, 3)]
-void StylePad(uint3 id : SV_DispatchThreadID) //id.xy=288
+void StylePad(uint3 id : SV_DispatchThreadID) //id.xy=288 nwidth=286
 {
 	uint pad = 15, width = 256, depth = 3;
 	if (StdCheckRange(id, width + 2 * pad)) return;

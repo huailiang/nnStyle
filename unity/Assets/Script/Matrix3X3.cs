@@ -29,10 +29,10 @@ public struct Matrix3X3
 
     public override string ToString()
     {
-        return string.Format("{0}\t{1}\t{2}\n{3}\t{4}\t{5}\n{6}\t{7}\t{8}",
-            m00.ToString("f3"), m01.ToString("f3"), m02.ToString("f3"),
-            m10.ToString("f3"), m11.ToString("f3"), m12.ToString("f3"),
-            m20.ToString("f3"), m21.ToString("f3"), m22.ToString("f3"));
+        return string.Format("{0}\t{1}\t{2}\n{3}\t{4}\t{5}\n{6}\t{7}\t{8}\n",
+            m00.ToString("f4"), m01.ToString("f4"), m02.ToString("f4"),
+            m10.ToString("f4"), m11.ToString("f4"), m12.ToString("f4"),
+            m20.ToString("f4"), m21.ToString("f4"), m22.ToString("f4"));
     }
 
     public Matrix3X3 transpose
@@ -89,18 +89,18 @@ public struct Matrix3X3
         return v3;
     }
 
-    public static Matrix3X3 operator *(Matrix3X3 m1, Matrix3X3 m2)
+    public static Matrix3X3 operator *(Matrix3X3 x, Matrix3X3 y)
     {
-        return new Matrix3X3(m1.m00 * m2.m00, m1.m01 * m2.m01, m1.m02 * m2.m02,
-                             m1.m10 * m2.m10, m1.m11 * m2.m11, m1.m12 * m2.m12,
-                             m1.m20 * m2.m20, m1.m21 * m2.m21, m1.m22 * m2.m22);
+        return new Matrix3X3(x.m00 * y.m00, x.m01 * y.m01, x.m02 * y.m02,
+                             x.m10 * y.m10, x.m11 * y.m11, x.m12 * y.m12,
+                             x.m20 * y.m20, x.m21 * y.m21, x.m22 * y.m22);
     }
 
-    public static Matrix3X3 operator +(Matrix3X3 m1, Matrix3X3 m2)
+    public static Matrix3X3 operator +(Matrix3X3 x, Matrix3X3 y)
     {
-        return new Matrix3X3(m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m02 + m2.m02,
-                             m1.m10 + m2.m10, m1.m11 + m2.m11, m1.m12 + m2.m12,
-                             m1.m20 + m2.m20, m1.m21 + m2.m21, m1.m22 + m2.m22);
+        return new Matrix3X3(x.m00 + y.m00, x.m01 + y.m01, x.m02 + y.m02,
+                             x.m10 + y.m10, x.m11 + y.m11, x.m12 + y.m12,
+                             x.m20 + y.m20, x.m21 + y.m21, x.m22 + y.m22);
     }
 
     public float this[int x, int y]

@@ -87,8 +87,8 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 [numthreads(8,8,1)]
 void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
-	int width = 16, depth = 256;
-	DefineResiduleConv(id, 1, 1)
+	int input = 18, output = 16, depth = 256;
+	DefineResiduleConv(id, input, output, 1, 1)
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
@@ -102,7 +102,8 @@ void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 16, depth = 256;
-	DeifineResiduleInst(id, 1, 1)
+	DeifineResiduleInst(id, 1, 1);
+	input_writable[indx] = input_writable[indx];
 }
 
 [numthreads(8, 8, 4)]
@@ -110,15 +111,15 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	StdPad(id, width, depth, pad)
-	decoder_residule[indx2] = input_writable[indx];	
+	StdPad(id, width, depth, pad);
+	decoder_residule[indx2] = relu(input_writable[indx]);
 }
 
 [numthreads(8,8,1)]
 void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
 {
-	int width = 16, depth = 256;
-	DefineResiduleConv(id, 1, 2)
+	int input = 18, output = 16, depth = 256;
+	DefineResiduleConv(id, input, output, 1, 2)
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
@@ -132,8 +133,8 @@ void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 16, depth = 256;
-	DeifineResiduleInst(id, 1, 2)
-	decoder_residule[indx] += input_initial[indx];
+	DeifineResiduleInst(id, 1, 2);
+	input_writable[indx] += input_initial[indx];
 }
 
 /***********************************************************************/
@@ -143,7 +144,7 @@ void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x2
 {
 	int width = 16, depth = 256;
 	int indx = StdID(id, width, depth);
-	float v = decoder_residule[indx];
+	float v = input_writable[indx];
 	DefineDecoderPad(id, 1)
 }
 
