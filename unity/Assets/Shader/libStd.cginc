@@ -79,15 +79,19 @@ xy range section will be filled with zero
 float3x3 StdSlowSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int width, int depth)
 {
 	float a[9];
+	bool x1 = x + 1 < width;
+	bool x2 = x + 2 < width;
+	bool y1 = y + 1 < width;
+	bool y2 = y + 2 < width;
 	a[0] = buffer[StdIndex(x, y, z, width, depth)];
-	a[1] = x + 1 < width ? buffer[StdIndex(x + 1, y, z, width, depth)] : 0;
-	a[2] = x + 2 < width ? buffer[StdIndex(x + 2, y, z, width, depth)] : 0;
-	a[3] = y + 1 < width ? buffer[StdIndex(x, y + 1, z, width, depth)] : 0;
-	a[4] = x + 1 < width ? buffer[StdIndex(x + 1, y + 1, z, width, depth)] : 0;
-	a[5] = x + 2 < width ? buffer[StdIndex(x + 2, y + 1, z, width, depth)] : 0;
-	a[6] = y + 2 < width ? buffer[StdIndex(x, y + 2, z, width, depth)] : 0;
-	a[7] = x + 1 < width ? buffer[StdIndex(x + 1, y + 2, z, width, depth)] : 0;
-	a[8] = x + 2 < width ? buffer[StdIndex(x + 2, y + 2, z, width, depth)] : 0;
+	a[1] = x1 ? buffer[StdIndex(x + 1, y, z, width, depth)] : 0;
+	a[2] = x2 ? buffer[StdIndex(x + 2, y, z, width, depth)] : 0;
+	a[3] = y1 ? buffer[StdIndex(x, y + 1, z, width, depth)] : 0;
+	a[4] = x1 && y1 ? buffer[StdIndex(x + 1, y + 1, z, width, depth)] : 0;
+	a[5] = x2 && y1 ? buffer[StdIndex(x + 2, y + 1, z, width, depth)] : 0;
+	a[6] = y2 ? buffer[StdIndex(x, y + 2, z, width, depth)] : 0;
+	a[7] = x1 && y2 ? buffer[StdIndex(x + 1, y + 2, z, width, depth)] : 0;
+	a[8] = x2 && y2 ? buffer[StdIndex(x + 2, y + 2, z, width, depth)] : 0;
 	return float3x3(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
 }
 
