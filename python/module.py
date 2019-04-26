@@ -52,15 +52,15 @@ def decoder(features, options, reuse=True, name="decoder"):
             assert tf.get_variable_scope().reuse is False
 
         def residule_block(x, dim, ks=3, s=1, name='res'):
-            y = tf.pad(x, [[0, 0], [1, 1], [1, 1], [0, 0]], "REFLECT")
-            y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name=name + '_c1'), name + '_bn1')
-            y = tf.pad(tf.nn.relu(y), [[0, 0], [1, 1], [1, 1], [0, 0]], "REFLECT")
-            y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name=name + '_c2'), name + '_bn2')
-            return [y + x, y]
+            y1 = tf.pad(x, [[0, 0], [1, 1], [1, 1], [0, 0]], "REFLECT")
+            y2 = instance_norm(conv2d(y1, dim, ks, s, padding='VALID', name=name + '_c1'), name + '_bn1')
+            y3 = tf.pad(tf.nn.relu(y2), [[0, 0], [1, 1], [1, 1], [0, 0]], "REFLECT")
+            y = instance_norm(conv2d(y3, dim, ks, s, padding='VALID', name=name + '_c2'), name + '_bn2')
+            return [y + x, y1, y2, y3, y]
 
         # Now stack 9 residual blocks
         num_kernels = features.get_shape().as_list()[-1]
-        r1, y = residule_block(features, num_kernels, name='g_r1')
+        r1, y1, y2, y3, y = residule_block(features, num_kernels, name='g_r1')
         # r2 = residule_block(r1, num_kernels, name='g_r2')
         # r3 = residule_block(r2, num_kernels, name='g_r3')
         # r4 = residule_block(r3, num_kernels, name='g_r4')
@@ -82,7 +82,7 @@ def decoder(features, options, reuse=True, name="decoder"):
 
         d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
         pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c')) * 2. - 1.
-        return [pred, d1, d2, d3, d4, y]
+        return [pred, d1, d2, d3, d4, y1, y2, y3, y]
 
 
 def discriminator(image, options, reuse=True, name="discriminator"):

@@ -146,7 +146,7 @@ public class BufferProfile
         }
     }
 
-    public static void CheckZero(string name)
+    public static void CheckBuffer(string name, float expsilon)
     {
         Buffer buffer;
         if (BufferPool.TryGet(name, out buffer))
@@ -159,14 +159,22 @@ public class BufferProfile
                 float[] array = new float[x * y * z];
                 cb.GetData(array);
                 int counter = 0;
+                sb.Length = 0;
                 for (int i = 0; i < x; i++)
+                {
                     for (int j = 0; j < y; j++)
                         for (int k = 0; k < z; k++)
                         {
                             int idx = i * y * z + j * z + k;
-                            if (array[idx] > 1e-2) counter++;
+                            if (array[idx] > expsilon)
+                            {
+                                sb.AppendFormat("({0},{1},{2})\t\t", i, j, k, array[idx].ToString("f2"));
+                                counter++;
+                            }
                         }
-                Debug.Log(name + " has none-zero counter: " + counter);
+                }
+                Debug.Log(name + " : " + counter);
+                if (counter > 0) Debug.Log(sb);
             }
         }
     }

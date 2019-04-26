@@ -430,7 +430,10 @@ class Artgan(object):
             export_layer(e_list[1], "encoder_cx")
             d_list = self.sess.run(self.output_photo, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
             img = d_list[0]
-            # printh(d_list[9], "decoder_y", 1)
+            export_layer(d_list[5], "decoder_y1")
+            export_layer(d_list[6], "decoder_y2")
+            export_layer(d_list[7], "decoder_y3")
+            export_layer(d_list[8], "decoder_y")
             # printf(d_list[3], "decoder_d3")
 
             img = img[0]

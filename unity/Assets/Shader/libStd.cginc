@@ -32,14 +32,14 @@ groupshared float g_cache[CACHE_MAX];
 #define StdPad(id, width, depth, pad)	\
 	uint low = pad - id.x;	\
 	uint mid = id.x - pad;	\
-	uint high = 2 * width + pad - id.x;	\
+	uint high = 2 * width + pad - 1 - id.x;	\
 	uint x_array[3] = { low, mid, high };	\
 	low = pad - id.y;	\
 	mid = id.y - pad;	\
-	high = 2 * width + pad - id.y;	\
+	high = 2 * width + pad - 1 - id.y;	\
 	uint y_array[3] = { low, mid, high };	\
-	uint x_id = id.x > (pad + width) ? 2 : saturate(id.x / pad);	\
-	uint y_id = id.y > (pad + width) ? 2 : saturate(id.y / pad);	\
+	uint x_id = id.x >= (pad + width) ? 2 : saturate(id.x / pad);	\
+	uint y_id = id.y >= (pad + width) ? 2 : saturate(id.y / pad);	\
 	x_id = x_array[x_id];	\
 	y_id = y_array[y_id];	\
 	uint indx = StdIndex(x_id, y_id, id.z, width, depth);	\
