@@ -137,8 +137,6 @@ void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
 	input_writable[indx] += input_initial[indx];
 }
 
-/***********************************************************************/
-
 [numthreads(8,8,4)]
 void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x256
 {
@@ -262,7 +260,6 @@ void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 256x256x32->262x262x
 	decoder_conv5_pad[indx2] = decoder_conv4[indx];
 }
 
-
 float DotConv7x7(uint3 id, uint width, uint depth,uint z, int d_indx)
 {
 	float v = 0.0f;
@@ -295,6 +292,6 @@ void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.xy=256
 		}
 		rgb[i] = sigmod(v);
 	}
-	uint2 coord = uint2(width - ks + stride - id.x, id.y);
+	uint2 coord = uint2(id.y, width - ks + stride -1 - id.x);
 	decoder_destination[coord] = float4(rgb[0], rgb[1], rgb[2], 1);
 }

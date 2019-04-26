@@ -115,92 +115,23 @@ public class StyleProcess : MonoBehaviour
             encoderShader.Dispatch(enNorm, 1, 1, 1);
             encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
             encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
-            encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm1, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
-            encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
-            encoderShader.Dispatch(enStyleConv3, 72 / 8, 72 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm3, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance3, 72 / 8, 72 / 8, 64 / 4);
-            encoderShader.Dispatch(enStyleConv4, 40 / 8, 40 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm4, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance4, 40 / 8, 40 / 8, 128 / 4);
-            encoderShader.Dispatch(enStyleConv5, 16 / 8, 16 / 8, 1);
-            encoderShader.Dispatch(enStyleNorm5, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
-
-            //decoder
-            decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
-            decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 1);
-            decoderShader.Dispatch(deResiduleInst1_1, 16 / 8, 16 / 8, 256 / 4);
-            decoderShader.Dispatch(deResidulePad1_2, 24 / 8, 24 / 8, 256 / 4);
-            decoderShader.Dispatch(deResiduleConv1_2, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_2, 1, 1, 1);
-            decoderShader.Dispatch(deResiduleInst1_2, 16 / 8, 16 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderExpand1, 16 / 8, 16 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderConv1, 32 / 8, 32 / 8, 1);
-            decoderShader.Dispatch(decoderNormal1, 1, 1, 1);
-            decoderShader.Dispatch(decoderInstance1, 16 / 8, 16 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderExpand2, 32 / 8, 32 / 8, 256 / 4);
-            decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
-            decoderShader.Dispatch(decoderNormal2, 1, 1, 1);
-            decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
-            decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
-            decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
-            decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
-            decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-            decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
-            decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
-            decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
-            decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
-            decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
-            decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
-            tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
+            DrawEncoder();
+            DrawResidule();
+            DrawDecoder();
         }
-        if (GUI.Button(new Rect(20, 80, 80, 40), "Decoder_r1"))
+        if (GUI.Button(new Rect(20, 80, 80, 40), "Encoder_v0"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_r0");
-            BufferPool.Get("input_initial").SetData(layer);
-            BufferProfile.CheckZero("encoder_conv5");
-            BufferProfile.CheckZero("input_initial");
-        }
-        if (GUI.Button(new Rect(20, 140, 80, 40), "Encoder_v1"))
-        {
-            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
-            encoderShader.Dispatch(enNorm, 1, 1, 1);
-            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            BufferProfile.Printf("encoder_inst_statistic");
+            float[] layer = checkpoint.LoadLayer("encoder_cx");
+            BufferPool.Get("encoder_inst").SetData(layer);
             BufferProfile.Printf("encoder_inst");
-        }
-        if (GUI.Button(new Rect(20, 200, 80, 40), "Encoder_v4"))
-        {
-            float[] layer = checkpoint.LoadLayer("encoder_c1");
-            BufferPool.Get("encoder_conv1").SetData(layer);
-            encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
-            BufferProfile.Printf("encoder_conv2");
-            encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
-            encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
-            BufferProfile.Printf("encoder_conv2_statistic");
-            BufferProfile.Printf("encoder_conv2");
         }
         if (GUI.Button(new Rect(120, 20, 80, 40), "Decode_V1"))
         {
-            float[] layer = checkpoint.LoadLayer("encoder_c5");
-            BufferPool.Get("input_initial").SetData(layer);
-            BufferProfile.Printf("input_initial");
-            decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
-            decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 1);
-            BufferProfile.Printf("input_statistic");
-            decoderShader.Dispatch(deResiduleInst1_1, 16 / 8, 16 / 8, 256 / 4);
-            BufferProfile.Printf("input_writable");
-            decoderShader.Dispatch(deResidulePad1_2, 24 / 8, 24 / 8, 256 / 4);
-            decoderShader.Dispatch(deResiduleConv1_2, 16 / 8, 16 / 8, 1);
-            decoderShader.Dispatch(deResiduleNormal1_2, 1, 1, 1);
-            decoderShader.Dispatch(deResiduleInst1_2, 16 / 8, 16 / 8, 256 / 4);
+            float[] layer = checkpoint.LoadLayer("encoder_cx");
+            BufferPool.Get("encoder_inst").SetData(layer);
+            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
+            DrawEncoder();
+            DrawResidule();
             DrawDecoder();
         }
         if (GUI.Button(new Rect(120, 80, 80, 40), "Decode_V3"))
@@ -222,6 +153,37 @@ public class StyleProcess : MonoBehaviour
             BufferProfile.Printh("decoder_conv4", 2);
             DrawRender();
         }
+    }
+
+    private void DrawEncoder()
+    {
+        encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
+        encoderShader.Dispatch(enStyleNorm1, 1, 1, 1);
+        encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
+        encoderShader.Dispatch(enStyleConv2, 144 / 8, 144 / 8, 1);
+        encoderShader.Dispatch(enStyleNorm2, 1, 1, 1);
+        encoderShader.Dispatch(enStyleInstance2, 144 / 8, 144 / 8, 32 / 4);
+        encoderShader.Dispatch(enStyleConv3, 72 / 8, 72 / 8, 1);
+        encoderShader.Dispatch(enStyleNorm3, 1, 1, 1);
+        encoderShader.Dispatch(enStyleInstance3, 72 / 8, 72 / 8, 64 / 4);
+        encoderShader.Dispatch(enStyleConv4, 40 / 8, 40 / 8, 1);
+        encoderShader.Dispatch(enStyleNorm4, 1, 1, 2);
+        encoderShader.Dispatch(enStyleInstance4, 40 / 8, 40 / 8, 128 / 4);
+        encoderShader.Dispatch(enStyleConv5, 16 / 8, 16 / 8, 1);
+        encoderShader.Dispatch(enStyleNorm5, 1, 1, 4);
+        encoderShader.Dispatch(enStyleInstance5, 16 / 8, 16 / 8, 256 / 4);
+    }
+
+    private void DrawResidule()
+    {
+        decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
+        decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
+        decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 4);
+        decoderShader.Dispatch(deResiduleInst1_1, 16 / 8, 16 / 8, 256 / 4);
+        decoderShader.Dispatch(deResidulePad1_2, 24 / 8, 24 / 8, 256 / 4);
+        decoderShader.Dispatch(deResiduleConv1_2, 16 / 8, 16 / 8, 1);
+        decoderShader.Dispatch(deResiduleNormal1_2, 1, 1, 4);
+        decoderShader.Dispatch(deResiduleInst1_2, 16 / 8, 16 / 8, 256 / 4);
     }
 
     private void DrawDecoder()
