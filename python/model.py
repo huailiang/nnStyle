@@ -18,14 +18,10 @@ class Artgan(object):
     def __init__(self, sess, args):
         self.model_name = args.model_name
         self.root_dir = './models'
-        self.checkpoint_dir = os.path.join(
-            self.root_dir, self.model_name, 'checkpoint')
-        self.checkpoint_long_dir = os.path.join(
-            self.root_dir, self.model_name, 'checkpoint_long')
-        self.sample_dir = os.path.join(
-            self.root_dir, self.model_name, 'sample')
-        self.inference_dir = os.path.join(
-            self.root_dir, self.model_name, 'inference')
+        self.checkpoint_dir = os.path.join(self.root_dir, self.model_name, 'checkpoint')
+        self.checkpoint_long_dir = os.path.join(self.root_dir, self.model_name, 'checkpoint_long')
+        self.sample_dir = os.path.join(self.root_dir, self.model_name, 'sample')
+        self.inference_dir = os.path.join(self.root_dir, self.model_name, 'inference')
         self.logs_dir = os.path.join(self.root_dir, self.model_name, 'logs')
 
         self.sess = sess
@@ -36,28 +32,17 @@ class Artgan(object):
 
         self.initial_step = 0
 
-        OPTIONS = namedtuple('OPTIONS',
-                             'batch_size image_size \
+        OPTIONS = namedtuple('OPTIONS', 'batch_size image_size \
                               total_steps save_freq lr\
                               gf_dim df_dim \
                               is_training \
                               path_to_content_dataset \
                               path_to_art_dataset \
                               discr_loss_weight transformer_loss_weight feature_loss_weight')
-        self.options = OPTIONS._make(
-            (args.batch_size,
-             args.image_size,
-             args.total_steps,
-             args.save_freq,
-             args.lr,
-             args.ngf,
-             args.ndf,
-             args.phase == 'train',
-             args.path_to_content_dataset,
-             args.path_to_art_dataset,
-             args.discr_loss_weight,
-             args.transformer_loss_weight,
-             args.feature_loss_weight))
+        self.options = OPTIONS._make((
+            args.batch_size, args.image_size, args.total_steps, args.save_freq, args.lr, args.ngf, args.ndf,
+            args.phase == 'train', args.path_to_content_dataset, args.path_to_art_dataset, args.discr_loss_weight,
+            args.transformer_loss_weight, args.feature_loss_weight))
 
         # Create all the folders for saving the model
         if not os.path.exists(self.root_dir):
@@ -81,235 +66,130 @@ class Artgan(object):
         if self.options.is_training:
             # ==================== Define placeholders. ===================== #
             with tf.name_scope('placeholder'):
-                self.input_painting = tf.placeholder(
-                    dtype=tf.float32, shape=[
-                        self.batch_size, None, None, 3], name='painting')
-                self.input_photo = tf.placeholder(
-                    dtype=tf.float32, shape=[
-                        self.batch_size, None, None, 3], name='photo')
-                self.lr = tf.placeholder(
-                    dtype=tf.float32, shape=(), name='learning_rate')
+                self.input_painting = tf.placeholder(dtype=tf.float32, shape=[self.batch_size, None, None, 3],
+                                                     name='painting')
+                self.input_photo = tf.placeholder(dtype=tf.float32, shape=[self.batch_size, None, None, 3],
+                                                  name='photo')
+                self.lr = tf.placeholder(dtype=tf.float32, shape=(), name='learning_rate')
 
             # ===================== Wire the graph. ========================= #
             # Encode input images.
-            self.input_photo_features = encoder(image=self.input_photo,
-                                                options=self.options,
-                                                reuse=False)
+            self.input_photo_features = encoder(image=self.input_photo, options=self.options, reuse=False)
 
             # Decode obtained features
-            self.output_photo = decoder(features=self.input_photo_features,
-                                        options=self.options,
-                                        reuse=False)
+            self.output_photo = decoder(features=self.input_photo_features, options=self.options, reuse=False)
 
             # Get features of output images. Need them to compute feature loss.
-            self.output_photo_features = encoder(image=self.output_photo,
-                                                 options=self.options,
-                                                 reuse=True)
+            self.output_photo_features = encoder(image=self.output_photo, options=self.options, reuse=True)
 
             # Add discriminators.
             # Note that each of the predictions contain multiple predictions
             # at different scale.
-            self.input_painting_discr_predictions = discriminator(
-                image=self.input_painting, options=self.options, reuse=False)
-            self.input_photo_discr_predictions = discriminator(
-                image=self.input_photo, options=self.options, reuse=True)
-            self.output_photo_discr_predictions = discriminator(
-                image=self.output_photo, options=self.options, reuse=True)
+            self.input_painting_discr_predictions = discriminator(image=self.input_painting, options=self.options,
+                                                                  reuse=False)
+            self.input_photo_discr_predictions = discriminator(image=self.input_photo, options=self.options, reuse=True)
+            self.output_photo_discr_predictions = discriminator(image=self.output_photo, options=self.options,
+                                                                reuse=True)
 
             # ===================== Final losses that we optimize. ===================== #
 
             # Discriminator.
             # Have to predict ones only for original paintings, otherwise
             # predict zero.
-            scale_weight = {"scale_0": 1.,
-                            "scale_1": 1.,
-                            "scale_3": 1.,
-                            "scale_5": 1.,
-                            "scale_6": 1.}
-            self.input_painting_discr_loss = {
-                key: self.loss(
-                    pred,
-                    tf.ones_like(pred)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.input_painting_discr_predictions.keys(),
-                    self.input_painting_discr_predictions.values())}
-            self.input_photo_discr_loss = {
-                key: self.loss(
-                    pred,
-                    tf.zeros_like(pred)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.input_photo_discr_predictions.keys(),
-                    self.input_photo_discr_predictions.values())}
-            self.output_photo_discr_loss = {
-                key: self.loss(
-                    pred,
-                    tf.zeros_like(pred)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.output_photo_discr_predictions.keys(),
-                    self.output_photo_discr_predictions.values())}
+            scale_weight = {"scale_0": 1., "scale_1": 1., "scale_3": 1., "scale_5": 1., "scale_6": 1.}
+            self.input_painting_discr_loss = {key: self.loss(pred, tf.ones_like(pred)) * scale_weight[key] for key, pred
+                                              in zip(self.input_painting_discr_predictions.keys(),
+                                                     self.input_painting_discr_predictions.values())}
+            self.input_photo_discr_loss = {key: self.loss(pred, tf.zeros_like(pred)) * scale_weight[key] for key, pred
+                                           in zip(self.input_photo_discr_predictions.keys(),
+                                                  self.input_photo_discr_predictions.values())}
+            self.output_photo_discr_loss = {key: self.loss(pred, tf.zeros_like(pred)) * scale_weight[key] for key, pred
+                                            in zip(self.output_photo_discr_predictions.keys(),
+                                                   self.output_photo_discr_predictions.values())}
 
-            self.discr_loss = tf.add_n(list(self.input_painting_discr_loss.values())) + \
-                tf.add_n(list(self.input_photo_discr_loss.values())) + \
-                tf.add_n(list(self.output_photo_discr_loss.values()))
+            self.discr_loss = tf.add_n(list(self.input_painting_discr_loss.values())) + tf.add_n(
+                list(self.input_photo_discr_loss.values())) + tf.add_n(list(self.output_photo_discr_loss.values()))
 
             # Compute discriminator accuracies.
             self.input_painting_discr_acc = {
-                key: tf.reduce_mean(
-                    tf.cast(
-                        x=(
-                            pred > tf.zeros_like(pred)),
-                        dtype=tf.float32)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.input_painting_discr_predictions.keys(),
-                    self.input_painting_discr_predictions.values())}
+                key: tf.reduce_mean(tf.cast(x=(pred > tf.zeros_like(pred)), dtype=tf.float32)) * scale_weight[key] for
+                key, pred in
+                zip(self.input_painting_discr_predictions.keys(), self.input_painting_discr_predictions.values())}
             self.input_photo_discr_acc = {
-                key: tf.reduce_mean(
-                    tf.cast(
-                        x=(
-                            pred < tf.zeros_like(pred)),
-                        dtype=tf.float32)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.input_photo_discr_predictions.keys(),
-                    self.input_photo_discr_predictions.values())}
+                key: tf.reduce_mean(tf.cast(x=(pred < tf.zeros_like(pred)), dtype=tf.float32)) * scale_weight[key] for
+                key, pred in
+                zip(self.input_photo_discr_predictions.keys(), self.input_photo_discr_predictions.values())}
             self.output_photo_discr_acc = {
-                key: tf.reduce_mean(
-                    tf.cast(
-                        x=(
-                            pred < tf.zeros_like(pred)),
-                        dtype=tf.float32)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.output_photo_discr_predictions.keys(),
-                    self.output_photo_discr_predictions.values())}
-            self.discr_acc = (tf.add_n(list(self.input_painting_discr_acc.values())) +
-                              tf.add_n(list(self.input_photo_discr_acc.values())) +
-                              tf.add_n(list(self.output_photo_discr_acc.values()))) / float(len(scale_weight.keys()) * 3)
+                key: tf.reduce_mean(tf.cast(x=(pred < tf.zeros_like(pred)), dtype=tf.float32)) * scale_weight[key] for
+                key, pred in
+                zip(self.output_photo_discr_predictions.keys(), self.output_photo_discr_predictions.values())}
+            self.discr_acc = (tf.add_n(list(self.input_painting_discr_acc.values())) + tf.add_n(
+                list(self.input_photo_discr_acc.values())) + tf.add_n(
+                list(self.output_photo_discr_acc.values()))) / float(len(scale_weight.keys()) * 3)
 
             # Generator.
             # Predicts ones for both output images.
-            self.output_photo_gener_loss = {
-                key: self.loss(
-                    pred,
-                    tf.ones_like(pred)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.output_photo_discr_predictions.keys(),
-                    self.output_photo_discr_predictions.values())}
+            self.output_photo_gener_loss = {key: self.loss(pred, tf.ones_like(pred)) * scale_weight[key] for key, pred
+                                            in zip(self.output_photo_discr_predictions.keys(),
+                                                   self.output_photo_discr_predictions.values())}
 
-            self.gener_loss = tf.add_n(
-                list(self.output_photo_gener_loss.values()))
+            self.gener_loss = tf.add_n(list(self.output_photo_gener_loss.values()))
 
             # Compute generator accuracies.
             self.output_photo_gener_acc = {
-                key: tf.reduce_mean(
-                    tf.cast(
-                        x=(
-                            pred > tf.zeros_like(pred)),
-                        dtype=tf.float32)) *
-                scale_weight[key] for key,
-                pred in zip(
-                    self.output_photo_discr_predictions.keys(),
-                    self.output_photo_discr_predictions.values())}
+                key: tf.reduce_mean(tf.cast(x=(pred > tf.zeros_like(pred)), dtype=tf.float32)) * scale_weight[key] for
+                key, pred in
+                zip(self.output_photo_discr_predictions.keys(), self.output_photo_discr_predictions.values())}
 
-            self.gener_acc = tf.add_n(
-                list(self.output_photo_gener_acc.values())) / float(len(scale_weight.keys()))
+            self.gener_acc = tf.add_n(list(self.output_photo_gener_acc.values())) / float(len(scale_weight.keys()))
 
             # Image loss.
-            self.img_loss_photo = mse_criterion(
-                transformer_block(
-                    self.output_photo), transformer_block(
-                    self.input_photo))
+            self.img_loss_photo = mse_criterion(transformer_block(self.output_photo),
+                                                transformer_block(self.input_photo))
             self.img_loss = self.img_loss_photo
 
             # Features loss.
-            self.feature_loss_photo = abs_criterion(
-                self.output_photo_features, self.input_photo_features)
+            self.feature_loss_photo = abs_criterion(self.output_photo_features, self.input_photo_features)
             self.feature_loss = self.feature_loss_photo
 
             # ================== Define optimization steps. =============== #
             t_vars = tf.trainable_variables()
-            self.discr_vars = [
-                var for var in t_vars if 'discriminator' in var.name]
-            self.encoder_vars = [
-                var for var in t_vars if 'encoder' in var.name]
-            self.decoder_vars = [
-                var for var in t_vars if 'decoder' in var.name]
+            self.discr_vars = [var for var in t_vars if 'discriminator' in var.name]
+            self.encoder_vars = [var for var in t_vars if 'encoder' in var.name]
+            self.decoder_vars = [var for var in t_vars if 'decoder' in var.name]
 
             # Discriminator and generator steps.
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
             with tf.control_dependencies(update_ops):
                 self.d_optim_step = tf.train.AdamOptimizer(self.lr).minimize(
-                    loss=self.options.discr_loss_weight * self.discr_loss,
-                    var_list=[self.discr_vars])
+                    loss=self.options.discr_loss_weight * self.discr_loss, var_list=[self.discr_vars])
                 self.g_optim_step = tf.train.AdamOptimizer(self.lr).minimize(
-                    loss=self.options.discr_loss_weight * self.gener_loss +
-                    self.options.transformer_loss_weight * self.img_loss +
-                    self.options.feature_loss_weight * self.feature_loss,
+                    loss=self.options.discr_loss_weight * self.gener_loss + self.options.transformer_loss_weight * self.img_loss + self.options.feature_loss_weight * self.feature_loss,
                     var_list=[self.encoder_vars + self.decoder_vars])
 
             # ============= Write statistics to tensorboard. ================ #
 
             # Discriminator loss summary.
-            s_d1 = [
-                tf.summary.scalar(
-                    "discriminator/input_painting_discr_loss/" + key,
-                    val) for key,
-                val in zip(
-                    self.input_painting_discr_loss.keys(),
-                    self.input_painting_discr_loss.values())]
-            s_d2 = [
-                tf.summary.scalar(
-                    "discriminator/input_photo_discr_loss/" + key,
-                    val) for key,
-                val in zip(
-                    self.input_photo_discr_loss.keys(),
-                    self.input_photo_discr_loss.values())]
-            s_d3 = [
-                tf.summary.scalar(
-                    "discriminator/output_photo_discr_loss/" + key,
-                    val) for key,
-                val in zip(
-                    self.output_photo_discr_loss.keys(),
-                    self.output_photo_discr_loss.values())]
-            s_d = tf.summary.scalar(
-                "discriminator/discr_loss", self.discr_loss)
-            self.summary_discriminator_loss = tf.summary.merge(
-                s_d1 + s_d2 + s_d3 + [s_d])
+            s_d1 = [tf.summary.scalar("discriminator/input_painting_discr_loss/" + key, val) for key, val in
+                    zip(self.input_painting_discr_loss.keys(), self.input_painting_discr_loss.values())]
+            s_d2 = [tf.summary.scalar("discriminator/input_photo_discr_loss/" + key, val) for key, val in
+                    zip(self.input_photo_discr_loss.keys(), self.input_photo_discr_loss.values())]
+            s_d3 = [tf.summary.scalar("discriminator/output_photo_discr_loss/" + key, val) for key, val in
+                    zip(self.output_photo_discr_loss.keys(), self.output_photo_discr_loss.values())]
+            s_d = tf.summary.scalar("discriminator/discr_loss", self.discr_loss)
+            self.summary_discriminator_loss = tf.summary.merge(s_d1 + s_d2 + s_d3 + [s_d])
 
             # Discriminator acc summary.
-            s_d1_acc = [
-                tf.summary.scalar(
-                    "discriminator/input_painting_discr_acc/" + key,
-                    val) for key,
-                val in zip(
-                    self.input_painting_discr_acc.keys(),
-                    self.input_painting_discr_acc.values())]
-            s_d2_acc = [
-                tf.summary.scalar(
-                    "discriminator/input_photo_discr_acc/" + key,
-                    val) for key,
-                val in zip(
-                    self.input_photo_discr_acc.keys(),
-                    self.input_photo_discr_acc.values())]
-            s_d3_acc = [
-                tf.summary.scalar(
-                    "discriminator/output_photo_discr_acc/" + key,
-                    val) for key,
-                val in zip(
-                    self.output_photo_discr_acc.keys(),
-                    self.output_photo_discr_acc.values())]
-            s_d_acc = tf.summary.scalar(
-                "discriminator/discr_acc", self.discr_acc)
-            s_d_acc_g = tf.summary.scalar(
-                "discriminator/discr_acc", self.gener_acc)
-            self.summary_discriminator_acc = tf.summary.merge(
-                s_d1_acc + s_d2_acc + s_d3_acc + [s_d_acc])
+            s_d1_acc = [tf.summary.scalar("discriminator/input_painting_discr_acc/" + key, val) for key, val in
+                        zip(self.input_painting_discr_acc.keys(), self.input_painting_discr_acc.values())]
+            s_d2_acc = [tf.summary.scalar("discriminator/input_photo_discr_acc/" + key, val) for key, val in
+                        zip(self.input_photo_discr_acc.keys(), self.input_photo_discr_acc.values())]
+            s_d3_acc = [tf.summary.scalar("discriminator/output_photo_discr_acc/" + key, val) for key, val in
+                        zip(self.output_photo_discr_acc.keys(), self.output_photo_discr_acc.values())]
+            s_d_acc = tf.summary.scalar("discriminator/discr_acc", self.discr_acc)
+            s_d_acc_g = tf.summary.scalar("discriminator/discr_acc", self.gener_acc)
+            self.summary_discriminator_acc = tf.summary.merge(s_d1_acc + s_d2_acc + s_d3_acc + [s_d_acc])
 
             # Image loss summary.
             s_i1 = tf.summary.scalar("image_loss/photo", self.img_loss_photo)
@@ -317,9 +197,7 @@ class Artgan(object):
             self.summary_image_loss = tf.summary.merge([s_i1 + s_i])
 
             # Feature loss summary.
-            s_f1 = tf.summary.scalar(
-                "feature_loss/photo",
-                self.feature_loss_photo)
+            s_f1 = tf.summary.scalar("feature_loss/photo", self.feature_loss_photo)
             s_f = tf.summary.scalar("feature_loss/loss", self.feature_loss)
             self.summary_feature_loss = tf.summary.merge([s_f1 + s_f])
 
@@ -328,54 +206,37 @@ class Artgan(object):
         else:
             # ==================== Define placeholders. ===================== #
             with tf.name_scope('placeholder'):
-                self.input_photo = tf.placeholder(
-                    dtype=tf.float32, shape=[
-                        self.batch_size, None, None, 3], name='photo')
+                self.input_photo = tf.placeholder(dtype=tf.float32, shape=[self.batch_size, None, None, 3],
+                                                  name='photo')
 
             # ===================== Wire the graph. ========================= #
             # Encode input images.
-            self.input_photo_features = encoder(image=self.input_photo,
-                                                options=self.options,
-                                                reuse=False)
+            self.input_photo_features = encoder(image=self.input_photo, options=self.options, reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(features=self.input_photo_features[0],
-                                        options=self.options,
-                                        reuse=False)
+            self.output_photo = decoder(features=self.input_photo_features[0], options=self.options, reuse=False)
 
     def train(self, args, ckpt_nmbr=None):
         # Initialize augmentor.
-        augmentor = img_augm.Augmentor(
-            crop_size=[
-                self.options.image_size,
-                self.options.image_size],
-            vertical_flip_prb=0.,
-            hsv_augm_prb=1.0,
-            hue_augm_shift=0.05,
-            saturation_augm_shift=0.05,
-            saturation_augm_scale=0.05,
-            value_augm_shift=0.05,
-            value_augm_scale=0.05,
-        )
-        content_dataset_places = prepare_dataset.PlacesDataset(
-            path_to_dataset=self.options.path_to_content_dataset)
-        art_dataset = prepare_dataset.ArtDataset(
-            path_to_art_dataset=self.options.path_to_art_dataset)
+        augmentor = img_augm.Augmentor(crop_size=[self.options.image_size, self.options.image_size],
+                                       vertical_flip_prb=0., hsv_augm_prb=1.0, hue_augm_shift=0.05,
+                                       saturation_augm_shift=0.05, saturation_augm_scale=0.05, value_augm_shift=0.05,
+                                       value_augm_scale=0.05, )
+        content_dataset_places = prepare_dataset.PlacesDataset(path_to_dataset=self.options.path_to_content_dataset)
+        art_dataset = prepare_dataset.ArtDataset(path_to_art_dataset=self.options.path_to_art_dataset)
 
         # Initialize queue workers for both datasets.
         q_art = multiprocessing.Queue(maxsize=10)
         q_content = multiprocessing.Queue(maxsize=10)
         jobs = []
         for i in range(5):
-            p = multiprocessing.Process(
-                target=content_dataset_places.initialize_batch_worker, args=(
-                    q_content, augmentor, self.batch_size, i))
+            p = multiprocessing.Process(target=content_dataset_places.initialize_batch_worker,
+                                        args=(q_content, augmentor, self.batch_size, i))
             p.start()
             jobs.append(p)
 
-            p = multiprocessing.Process(
-                target=art_dataset.initialize_batch_worker, args=(
-                    q_art, augmentor, self.batch_size, i))
+            p = multiprocessing.Process(target=art_dataset.initialize_batch_worker,
+                                        args=(q_art, augmentor, self.batch_size, i))
             p.start()
             jobs.append(p)
         print("Processes are started.")
@@ -399,12 +260,8 @@ class Artgan(object):
         discr_success = args.discr_success_rate
         alpha = 0.05
 
-        for step in tqdm(
-                range(
-                    self.initial_step,
-                    self.options.total_steps + 1),
-                initial=self.initial_step,
-                total=self.options.total_steps):
+        for step in tqdm(range(self.initial_step, self.options.total_steps + 1), initial=self.initial_step,
+                         total=self.options.total_steps):
             # Get batch from the queue with batches q, if the last is
             # non-empty.
             while q_art.empty() or q_content.empty():
@@ -414,27 +271,21 @@ class Artgan(object):
 
             if discr_success >= win_rate:
                 # Train generator
-                _, summary_all, gener_acc_ = self.sess.run(
-                    [self.g_optim_step, self.summary_merged_all, self.gener_acc],
-                    feed_dict={
-                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                        self.lr: self.options.lr
-                    })
-                discr_success = discr_success * \
-                    (1. - alpha) + alpha * (1. - gener_acc_)
+                _, summary_all, gener_acc_ = self.sess.run([self.g_optim_step, self.summary_merged_all, self.gener_acc],
+                                                           feed_dict={self.input_painting: normalize_arr_of_imgs(
+                                                               batch_art['image']),
+                                                               self.input_photo: normalize_arr_of_imgs(
+                                                                   batch_content['image']), self.lr: self.options.lr})
+                discr_success = discr_success * (1. - alpha) + alpha * (1. - gener_acc_)
             else:
                 # Train discriminator.
-                _, summary_all, discr_acc_ = self.sess.run(
-                    [self.d_optim_step, self.summary_merged_all, self.discr_acc],
-                    feed_dict={
-                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                        self.lr: self.options.lr
-                    })
+                _, summary_all, discr_acc_ = self.sess.run([self.d_optim_step, self.summary_merged_all, self.discr_acc],
+                                                           feed_dict={self.input_painting: normalize_arr_of_imgs(
+                                                               batch_art['image']),
+                                                               self.input_photo: normalize_arr_of_imgs(
+                                                                   batch_content['image']), self.lr: self.options.lr})
 
-                discr_success = discr_success * \
-                    (1. - alpha) + alpha * discr_acc_
+                discr_success = discr_success * (1. - alpha) + alpha * discr_acc_
             self.writer.add_summary(summary_all, step * self.batch_size)
 
             if step % self.options.save_freq == 0 and step > self.initial_step:
@@ -445,22 +296,14 @@ class Artgan(object):
                 self.save(step, is_long=True)
 
             if step % 500 == 0:
-                output_paintings_, output_photos_ = self.sess.run(
-                    [self.input_painting, self.output_photo],
-                    feed_dict={
-                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                        self.lr: self.options.lr
-                    })
+                output_paintings_, output_photos_ = self.sess.run([self.input_painting, self.output_photo], feed_dict={
+                    self.input_painting: normalize_arr_of_imgs(batch_art['image']),
+                    self.input_photo: normalize_arr_of_imgs(batch_content['image']), self.lr: self.options.lr})
 
-                save_batch(
-                    input_painting_batch=batch_art['image'],
-                    input_photo_batch=batch_content['image'],
-                    output_painting_batch=denormalize_arr_of_imgs(output_paintings_),
-                    output_photo_batch=denormalize_arr_of_imgs(output_photos_),
-                    filepath='%s/step_%d.jpg' %
-                    (self.sample_dir,
-                     step))
+                save_batch(input_painting_batch=batch_art['image'], input_photo_batch=batch_content['image'],
+                           output_painting_batch=denormalize_arr_of_imgs(output_paintings_),
+                           output_photo_batch=denormalize_arr_of_imgs(output_photos_),
+                           filepath='%s/step_%d.jpg' % (self.sample_dir, step))
         print("Training is finished. Terminate jobs.")
         for p in jobs:
             p.join()
@@ -469,14 +312,8 @@ class Artgan(object):
         print("Done.")
 
     # Don't use this function yet.
-    def inference_video(
-            self,
-            args,
-            path_to_folder,
-            to_save_dir=None,
-            resize_to_original=True,
-            use_time_smooth_randomness=True,
-            ckpt_nmbr=None):
+    def inference_video(self, args, path_to_folder, to_save_dir=None, resize_to_original=True,
+                        use_time_smooth_randomness=True, ckpt_nmbr=None):
         """
         Run inference on the video frames. Original aspect ratio will be preserved.
         Args:
@@ -504,9 +341,8 @@ class Artgan(object):
 
         # Create folder to store results.
         if to_save_dir is None:
-            to_save_dir = os.path.join(
-                self.root_dir, self.model_name, 'inference_ckpt%d_sz%d' %
-                (self.initial_step, self.image_size))
+            to_save_dir = os.path.join(self.root_dir, self.model_name,
+                                       'inference_ckpt%d_sz%d' % (self.initial_step, self.image_size))
 
         if not os.path.exists(to_save_dir):
             os.makedirs(to_save_dir)
@@ -520,37 +356,24 @@ class Artgan(object):
             img_shape = img.shape[:2]
             # Prepare image for feeding into network.
             scale_mult = self.image_size / np.min(img_shape)
-            new_shape = (
-                np.array(
-                    img_shape,
-                    dtype=float) *
-                scale_mult).astype(int)
+            new_shape = (np.array(img_shape, dtype=float) * scale_mult).astype(int)
 
             img = scipy.misc.imresize(img, size=new_shape)
 
             img = np.expand_dims(img, axis=0)
 
             if use_time_smooth_randomness and img_idx == 0:
-                features_delta = self.sess.run(
-                    self.labels_to_concatenate_to_features, feed_dict={
-                        self.input_photo: normalize_arr_of_imgs(img), })
-                features_delta_start = features_delta + \
-                    np.random.random(size=features_delta.shape) * 0.5 - 0.25
+                features_delta = self.sess.run(self.labels_to_concatenate_to_features,
+                                               feed_dict={self.input_photo: normalize_arr_of_imgs(img), })
+                features_delta_start = features_delta + np.random.random(size=features_delta.shape) * 0.5 - 0.25
                 features_delta_start = features_delta_start.clip(0, 1000)
-                print(
-                    'features_delta_start.shape=',
-                    features_delta_start.shape)
-                features_delta_end = features_delta + \
-                    np.random.random(size=features_delta.shape) * 0.5 - 0.25
+                print('features_delta_start.shape=', features_delta_start.shape)
+                features_delta_end = features_delta + np.random.random(size=features_delta.shape) * 0.5 - 0.25
                 features_delta_end = features_delta_end.clip(0, 1000)
-                step = (features_delta_end - features_delta_start) / \
-                    (num_images - 1)
+                step = (features_delta_end - features_delta_start) / (num_images - 1)
 
-            feed_dict = {
-                self.input_painting: normalize_arr_of_imgs(img),
-                self.input_photo: normalize_arr_of_imgs(img),
-                self.lr: self.options.lr
-            }
+            feed_dict = {self.input_painting: normalize_arr_of_imgs(img), self.input_photo: normalize_arr_of_imgs(img),
+                         self.lr: self.options.lr}
             if use_time_smooth_randomness:
                 pass
 
@@ -563,18 +386,11 @@ class Artgan(object):
             else:
                 pass
 
-            scipy.misc.imsave(os.path.join(
-                to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
+            scipy.misc.imsave(os.path.join(to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
 
         print("Inference is finished.")
 
-    def inference(
-            self,
-            args,
-            path_to_folder,
-            to_save_dir=None,
-            resize_to_original=True,
-            ckpt_nmbr=None):
+    def inference(self, args, path_to_folder, to_save_dir=None, resize_to_original=True, ckpt_nmbr=None):
 
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
@@ -590,9 +406,8 @@ class Artgan(object):
 
         # Create folder to store results.
         if to_save_dir is None:
-            to_save_dir = os.path.join(
-                self.root_dir, self.model_name, 'inference_ckpt%d_sz%d' %
-                (self.initial_step, self.image_size))
+            to_save_dir = os.path.join(self.root_dir, self.model_name,
+                                       'inference_ckpt%d_sz%d' % (self.initial_step, self.image_size))
 
         if not os.path.exists(to_save_dir):
             os.makedirs(to_save_dir)
@@ -609,46 +424,21 @@ class Artgan(object):
             # Resize the smallest side of the image to the self.image_size
             alpha = float(self.image_size) / float(min(img_shape))
             img = scipy.misc.imresize(img, size=alpha)
-            img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
-            #
-            # e_list = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
+            e_list = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
             # printf(e_list[2], "encoder_c2")
-            # printf(e_list[5], "encoder_cv2")
-            # printf(e_list[6], "encoder_mean")
-            # printf(e_list[7], "encoder_variance")
-            # export_layer(e_list[1], "encoder_c1")
-            # export_layer(e_list[2], "encoder_c2")
-            # export_layer(e_list[3], "encoder_c3")
-            # export_layer(e_list[4], "encoder_c4")
-            # export_layer(e_list[0], "encoder_c0")
-
-            d_list = self.sess.run(
-                self.output_photo,
-                feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
-
+            export_layer(e_list[1], "encoder_cx")
+            d_list = self.sess.run(self.output_photo, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
             img = d_list[0]
-            #
-            # printf(d_list[1], "decoder_d1")
-            # printf(d_list[2], "decoder_dd2")
-            # printf(d_list[3], "decoder_d2")
-            # printf(d_list[4], "decoder_mean")
-            printf(d_list[3], "decoder_d3")
-            printf(d_list[6], "decoder_mean")
-            printf(d_list[7], "decoder_varn")
-            # export_layer(d_list[5], "decoder_dd3")
-            # export_layer(d_list[2], "decoder_d2")
-            # export_layer(d_list[3], "decoder_d3")
-            # export_layer(d_list[4], "decoder_d4")
-            # export_layer(d_list[5], "decoder_r1")
+            # printh(d_list[9], "decoder_y", 1)
+            # printf(d_list[3], "decoder_d3")
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)
             if resize_to_original:
                 img = scipy.misc.imresize(img, size=img_shape)
             img_name = os.path.basename(img_path)
-            scipy.misc.imsave(os.path.join(
-                to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
+            scipy.misc.imsave(os.path.join(to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
 
         print("Inference is finished.")
 
@@ -656,59 +446,33 @@ class Artgan(object):
         if not os.path.exists(self.checkpoint_dir):
             os.makedirs(self.checkpoint_dir)
         if is_long:
-            self.saver_long.save(
-                self.sess,
-                os.path.join(
-                    self.checkpoint_long_dir,
-                    self.model_name +
-                    '_%d.ckpt' %
-                    step),
-                global_step=step)
+            self.saver_long.save(self.sess, os.path.join(self.checkpoint_long_dir, self.model_name + '_%d.ckpt' % step),
+                                 global_step=step)
         else:
-            self.saver.save(
-                self.sess,
-                os.path.join(
-                    self.checkpoint_dir,
-                    self.model_name +
-                    '_%d.ckpt' %
-                    step),
-                global_step=step)
+            self.saver.save(self.sess, os.path.join(self.checkpoint_dir, self.model_name + '_%d.ckpt' % step),
+                            global_step=step)
 
     def load(self, checkpoint_dir, ckpt_nmbr=None):
         if ckpt_nmbr:
-            if len([x for x in os.listdir(checkpoint_dir)
-                    if str(ckpt_nmbr) in x]) > 0:
-                print(
-                    " [*] Reading checkpoint %d from folder %s." %
-                    (ckpt_nmbr, checkpoint_dir))
-                ckpt_name = [x for x in os.listdir(
-                    checkpoint_dir) if str(ckpt_nmbr) in x][0]
+            if len([x for x in os.listdir(checkpoint_dir) if str(ckpt_nmbr) in x]) > 0:
+                print(" [*] Reading checkpoint %d from folder %s." % (ckpt_nmbr, checkpoint_dir))
+                ckpt_name = [x for x in os.listdir(checkpoint_dir) if str(ckpt_nmbr) in x][0]
                 ckpt_name = '.'.join(ckpt_name.split('.')[:-1])
                 self.initial_step = ckpt_nmbr
-                print(
-                    "Load checkpoint %s. Initial step: %s." %
-                    (ckpt_name, self.initial_step))
-                self.saver.restore(
-                    self.sess, os.path.join(
-                        checkpoint_dir, ckpt_name))
+                print("Load checkpoint %s. Initial step: %s." % (ckpt_name, self.initial_step))
+                self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
                 return True
             else:
                 return False
         else:
-            print(
-                " [*] Reading latest checkpoint from folder %s." %
-                (checkpoint_dir))
+            print(" [*] Reading latest checkpoint from folder %s." % (checkpoint_dir))
             ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
                 print("checkpoint path: ", ckpt.model_checkpoint_path)
                 self.initial_step = int(ckpt_name.split("_")[-1].split(".")[0])
-                print(
-                    "Load checkpoint %s. Initial step: %s." %
-                    (ckpt_name, self.initial_step))
-                self.saver.restore(
-                    self.sess, os.path.join(
-                        checkpoint_dir, ckpt_name))
+                print("Load checkpoint %s. Initial step: %s." % (ckpt_name, self.initial_step))
+                self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
                 return True
             else:
                 return False

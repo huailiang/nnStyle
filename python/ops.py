@@ -58,11 +58,27 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
             return tf.matmul(input_, matrix) + bias
 
 
+def printh(tensor, name, idz=-1):
+    shape = tensor.shape
+    if idz == -1:
+        idz = shape[3] / 2
+    print("\n%s shape: %dx%dx%d  indz:%d" % (name, shape[1], shape[2], shape[3], idz))
+    max_x = min(20, shape[1])
+    max_y = min(14, shape[2])
+    o_str = ""
+    for i in range(0, max_x):
+        o_str += "[" + str(i) + "] "
+        for j in range(0, max_y):
+            o_str += "\t" + str("%.4f" % tensor[0][i][j][idz])
+        o_str += "\n"
+    print(o_str)
+
+
 def printf(tensor, name, idx=-1):
     shape = tensor.shape
     if len(shape) == 4:
         if idx == -1:
-            idx = shape[1] / 2
+            idx = int(shape[1] / 2)
         print("\n%s shape: %dx%dx%d  indx:%d" % (name, shape[1], shape[2], shape[3], idx))
         max_y = min(80, shape[2])
         max_z = min(14, shape[3])

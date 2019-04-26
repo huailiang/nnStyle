@@ -1,8 +1,8 @@
 import argparse
 import tensorflow as tf
+from model import Artgan
 
 tf.set_random_seed(228)
-from model import Artgan
 
 
 def parse_list(str_value):
@@ -31,7 +31,6 @@ parser.add_argument('--ptcd', dest='path_to_content_dataset', type=str, default=
                     help='Path to Places365 training dataset.')
 
 parser.add_argument('--total_steps', dest='total_steps', type=int, default=int(3e5), help='Total number of steps')
-
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
 parser.add_argument('--lr', dest='lr', type=float, default=0.0002, help='initial learning rate for adam')
 parser.add_argument('--save_freq', dest='save_freq', type=int, default=1000, help='Save model every save_freq steps')

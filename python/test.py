@@ -55,15 +55,14 @@ import numpy as np
 # '''
 #
 
-img_path = "./data/sample_photographs/app1.jpg"
+img_path = "./RT.jpg"
 img = imageio.imread(img_path)
-# printf(img, "img")
-tensor = tf.convert_to_tensor(img)
-tensor = tf.image.resize_images(images=tensor, size=tf.shape(tensor)[0:2] * 2,
-                                method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-with tf.Session() as sess:
-    img = sess.run(tensor)
-    imageio.imwrite("./data/app1_stylized.jpg", img)
+printf(img, "img")  # tensor = tf.convert_to_tensor(img)
+# tensor = tf.image.resize_images(images=tensor, size=tf.shape(tensor)[0:2] * 2,
+#                                 method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+# with tf.Session() as sess:
+#     img = sess.run(tensor)
+#     imageio.imwrite("./data/app1_stylized.jpg", img)
 
 #
 # newimg = np.zeros([512,  512, 3])
