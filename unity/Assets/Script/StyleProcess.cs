@@ -23,14 +23,9 @@ public class StyleProcess : MonoBehaviour
     {
         InitEncoder();
         InitDecoder();
-        if (stylePad < 0 || enStyleConv1 < 0 || enStyleNorm1 < 0 || enStyleInstance1 < 0)
-        {
-            Debug.Log("Initialization Failed");
-            return;
-        }
         if (tempRender.sharedMaterial.mainTexture == null)
         {
-            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app2");
+            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app1");
         }
         mainTexture = tempRender.sharedMaterial.mainTexture;
         tempDestination = new RenderTexture(width, width, 0);
@@ -110,19 +105,15 @@ public class StyleProcess : MonoBehaviour
         if (!drawGui) return;
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
-            encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
-            encoderShader.Dispatch(enNorm, 1, 1, 1);
-            encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
-            encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
             DrawEncoder();
             DrawResidule();
             DrawDecoder();
         }
-        if (GUI.Button(new Rect(20, 80, 80, 40), "Decode_V4"))
+        if (GUI.Button(new Rect(20, 80, 80, 40), "Decode"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_d3");
-            BufferPool.Get("decoder_conv3").SetData(layer);
-            DrawDecoderV4();
+            float[] layer = checkpoint.LoadLayer("decoder_r1");
+            BufferPool.Get("input_writable").SetData(layer);
+            DrawDecoder();
         }
         if (GUI.Button(new Rect(20, 140, 80, 40), "Output"))
         {
@@ -134,6 +125,10 @@ public class StyleProcess : MonoBehaviour
 
     private void DrawEncoder()
     {
+        encoderShader.Dispatch(enConv, width / 8, width / 8, 1);
+        encoderShader.Dispatch(enNorm, 1, 1, 1);
+        encoderShader.Dispatch(enInst, 256 / 8, 256 / 8, 1);
+        encoderShader.Dispatch(stylePad, 288 / 8, 288 / 8, 1);
         encoderShader.Dispatch(enStyleConv1, 288 / 8, 288 / 8, 1);
         encoderShader.Dispatch(enStyleNorm1, 1, 1, 1);
         encoderShader.Dispatch(enStyleInstance1, 288 / 8, 288 / 8, 32 / 4);
@@ -177,18 +172,13 @@ public class StyleProcess : MonoBehaviour
         decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
         decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
         decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-        DrawDecoderV4();
-    }
-    
-    private void DrawDecoderV4()
-    {
         decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
         decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
         decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
         decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
         DrawRender();
     }
-
+    
     private void DrawRender()
     {
         decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
@@ -259,18 +249,18 @@ public class StyleProcess : MonoBehaviour
 
     private void ProcessEncoder()
     {
-        string name = "encoder_conv0";
-        var cb = BufferPool.Get<float>(name, 286, 286, 3);
-        encoderShader.SetBuffer(stylePad, name, cb);
-        encoderShader.SetBuffer(enStyleConv1, name, cb);
-
-        name = "encoder_inst";
-        cb = BufferPool.Get<float>(name, 256, 256, 3);
+        string name = "encoder_inst";
+        var cb = BufferPool.Get<float>(name, 256, 256, 3);
         encoderShader.SetBuffer(enConv, name, cb);
         encoderShader.SetBuffer(enNorm, name, cb);
         encoderShader.SetBuffer(enInst, name, cb);
         encoderShader.SetBuffer(stylePad, name, cb);
 
+        name = "encoder_conv0";
+        cb = BufferPool.Get<float>(name, 286, 286, 3);
+        encoderShader.SetBuffer(stylePad, name, cb);
+        encoderShader.SetBuffer(enStyleConv1, name, cb);
+        
         name = "encoder_conv0_statistic";
         cb = BufferPool.Get<float>(name, 6);
         encoderShader.SetBuffer(enNorm, name, cb);
