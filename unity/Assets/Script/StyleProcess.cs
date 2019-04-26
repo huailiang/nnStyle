@@ -188,10 +188,10 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(120, 20, 80, 40), "Decode_V1"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_y1");
-            BufferPool.Get("decoder_residule").SetData(layer);
-            BufferProfile.Printf("decoder_residule");
-           // decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
+            float[] layer = checkpoint.LoadLayer("encoder_c5");
+            BufferPool.Get("input_initial").SetData(layer);
+            BufferProfile.Printf("input_initial");
+            decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
             decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
             decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 1);
             BufferProfile.Printf("input_statistic");

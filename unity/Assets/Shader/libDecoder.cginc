@@ -30,37 +30,6 @@ contact: peng_huailiang@qq.com
 	}
 
 
-#define DefineResiduleNormal(id) \
-	uint count = depth / MAX_THREAD_Z;	\
-	uint offset = width * depth / count;	\
-	for (uint i = 0; i < count; i++) {	\
-		uint shift = offset * i * 2;	\
-		uint z = id.z + MAX_THREAD_Z * i;	\
-		uint nix = id.y * depth / count + id.z + shift;	\
-		g_cache[nix] = 0;	\
-		g_cache[nix + offset] = 0;	\
-		for (uint j = 0; j < width * scale; j++) { \
-			int idx = j * width * depth * scale + id.y * depth * scale + z;		\
-			g_cache[nix] += input_writable[idx];	\
-			g_cache[nix + offset] += pow(abs(input_writable[idx]), 2);	\
-		}	\
-	} 	\
-	GroupMemoryBarrierWithGroupSync();	\
-	if (id.y < count) {	\
-		float mean = 0, qrt = 0;	\
-		int shift = width * depth * id.y * 2 / count;	\
-		for (uint i = 0; i < width; i++) {	\
-			int idx = i * depth / count + id.z + shift;	\
-			mean += g_cache[idx];	\
-			qrt += g_cache[idx + offset];	\
-		}	\
-		int len = width * width * scale;	\
-		mean = mean / len;	\
-		input_statistic[id.z * 2 + shift] = mean;	\
-		input_statistic[id.z * 2 + 1 + shift] = qrt / len - pow(abs(mean), 2);	\
-	}
-
-
 #define DeifineResiduleInst(id, seq, r)	\
 	int indx = StdID(id, width, depth);	\
 	float color = input_writable[indx];	\
@@ -88,43 +57,6 @@ contact: peng_huailiang@qq.com
 		int indx = (width * depth2) * id.x + depth2 * id.y + j;	\
 		decoder_conv##idx##[indx] = v;	\
 	}
-
-
-#define InnerDecoderNormal(seq)	\
-for (uint j = 0; j < nwidth; j++)	\
-{	\
-	[unroll]	\
-	for (uint i = 0; i < intvl; i++)	\
-	{	\
-		int idx = j * nwidth * depth + (id.y + width * i) * depth + id.z;	\
-		g_cache[nix] += decoder_conv##seq##[idx];	\
-		g_cache[nix + offset] += pow(abs(decoder_conv##seq##[idx]), 2);	\
-	}	\
-}	\
-
-#define DefineDecoderNormal(id, width, seq)	\
-	uint offset = CACHE_HALF;	\
-	uint nix = id.y * depth + id.z;	\
-	uint scale = nwidth / width;	\
-	uint intvl = id.y < nwidth % width ?  scale + 1 : scale;	\
-	g_cache[nix] = 0;	\
-	g_cache[nix + offset] = 0;	\
-	InnerDecoderNormal(seq)	\
-	GroupMemoryBarrierWithGroupSync();	\
-	if (id.y == 0)	\
-	{	\
-		float mean = 0, qrt = 0;	\
-		for (uint i = 0; i < width; i++)	\
-		{	\
-			int idx = i * depth + id.z;	\
-			mean += g_cache[idx];	\
-			qrt += g_cache[idx + offset];	\
-		}	\
-		int len = nwidth * nwidth;	\
-		mean = mean / len;	\
-		decoder_conv##seq##_statistic[id.z * 2] = mean;	\
-		decoder_conv##seq##_statistic[id.z * 2 + 1] = qrt / len - mean * mean;	\
-	}	\
 
 
 #define DefineDecoderInstRelu(id, seq)	\

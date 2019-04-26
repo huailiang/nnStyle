@@ -101,5 +101,39 @@ inline bool StdCheckRange(uint3 id, uint width)
 	return id.x >= width || id.y >= width;
 }
 
+#define StdInnerNormal(inbuffer)	\
+	for (uint j = 0; j < nwidth; j++) {	\
+		for (uint i = 0; i < intvl; i++) {	\
+			int idx = j * nwidth * depth + (id.y + width * i) * depth + id.z;	\
+			g_cache[nix] += inbuffer[idx];	\
+			g_cache[nix + offset] += pow(abs(inbuffer[idx]), 2);	\
+		}	\
+	}
+
+
+#define StdDefineNormal(id, inbuffer, outbuffer, width)	\
+	uint offset = CACHE_HALF;	\
+	uint nix = id.y * depth + id.z;	\
+	uint scale = nwidth / width;	\
+	uint intvl = id.y < nwidth % width ?  scale + 1 : scale;	\
+	g_cache[nix] = 0;	\
+	g_cache[nix + offset] = 0;	\
+	StdInnerNormal(inbuffer)	\
+	GroupMemoryBarrierWithGroupSync();	\
+	if (id.y == 0)	\
+	{	\
+		float mean = 0, qrt = 0;	\
+		for (uint i = 0; i < width; i++)	\
+		{	\
+			int idx = i * depth + id.z;	\
+			mean += g_cache[idx];	\
+			qrt += g_cache[idx + offset];	\
+		}	\
+		int len = nwidth * nwidth;	\
+		mean = mean / len;	\
+		outbuffer[id.z * 2] = mean;	\
+		outbuffer[id.z * 2 + 1] = qrt / len - mean * mean;	\
+	}	\
+
 
 #endif

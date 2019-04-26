@@ -92,10 +92,10 @@ void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 }
 
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
-void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
+void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.z=256 16x16x256
 {
-	uint width = 4, depth = 256, scale = 2;
-	DefineResiduleNormal(id)
+	uint width = 4, depth = 256, nwidth = 16;
+	StdDefineNormal(id, input_writable, input_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -125,8 +125,8 @@ void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 [numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
 void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
-	uint width = 4, depth = 256, scale = 2;
-	DefineResiduleNormal(id)
+	uint width = 4, depth = 256, nwidth = 16;
+	StdDefineNormal(id, input_writable, input_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -159,7 +159,7 @@ void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
 void DecoderNormal1(uint3 id: SV_DispatchThreadID) //id.z=256 32x32x256
 {
 	uint width = 4, depth = 256, nwidth = 32;
-	DefineDecoderNormal(id, width, 1)
+	StdDefineNormal(id, decoder_conv1, decoder_conv1_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -187,7 +187,7 @@ void DecoderConv2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x256->64x64x128
 void DecoderNormal2(uint3 id: SV_DispatchThreadID) //id.z=MAX_THREAD_Z*2 64x64x128
 {
 	uint width = 8, depth = 128, nwidth = 64;
-	DefineDecoderNormal(id, width, 2)
+	StdDefineNormal(id, decoder_conv2, decoder_conv2_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -215,7 +215,7 @@ void DecoderConv3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x128->128x12
 void DecoderNormal3(uint3 id: SV_DispatchThreadID) //128x128x64
 {
 	uint width = REV_THREAD_Z, depth = 64, nwidth = 128;
-	DefineDecoderNormal(id, width, 3);
+	StdDefineNormal(id, decoder_conv3, decoder_conv3_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -243,7 +243,7 @@ void DecoderConv4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x64->256x256
 void DecoderNormal4(uint3 id: SV_DispatchThreadID) //256x256x32
 {
 	uint width = THREAD_Y_32Z, depth = 32, nwidth = 256;
-	DefineDecoderNormal(id, width, 4);
+	StdDefineNormal(id, decoder_conv4, decoder_conv4_statistic, width);
 }
 
 [numthreads(8,8,4)]
