@@ -25,6 +25,11 @@ public class BufferProfile
         LookupPool(name, Printf);
     }
 
+    public static void Printf(string name, int dftX)
+    {
+        LookupPool(name, (cb, na, shape) => Printf(cb, dftX, name, shape));
+    }
+
     public static void Printf(ComputeBuffer cb, string name, params int[] shape)
     {
         int dftX = shape[0] / 2;
@@ -39,7 +44,12 @@ public class BufferProfile
             int max_z = z <= 8 ? z : 14;
             float[] array = new float[x * y * z];
             buffer.GetData(array);
-            sb.AppendFormat("({0}x{1}x{2})  indx:{3}\n", x, y, z, dftX);
+            float max = 0f; int ix = 0;
+            for (int i = 0; i < x * y * z; i++)
+            {
+                if (array[i] > max) { max = array[i]; ix = i; }
+            }
+            sb.AppendFormat("({0}x{1}x{2})  indx:{3} max:{4} maxix:{5}\n", x, y, z, dftX, max, Indx(ix, shape).ToString("f0"));
             for (int i = 0; i < Mathf.Min(max_y, y); i++)
             {
                 sb.Append("[" + i + "] ");
@@ -89,6 +99,17 @@ public class BufferProfile
                 sb.Append("\n");
             }
         }, (x) => LogV1(x, buffer), shape);
+    }
+
+    private static Vector3 Indx(int i, int[] shape)
+    {
+        Vector3 rt = Vector3.zero;
+        int x = shape[0], y = shape[1], z = shape[2];
+        rt.z = i % z;
+        int ii = x / z;
+        rt.y = ii % y;
+        rt.x = ii / x;
+        return rt;
     }
 
     private static void HandleLog(string name, Action<int, int, int> v3, Action<int> v1, params int[] shape)
