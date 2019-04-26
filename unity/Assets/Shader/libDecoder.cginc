@@ -13,13 +13,19 @@ contact: peng_huailiang@qq.com
 #include "libStd.cginc"
 #include "libActive.cginc"
 
+#define DefineDecodeBuffer(seq)	\
+	RWStructuredBuffer<float> decoder_conv##seq##;	\
+	RWStructuredBuffer<float> decoder_conv##seq##_conved;		\
+	RWStructuredBuffer<float> decoder_conv##seq##_statistic;	\
+
+
 #define DefineResiduleConv(id, input, output, seq, idx) \
 	for(int j = 0;j < depth; j++) \
 	{ 	\
 		float v = 0.0f;	\
 		for(int i= 0; i < depth; i++)	\
 		{	\
-			float3x3 xsamp = StdSample(decoder_residule, id.x, id.y, i, input, depth);	\
+			float3x3 xsamp = StdSample(decoder_conv0, id.x, id.y, i, input, depth);	\
 			float3x3 kernel = decoder_g_r##seq##_c##idx##_Conv_weights[depth * i + j];	\
 			float3x3 conv = xsamp * kernel;	\
 			float3 iall = conv[0] + conv[1] + conv[2];	\
@@ -33,8 +39,8 @@ contact: peng_huailiang@qq.com
 #define DeifineResiduleInst(id, seq, r)	\
 	int indx = StdID(id, width, depth);	\
 	float color = input_writable[indx];	\
-	float mean = input_statistic[id.z * 2];	\
-	float variance = input_statistic[id.z * 2 + 1];	\
+	float mean = decoder_conv0_statistic[id.z * 2];	\
+	float variance = decoder_conv0_statistic[id.z * 2 + 1];	\
 	float inv = rsqrt(variance + EPSILON);	\
 	float normalized = (color - mean) * inv;	\
 	float scale = decoder_g_r##seq##_bn##r##_scale[id.z];	\

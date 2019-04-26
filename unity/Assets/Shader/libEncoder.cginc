@@ -14,6 +14,17 @@ contact: peng_huailiang@qq.com
 #include "libStd.cginc"
 
 
+#define DefineEncodeBuffer(seq)	\
+	RWStructuredBuffer<float> encoder_conv##seq##;	\
+	RWStructuredBuffer<float> encoder_conv##seq##_statistic;	\
+
+
+#define DefineEncoderArg(seq)	\
+	StructuredBuffer<float> encoder_g_e##seq##_bn_offset;	\
+	StructuredBuffer<float> encoder_g_e##seq##_bn_scale;	\
+	StructuredBuffer<float3x3> encoder_g_e##seq##_c_Conv_weights;	\
+
+
 #define DefineEncoderConv(id, input, output, depth1, depth2, stride, idx, pidx)	\
 	for(uint j = 0; j < depth2; j++)	\
 	{	\

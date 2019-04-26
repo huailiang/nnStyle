@@ -15,7 +15,7 @@ contact: peng_huailiang@qq.com
 used in encoder & decoder
 */
 
-#define CACHE_MAX 2048
+#define CACHE_MAX  2048
 #define CACHE_HALF 1024
 
 groupshared float g_cache[CACHE_MAX];

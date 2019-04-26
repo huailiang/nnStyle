@@ -6,43 +6,44 @@ Copyright (c) 2019 huailiang
 contact: peng_huailiang@qq.com
 */
 
-#pragma kernel StyleEncoderConv 
-#pragma kernel StyleEncoderNormal 
-#pragma kernel StyleEncoderInstance 
-#pragma kernel StylePad 
-#pragma kernel StyleConv1 
-#pragma kernel StyleNormal1 
-#pragma kernel StyleInstance1 
-#pragma kernel StyleConv2 
-#pragma kernel StyleNormal2 
-#pragma kernel StyleInstance2 
-#pragma kernel StyleConv3 
+#pragma kernel StyleEncoderConv
+#pragma kernel StyleEncoderNormal
+#pragma kernel StyleEncoderInstance
+#pragma kernel StylePad
+#pragma kernel StyleConv1
+#pragma kernel StyleNormal1
+#pragma kernel StyleInstance1
+#pragma kernel StyleConv2
+#pragma kernel StyleNormal2
+#pragma kernel StyleInstance2
+#pragma kernel StyleConv3
 #pragma kernel StyleNormal3 
 #pragma kernel StyleInstance3 
-#pragma kernel StyleConv4 
+#pragma kernel StyleConv4
 #pragma kernel StyleNormal4 
-#pragma kernel StyleInstance4 
-#pragma kernel StyleConv5 
-#pragma kernel StyleNormal5 
-#pragma kernel StyleInstance5 
+#pragma kernel StyleInstance4
+#pragma kernel StyleConv5
+#pragma kernel StyleNormal5
+#pragma kernel StyleInstance5
 
 #include "libEncoder.cginc"
-#include "libEncoderArgs.cginc"
 
 Texture2D<float4> source;
 RWStructuredBuffer<float> encoder_inst;
-RWStructuredBuffer<float> encoder_inst_statistic;
-RWStructuredBuffer<float> encoder_conv0;
-RWStructuredBuffer<float> encoder_conv1;
-RWStructuredBuffer<float> encoder_conv1_statistic;
-RWStructuredBuffer<float> encoder_conv2;
-RWStructuredBuffer<float> encoder_conv2_statistic;
-RWStructuredBuffer<float> encoder_conv3;
-RWStructuredBuffer<float> encoder_conv3_statistic;
-RWStructuredBuffer<float> encoder_conv4;
-RWStructuredBuffer<float> encoder_conv4_statistic;
-RWStructuredBuffer<float> encoder_conv5;
-RWStructuredBuffer<float> encoder_conv5_statistic;
+StructuredBuffer<float> encoder_g_e0_bn_offset;
+StructuredBuffer<float> encoder_g_e0_bn_scale;
+DefineEncoderArg(1)
+DefineEncoderArg(2)
+DefineEncoderArg(3)
+DefineEncoderArg(4)
+DefineEncoderArg(5)
+DefineEncodeBuffer(0)
+DefineEncodeBuffer(1)
+DefineEncodeBuffer(2)
+DefineEncodeBuffer(3)
+DefineEncodeBuffer(4)
+DefineEncodeBuffer(5)
+
 
 /*
 ***  formula  o=(w-k+2p)/s+1  ***
@@ -60,9 +61,9 @@ conv5			  16x16x256
 void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
-	float4 color = source[id.xy];
+	float4 color = source[uint2(id.x, width - 1 - id.y)];
 	float arr[3] = { color.x, color.y, color.z };
-	float v = 2 * arr[id.z] - 1;
+	float v = 2 * arr[id.z] - 1;  // (0,1) -> (-1,1)
 	int idx = id.y * width * depth + id.x * depth + id.z;
 	encoder_inst[idx] = v;
 }
@@ -71,23 +72,21 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID) // 256x256x3
 {
 	uint width = 64, depth = 3, nwidth = 256;
-	StdDefineNormal(id, encoder_inst, encoder_inst_statistic, width);
+	StdDefineNormal(id, encoder_inst, encoder_conv0_statistic, width);
 }
 
 [numthreads(8, 8, 3)]
 void StyleEncoderInstance(uint3 id : SV_DispatchThreadID) //id.xy=256 256x256x3
 {
 	uint width = 256, depth = 3;
-	float4 color = source[uint2(id.x, width - id.y - 1)];
-	float arr[3] = { color.x, color.y, color.z };
-	int z = id.z;
 	int idx = StdID(id, width, depth);
-	float mean = encoder_inst_statistic[z * 2];
-	float variance = encoder_inst_statistic[z * 2 + 1];
+	float color = encoder_inst[idx];
+	float mean = encoder_conv0_statistic[id.z * 2];
+	float variance = encoder_conv0_statistic[id.z * 2 + 1];
 	float inv = rsqrt(variance + EPSILON);
-	float normalized = (arr[z] - mean) * inv;
-	float scale = encoder_g_e0_bn_scale[z];
-	float offset = encoder_g_e0_bn_offset[z];
+	float normalized = (color - mean) * inv;
+	float scale = encoder_g_e0_bn_scale[id.z];
+	float offset = encoder_g_e0_bn_offset[id.z];
 	encoder_inst[idx] = scale * normalized + offset;
 }
 

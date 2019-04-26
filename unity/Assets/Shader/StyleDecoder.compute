@@ -35,27 +35,17 @@ contact: peng_huailiang@qq.com
 
 RWStructuredBuffer<float> input_initial;
 RWStructuredBuffer<float> input_writable;
-RWStructuredBuffer<float> input_statistic;
 RWTexture2D<float4> decoder_destination;
 
 #include "libStd.cginc"
 #include "libDecoderArgs.cginc"
 #include "libDecoder.cginc"
 
-RWStructuredBuffer<float> decoder_residule; 		//16x16x256
-RWStructuredBuffer<float> decoder_conv0_conved;		//32x32x256
-RWStructuredBuffer<float> decoder_conv1;			//32x32x256
-RWStructuredBuffer<float> decoder_conv1_conved;		//32x32x256
-RWStructuredBuffer<float> decoder_conv1_statistic; 	//256x2
-RWStructuredBuffer<float> decoder_conv2;			//64x64x128
-RWStructuredBuffer<float> decoder_conv2_conved;		//64x64x128		
-RWStructuredBuffer<float> decoder_conv2_statistic;	//128x2
-RWStructuredBuffer<float> decoder_conv3;			//128x128x64
-RWStructuredBuffer<float> decoder_conv3_conved;		//128x128x64
-RWStructuredBuffer<float> decoder_conv3_statistic;	//64x2
-RWStructuredBuffer<float> decoder_conv4;			//256x256x32
-RWStructuredBuffer<float> decoder_conv4_conved;		
-RWStructuredBuffer<float> decoder_conv4_statistic;	//32x2
+DefineDecodeBuffer(0)
+DefineDecodeBuffer(1)
+DefineDecodeBuffer(2)
+DefineDecodeBuffer(3)
+DefineDecodeBuffer(4)
 RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
 
 /*
@@ -80,8 +70,8 @@ void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 {
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
-	StdPad(id, width, depth, pad)
-	decoder_residule[indx2] = input_initial[indx];	
+	StdPad(id, width, depth, pad);
+	decoder_conv0[indx2] = input_initial[indx];
 }
 
 [numthreads(8,8,1)]
@@ -95,7 +85,7 @@ void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.z=256 16x16x256
 {
 	uint width = 4, depth = 256, nwidth = 16;
-	StdDefineNormal(id, input_writable, input_statistic, width);
+	StdDefineNormal(id, input_writable, decoder_conv0_statistic, width);
 }
 
 [numthreads(8,8,4)]
@@ -112,7 +102,7 @@ void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
 	uint pad = 1, width = 16, depth = 256;
 	if (StdCheckRange(id, width + 2 * pad)) return;
 	StdPad(id, width, depth, pad);
-	decoder_residule[indx2] = relu(input_writable[indx]);
+	decoder_conv0[indx2] = relu(input_writable[indx]);
 }
 
 [numthreads(8,8,1)]
@@ -126,7 +116,7 @@ void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x
 void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
 {
 	uint width = 4, depth = 256, nwidth = 16;
-	StdDefineNormal(id, input_writable, input_statistic, width);
+	StdDefineNormal(id, input_writable, decoder_conv0_statistic, width);
 }
 
 [numthreads(8,8,4)]

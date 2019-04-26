@@ -77,7 +77,7 @@ def printf(tensor, name, idx=-1):
         print(o_str)
     if len(shape) == 3:
         if idx == -1:
-            idx = shape[0] / 2
+            idx = int(shape[0] / 2)
         print("\n%s shape: %dx%dx%d  indx:%d" % (name, shape[0], shape[1], shape[2], idx))
         max_y = min(80, shape[1])
         max_z = min(14, shape[2])
