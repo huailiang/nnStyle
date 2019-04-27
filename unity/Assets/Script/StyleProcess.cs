@@ -12,9 +12,9 @@ public class StyleProcess : MonoBehaviour
     private int enConv, enNorm, enInst, stylePad, enStyleConv1, enStyleNorm1, enStyleInstance1, enStyleConv2, enStyleNorm2, enStyleInstance2;
     private int enStyleConv3, enStyleNorm3, enStyleInstance3, enStyleConv4, enStyleNorm4, enStyleInstance4, enStyleConv5, enStyleNorm5, enStyleInstance5;
 
-    private int deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleInst1_1, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2, deResiduleInst1_2;
-    private int decoderExpand1, decoderConv1, decoderNormal1, decoderInstance1, decoderExpand2, decoderConv2, decoderNormal2, decoderInstance2;
-    private int decoderExpand3, decoderConv3, decoderNormal3, decoderInstance3, decoderExpand4, decoderConv4, decoderNormal4, decoderInstance4, decoderExpand5, decoderConv5;
+    private int residulePad1_1, residuleConv1_1, residuleNormal1_1, residuleInst1_1, residulePad1_2, residuleConv1_2, residuleNormal1_2, residuleInst1_2;
+    private int decodeExpand1, decodeConv1, decodeNormal1, decodeInstance1, decodeExpand2, decodeConv2, decodeNormal2, decodeInstance2;
+    private int decodeExpand3, decodeConv3, decodeNormal3, decodeInstance3, decodeExpand4, decodeConv4, decodeNormal4, decodeInstance4, decodeExpand5, decodeConv5;
 
     private const int width = 256;
     private bool drawGui = true;
@@ -60,32 +60,32 @@ public class StyleProcess : MonoBehaviour
 
     private void InitDecoder()
     {
-        deResidulePad1_1 = decoderShader.FindKernel("ResidulePad1_1");
-        deResiduleConv1_1 = decoderShader.FindKernel("ResiduleConv1_1");
-        deResiduleNormal1_1 = decoderShader.FindKernel("ResiduleNormal1_1");
-        deResiduleInst1_1 = decoderShader.FindKernel("ResiduleInst1_1");
-        deResidulePad1_2 = decoderShader.FindKernel("ResidulePad1_2");
-        deResiduleConv1_2 = decoderShader.FindKernel("ResiduleConv1_2");
-        deResiduleNormal1_2 = decoderShader.FindKernel("ResiduleNormal1_2");
-        deResiduleInst1_2 = decoderShader.FindKernel("ResiduleInst1_2");
-        decoderExpand1 = decoderShader.FindKernel("DecoderExpand1");
-        decoderConv1 = decoderShader.FindKernel("DecoderConv1");
-        decoderNormal1 = decoderShader.FindKernel("DecoderNormal1");
-        decoderInstance1 = decoderShader.FindKernel("DecoderInstance1");
-        decoderExpand2 = decoderShader.FindKernel("DecoderExpand2");
-        decoderConv2 = decoderShader.FindKernel("DecoderConv2");
-        decoderNormal2 = decoderShader.FindKernel("DecoderNormal2");
-        decoderInstance2 = decoderShader.FindKernel("DecoderInstance2");
-        decoderExpand3 = decoderShader.FindKernel("DecoderExpand3");
-        decoderConv3 = decoderShader.FindKernel("DecoderConv3");
-        decoderNormal3 = decoderShader.FindKernel("DecoderNormal3");
-        decoderInstance3 = decoderShader.FindKernel("DecoderInstance3");
-        decoderExpand4 = decoderShader.FindKernel("DecoderExpand4");
-        decoderConv4 = decoderShader.FindKernel("DecoderConv4");
-        decoderNormal4 = decoderShader.FindKernel("DecoderNormal4");
-        decoderInstance4 = decoderShader.FindKernel("DecoderInstance4");
-        decoderExpand5 = decoderShader.FindKernel("DecoderPad5");
-        decoderConv5 = decoderShader.FindKernel("DecoderConv5");
+        residulePad1_1 = decoderShader.FindKernel("ResidulePad1_1");
+        residuleConv1_1 = decoderShader.FindKernel("ResiduleConv1_1");
+        residuleNormal1_1 = decoderShader.FindKernel("ResiduleNormal1_1");
+        residuleInst1_1 = decoderShader.FindKernel("ResiduleInst1_1");
+        residulePad1_2 = decoderShader.FindKernel("ResidulePad1_2");
+        residuleConv1_2 = decoderShader.FindKernel("ResiduleConv1_2");
+        residuleNormal1_2 = decoderShader.FindKernel("ResiduleNormal1_2");
+        residuleInst1_2 = decoderShader.FindKernel("ResiduleInst1_2");
+        decodeExpand1 = decoderShader.FindKernel("DecoderExpand1");
+        decodeConv1 = decoderShader.FindKernel("DecoderConv1");
+        decodeNormal1 = decoderShader.FindKernel("DecoderNormal1");
+        decodeInstance1 = decoderShader.FindKernel("DecoderInstance1");
+        decodeExpand2 = decoderShader.FindKernel("DecoderExpand2");
+        decodeConv2 = decoderShader.FindKernel("DecoderConv2");
+        decodeNormal2 = decoderShader.FindKernel("DecoderNormal2");
+        decodeInstance2 = decoderShader.FindKernel("DecoderInstance2");
+        decodeExpand3 = decoderShader.FindKernel("DecoderExpand3");
+        decodeConv3 = decoderShader.FindKernel("DecoderConv3");
+        decodeNormal3 = decoderShader.FindKernel("DecoderNormal3");
+        decodeInstance3 = decoderShader.FindKernel("DecoderInstance3");
+        decodeExpand4 = decoderShader.FindKernel("DecoderExpand4");
+        decodeConv4 = decoderShader.FindKernel("DecoderConv4");
+        decodeNormal4 = decoderShader.FindKernel("DecoderNormal4");
+        decodeInstance4 = decoderShader.FindKernel("DecoderInstance4");
+        decodeExpand5 = decoderShader.FindKernel("DecoderPad5");
+        decodeConv5 = decoderShader.FindKernel("DecoderConv5");
     }
 
     private void OnDestroy()
@@ -155,41 +155,41 @@ public class StyleProcess : MonoBehaviour
 
     private void DrawResidule()
     {
-        decoderShader.Dispatch(deResidulePad1_1, 24 / 8, 24 / 8, 256 / 4);
-        decoderShader.Dispatch(deResiduleConv1_1, 16 / 8, 16 / 8, 1);
-        decoderShader.Dispatch(deResiduleNormal1_1, 1, 1, 1);
-        decoderShader.Dispatch(deResiduleInst1_1, 16 / 8, 16 / 8, 256 / 4);
-        decoderShader.Dispatch(deResidulePad1_2, 24 / 8, 24 / 8, 256 / 4);
-        decoderShader.Dispatch(deResiduleConv1_2, 16 / 8, 16 / 8, 1);
-        decoderShader.Dispatch(deResiduleNormal1_2, 1, 1, 1);
-        decoderShader.Dispatch(deResiduleInst1_2, 16 / 8, 16 / 8, 256 / 4);
+        decoderShader.Dispatch(residulePad1_1, 24 / 8, 24 / 8, 256 / 4);
+        decoderShader.Dispatch(residuleConv1_1, 16 / 8, 16 / 8, 1);
+        decoderShader.Dispatch(residuleNormal1_1, 1, 1, 1);
+        decoderShader.Dispatch(residuleInst1_1, 16 / 8, 16 / 8, 256 / 4);
+        decoderShader.Dispatch(residulePad1_2, 24 / 8, 24 / 8, 256 / 4);
+        decoderShader.Dispatch(residuleConv1_2, 16 / 8, 16 / 8, 1);
+        decoderShader.Dispatch(residuleNormal1_2, 1, 1, 1);
+        decoderShader.Dispatch(residuleInst1_2, 16 / 8, 16 / 8, 256 / 4);
     }
 
     private void DrawDecoder()
     {
-        decoderShader.Dispatch(decoderExpand1, 16 / 8, 16 / 8, 256 / 4);
-        decoderShader.Dispatch(decoderConv1, 32 / 8, 32 / 8, 1);
-        decoderShader.Dispatch(decoderNormal1, 1, 1, 1);
-        decoderShader.Dispatch(decoderInstance1, 32 / 8, 32 / 8, 256 / 4);
-        decoderShader.Dispatch(decoderExpand2, 32 / 8, 32 / 8, 256 / 4);
-        decoderShader.Dispatch(decoderConv2, 64 / 8, 64 / 8, 1);
-        decoderShader.Dispatch(decoderNormal2, 1, 1, 1);
-        decoderShader.Dispatch(decoderInstance2, 64 / 8, 64 / 8, 128 / 4);
-        decoderShader.Dispatch(decoderExpand3, 64 / 8, 64 / 8, 128 / 4);
-        decoderShader.Dispatch(decoderConv3, 128 / 8, 128 / 8, 1);
-        decoderShader.Dispatch(decoderNormal3, 1, 1, 1);
-        decoderShader.Dispatch(decoderInstance3, 128 / 8, 128 / 8, 64 / 4);
-        decoderShader.Dispatch(decoderExpand4, 128 / 8, 128 / 8, 64 / 4);
-        decoderShader.Dispatch(decoderConv4, 256 / 8, 256 / 8, 1);
-        decoderShader.Dispatch(decoderNormal4, 1, 1, 1);
-        decoderShader.Dispatch(decoderInstance4, 256 / 8, 256 / 8, 32 / 4);
+        decoderShader.Dispatch(decodeExpand1, 16 / 8, 16 / 8, 256 / 4);
+        decoderShader.Dispatch(decodeConv1, 32 / 8, 32 / 8, 1);
+        decoderShader.Dispatch(decodeNormal1, 1, 1, 1);
+        decoderShader.Dispatch(decodeInstance1, 32 / 8, 32 / 8, 256 / 4);
+        decoderShader.Dispatch(decodeExpand2, 32 / 8, 32 / 8, 256 / 4);
+        decoderShader.Dispatch(decodeConv2, 64 / 8, 64 / 8, 1);
+        decoderShader.Dispatch(decodeNormal2, 1, 1, 1);
+        decoderShader.Dispatch(decodeInstance2, 64 / 8, 64 / 8, 128 / 4);
+        decoderShader.Dispatch(decodeExpand3, 64 / 8, 64 / 8, 128 / 4);
+        decoderShader.Dispatch(decodeConv3, 128 / 8, 128 / 8, 1);
+        decoderShader.Dispatch(decodeNormal3, 1, 1, 1);
+        decoderShader.Dispatch(decodeInstance3, 128 / 8, 128 / 8, 64 / 4);
+        decoderShader.Dispatch(decodeExpand4, 128 / 8, 128 / 8, 64 / 4);
+        decoderShader.Dispatch(decodeConv4, 256 / 8, 256 / 8, 1);
+        decoderShader.Dispatch(decodeNormal4, 1, 1, 1);
+        decoderShader.Dispatch(decodeInstance4, 256 / 8, 256 / 8, 32 / 4);
         DrawRender();
     }
 
     private void DrawRender()
     {
-        decoderShader.Dispatch(decoderExpand5, 264 / 8, 264 / 8, 32 / 4);
-        decoderShader.Dispatch(decoderConv5, 256 / 8, 256 / 8, 1);
+        decoderShader.Dispatch(decodeExpand5, 264 / 8, 264 / 8, 32 / 4);
+        decoderShader.Dispatch(decodeConv5, 256 / 8, 256 / 8, 1);
         tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
     }
 
@@ -212,9 +212,9 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                SetDecoderBuffer(item.Key, buffer, decoderConv1, deResiduleNormal1_1, deResiduleInst1_1, deResiduleNormal1_2, deResiduleInst1_2, decoderNormal1, decoderInstance1, decoderConv2, decoderNormal2, decoderInstance2,
-                    decoderConv3, decoderNormal3, decoderInstance3, decoderConv4, decoderNormal4, decoderInstance4);
-                if (item.Key == "decoder_g_pred_c_Conv_weights") decoderShader.SetBuffer(decoderConv5, "decoder_g_pred_c_Conv_weights", buffer);
+                SetDecoderBuffer(item.Key, buffer, decodeConv1, residuleNormal1_1, residuleInst1_1, residuleNormal1_2, residuleInst1_2, decodeNormal1, decodeInstance1, decodeConv2, decodeNormal2, decodeInstance2,
+                    decodeConv3, decodeNormal3, decodeInstance3, decodeConv4, decodeNormal4, decodeInstance4);
+                if (item.Key == "decoder_g_pred_c_Conv_weights") decoderShader.SetBuffer(decodeConv5, "decoder_g_pred_c_Conv_weights", buffer);
             }
         }
         foreach (var item in v3)
@@ -239,8 +239,8 @@ public class StyleProcess : MonoBehaviour
             {
                 buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                SetDecoderBuffer(item.Key, buffer, deResiduleConv1_1, deResiduleNormal1_1, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2, decoderConv3,
-                    decoderConv1, decoderNormal3, decoderConv4, decoderNormal4);
+                SetDecoderBuffer(item.Key, buffer, residuleConv1_1, residuleNormal1_1, residuleConv1_2, residuleNormal1_2, decodeConv2, decodeNormal2, decodeConv3,
+                    decodeConv1, decodeNormal3, decodeConv4, decodeNormal4);
             }
         }
         encoderShader.SetTexture(enConv, "source", mainTexture);
@@ -350,76 +350,76 @@ public class StyleProcess : MonoBehaviour
     {
         string name = "input_initial";
         var cb = BufferPool.Inference("encoder_conv5", name);
-        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleInst1_2, deResidulePad1_2, deResiduleConv1_2, deResiduleNormal1_2);
+        SetDecoderBuffer(name, cb, residulePad1_1, residuleConv1_1, residuleNormal1_1, residuleInst1_2, residulePad1_2, residuleConv1_2, residuleNormal1_2);
 
         name = "input_writable";
         cb = BufferPool.Get<float>(name, 16, 16, 256);
-        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, deResiduleInst1_1, decoderExpand1, deResidulePad1_2, deResiduleNormal1_2, deResiduleConv1_2, deResiduleInst1_2);
+        SetDecoderBuffer(name, cb, residuleNormal1_1, residuleConv1_1, residuleInst1_1, decodeExpand1, residulePad1_2, residuleNormal1_2, residuleConv1_2, residuleInst1_2);
 
         name = "decoder_conv0_statistic";
         cb = BufferPool.Get<float>(name, 512);
-        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleInst1_1, deResiduleConv1_2, deResidulePad1_2, deResiduleNormal1_2, deResiduleInst1_2);
+        SetDecoderBuffer(name, cb, residulePad1_1, residuleConv1_1, residuleNormal1_1, residuleInst1_1, residuleConv1_2, residulePad1_2, residuleNormal1_2, residuleInst1_2);
 
         name = "decoder_conv0";
         cb = BufferPool.Get<float>(name, 18, 18, 256);
-        SetDecoderBuffer(name, cb, deResidulePad1_1, deResiduleConv1_1, deResiduleNormal1_1, deResiduleNormal1_2, deResidulePad1_2, deResiduleConv1_2, deResiduleInst1_2);
+        SetDecoderBuffer(name, cb, residulePad1_1, residuleConv1_1, residuleNormal1_1, residuleNormal1_2, residulePad1_2, residuleConv1_2, residuleInst1_2);
 
         name = "decoder_conv0_conved";
         cb = BufferPool.Get<float>(name, 32, 32, 256);
-        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, decoderConv1, decoderExpand1);
+        SetDecoderBuffer(name, cb, residuleNormal1_1, residuleConv1_1, decodeConv1, decodeExpand1);
 
         name = "decoder_conv1";
         cb = BufferPool.Get<float>(name, 32, 32, 256);
-        SetDecoderBuffer(name, cb, deResiduleConv1_1, decoderNormal1, decoderConv1, decoderInstance1, decoderExpand2);
+        SetDecoderBuffer(name, cb, residuleConv1_1, decodeNormal1, decodeConv1, decodeInstance1, decodeExpand2);
 
         name = "decoder_conv1_conved";
         cb = BufferPool.Get<float>(name, 32, 32, 256);
-        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, decoderConv1, decoderExpand1);
+        SetDecoderBuffer(name, cb, residuleNormal1_1, residuleConv1_1, decodeConv1, decodeExpand1);
 
         name = "decoder_conv1_statistic";
         cb = BufferPool.Get<float>(name, 512);
-        SetDecoderBuffer(name, cb, deResiduleNormal1_1, deResiduleConv1_1, decoderNormal1, decoderConv1, decoderInstance1);
+        SetDecoderBuffer(name, cb, residuleNormal1_1, residuleConv1_1, decodeNormal1, decodeConv1, decodeInstance1);
 
         name = "decoder_conv2";
         cb = BufferPool.Get<float>(name, 64, 64, 128);
-        SetDecoderBuffer(name, cb, deResiduleConv1_2, decoderExpand3, decoderNormal2, decoderConv2, decoderInstance2);
+        SetDecoderBuffer(name, cb, residuleConv1_2, decodeExpand3, decodeNormal2, decodeConv2, decodeInstance2);
 
         name = "decoder_conv2_conved";
         cb = BufferPool.Get<float>(name, 64, 64, 256);
-        SetDecoderBuffer(name, cb, decoderConv2, decoderExpand2);
+        SetDecoderBuffer(name, cb, decodeConv2, decodeExpand2);
 
         name = "decoder_conv2_statistic";
         cb = BufferPool.Get<float>(name, 256);
-        SetDecoderBuffer(name, cb, deResiduleConv1_2, deResiduleNormal1_2, decoderConv2, decoderNormal2, decoderInstance2);
+        SetDecoderBuffer(name, cb, residuleConv1_2, residuleNormal1_2, decodeConv2, decodeNormal2, decodeInstance2);
 
         name = "decoder_conv3";
         cb = BufferPool.Get<float>(name, 128, 128, 64);
-        SetDecoderBuffer(name, cb, decoderExpand4, decoderConv3, decoderNormal3, decoderInstance3);
+        SetDecoderBuffer(name, cb, decodeExpand4, decodeConv3, decodeNormal3, decodeInstance3);
 
         name = "decoder_conv3_conved";
         cb = BufferPool.Get<float>(name, 128, 128, 128);
-        SetDecoderBuffer(name, cb, decoderConv3, decoderExpand3);
+        SetDecoderBuffer(name, cb, decodeConv3, decodeExpand3);
 
         name = "decoder_conv3_statistic";
         cb = BufferPool.Get<float>(name, 128);
-        SetDecoderBuffer(name, cb, decoderNormal3, decoderConv3, decoderInstance3);
+        SetDecoderBuffer(name, cb, decodeNormal3, decodeConv3, decodeInstance3);
 
         name = "decoder_conv4";
         cb = BufferPool.Get<float>(name, 256, 256, 32);
-        SetDecoderBuffer(name, cb, decoderExpand5, decoderConv4, decoderNormal4, decoderInstance4);
+        SetDecoderBuffer(name, cb, decodeExpand5, decodeConv4, decodeNormal4, decodeInstance4);
 
         name = "decoder_conv4_conved";
         cb = BufferPool.Get<float>(name, 256, 256, 64);
-        SetDecoderBuffer(name, cb, decoderConv4, decoderExpand4, decoderExpand5);
+        SetDecoderBuffer(name, cb, decodeConv4, decodeExpand4, decodeExpand5);
 
         name = "decoder_conv4_statistic";
         cb = BufferPool.Get<float>(name, 64);
-        SetDecoderBuffer(name, cb, decoderNormal4, decoderConv4, decoderInstance4);
+        SetDecoderBuffer(name, cb, decodeNormal4, decodeConv4, decodeInstance4);
 
         name = "decoder_conv5_pad";
         cb = BufferPool.Get<float>(name, 262, 262, 32);
-        SetDecoderBuffer(name, cb, decoderExpand5, decoderConv5);
+        SetDecoderBuffer(name, cb, decodeExpand5, decodeConv5);
 
-        decoderShader.SetTexture(decoderConv5, "decoder_destination", tempDestination);
+        decoderShader.SetTexture(decodeConv5, "decoder_destination", tempDestination);
     }
 }
