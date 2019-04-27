@@ -1,4 +1,7 @@
-# encoding=utf8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: penghuailiang
+# @Date  : 2019-04-2
 
 import os
 import shutil
@@ -83,11 +86,10 @@ def print_tensor(checkpoint_path):
     llist = []
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
-        if not key.endswith("Adam_1") and not key.endswith(
-                "Adam") and not key.startswith("discriminator") and len(shape) > 0:
+        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
+                shape) > 0:
             print(key.replace("/", "_"), shape)
-            llist.append(key.replace("/", "_") + "  " + str(shape))
-            # tensor = reader.get_tensor(key)
+            llist.append(key.replace("/", "_") + "  " + str(shape))  # tensor = reader.get_tensor(key)
     llist.sort()
     for x in llist:
         print(x)
@@ -102,8 +104,8 @@ def export_args(checkpoint_path):
     f = open(name, 'w')
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
-        if not key.endswith("Adam_1") and not key.endswith(
-                "Adam") and not key.startswith("discriminator") and len(shape) > 0:
+        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
+                shape) > 0:
             print(key.replace("/", "_"), shape)
             for x in shape:
                 counter += x
@@ -117,8 +119,7 @@ def export_args(checkpoint_path):
 def export_layer(tensor, name):
     shape = tensor.shape
     if len(shape) == 4:
-        print("\n export %s shape: %dx%dx%d" %
-              (name, shape[1], shape[2], shape[3]))
+        print("\n export %s shape: %dx%dx%d" % (name, shape[1], shape[2], shape[3]))
         f = open(name + ".bytes", 'w')
         warite_layer(f, tensor)
         f.close()

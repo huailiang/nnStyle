@@ -390,8 +390,7 @@ class Artgan(object):
 
         print("Inference is finished.")
 
-    def inference(self, args, path_to_folder, to_save_dir=None, resize_to_original=True, ckpt_nmbr=None):
-
+    def init_loadckpt(self, to_save_dir=None, ckpt_nmbr=None):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         print("Start inference.")
@@ -411,7 +410,10 @@ class Artgan(object):
 
         if not os.path.exists(to_save_dir):
             os.makedirs(to_save_dir)
+        return to_save_dir
 
+    def inference(self, args, path_to_folder, to_save_dir=None, resize_to_original=True, ckpt_nmbr=None):
+        to_save_dir = self.init_loadckpt(to_save_dir, ckpt_nmbr)
         names = []
         for d in path_to_folder:
             names += glob(os.path.join(d, '*'))
@@ -425,14 +427,8 @@ class Artgan(object):
             alpha = float(self.image_size) / float(min(img_shape))
             img = scipy.misc.imresize(img, size=alpha)
             img = np.expand_dims(img, axis=0)
-            # e_list = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
-            # printf(e_list[4], "encoder_c4")
-            # export_layer(e_list[1], "encoder_cx")
             d_list = self.sess.run(self.output_photo, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
             img = d_list[0]
-            # export_layer(d_list[5], "decoder_y1")
-            # export_layer(d_list[6], "decoder_y2")
-            # printf(d_list[3], "decoder_d3")
 
             img = img[0]
             img = denormalize_arr_of_imgs(img)
@@ -442,6 +438,39 @@ class Artgan(object):
             scipy.misc.imsave(os.path.join(to_save_dir, img_name[:-4] + "_stylized.jpg"), img)
 
         print("Inference is finished.")
+
+    def export_layers(self, path_to_folder, to_save_dir=None, ckpt_nmbr=None):
+        self.init_loadckpt(to_save_dir, ckpt_nmbr)
+        names = []
+        for d in path_to_folder:
+            names += glob(os.path.join(d, '*'))
+        names = sorted([x for x in names if os.path.basename(x)[0] != '.'])
+
+        for img_idx, img_path in enumerate(tqdm(names)):
+            img = scipy.misc.imread(img_path, mode='RGB')
+            img_shape = img.shape[:2]
+            # Resize the smallest side of the image to the self.image_size
+            alpha = float(self.image_size) / float(min(img_shape))
+            img = scipy.misc.imresize(img, size=alpha)
+            img = np.expand_dims(img, axis=0)
+            e_list = self.sess.run(self.input_photo_features, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
+            export_layer(e_list[1], "encoder_c1")
+            export_layer(e_list[2], "encoder_c2")
+            export_layer(e_list[3], "encoder_c3")
+            export_layer(e_list[4], "encoder_c4")
+            export_layer(e_list[0], "encoder_c5")
+            d_list = self.sess.run(self.output_photo, feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
+            export_layer(d_list[1], "decoder_d1")
+            export_layer(d_list[2], "decoder_d2")
+            export_layer(d_list[3], "decoder_d3")
+            export_layer(d_list[3], "decoder_d4")
+            export_layer(d_list[5], "decoder_y1")
+            export_layer(d_list[6], "decoder_y2")
+            export_layer(d_list[7], "decoder_y3")
+
+    def export_arg(self, cpkt):
+        checkpoint_path = os.path.join(self.checkpoint_long_dir, cpkt)
+        export_args(checkpoint_path)
 
     def save(self, step, is_long=False):
         if not os.path.exists(self.checkpoint_dir):

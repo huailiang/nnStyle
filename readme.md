@@ -17,11 +17,14 @@ Tensorflow 1.7 or new
 
 ## Export Data
 
-run the command like this:
+### run the command like this:
 
 ```sh
-cd python
-python export.py
+cd python/
+python main.py \
+         --model_name=model_van-gogh \
+         --phase=export_arg \
+         --image_size=256
 ```
 
 You will find *args.bytes* generated in the unity/Assets/Resources/ directory. 
@@ -29,6 +32,36 @@ You will find *args.bytes* generated in the unity/Assets/Resources/ directory.
 The file is store arguments about neural network trained in the tensorflow.
 
 The file format is not protobuf, defined self.
+
+
+###  Export neural network layer to unity env, use the command like this:
+
+```sh
+cd python/
+python main.py \
+         --model_name=model_van-gogh \
+         --phase=export_layers \
+         --image_size=256
+```
+
+If you visual layer data as image, you can use tool in unity, and click Tools->LayerVisual, Then you will get tool like this:
+
+
+<br><img src='image/model2.jpg'><br>
+
+### preview effect in python env, use the command:
+
+
+```sh
+cd python/
+python main.py \
+         --model_name=model_van-gogh \
+         --phase=inference \
+         --image_size=256
+```
+
+The generated picture will be placed in model folder.
+
 
 ## Comment
 
