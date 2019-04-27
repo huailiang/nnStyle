@@ -1,5 +1,5 @@
 
-# Shader Nearual Network
+# Style-transfer Nearual Network
 
 The project aimed to transfer style  realtime in the video game. 
 
@@ -20,7 +20,6 @@ Tensorflow 1.7 or new
 ### run the command like this:
 
 ```sh
-cd python/
 python main.py \
          --model_name=model_van-gogh \
          --phase=export_arg \
@@ -37,7 +36,6 @@ The file format is not protobuf, defined self.
 ###  Export neural network layer to unity env, use the command like this:
 
 ```sh
-cd python/
 python main.py \
          --model_name=model_van-gogh \
          --phase=export_layers \
@@ -53,7 +51,6 @@ If you visual layer data as image, you can use tool in unity, and click Tools->L
 
 
 ```sh
-cd python/
 python main.py \
          --model_name=model_van-gogh \
          --phase=inference \
