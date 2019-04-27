@@ -47,6 +47,7 @@ public class BufferProfile
             float max = 0f; int ix = 0;
             for (int i = 0; i < x * y * z; i++)
             {
+                if (float.IsNaN(array[i])) Debug.LogError("not nan");
                 if (array[i] > max) { max = array[i]; ix = i; }
             }
             sb.AppendFormat("({0}x{1}x{2})  indx:{3} max:{4} maxix:{5}\n", x, y, z, dftX, max, Indx(ix, shape).ToString("f0"));

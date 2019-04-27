@@ -68,7 +68,7 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 	encoder_inst[idx] = v;
 }
 
-[numthreads(1, 64, 3)]
+[numthreads(3, 64, 1)]
 void StyleEncoderNormal(uint3 id : SV_DispatchThreadID) // 256x256x3
 {
 	uint width = 64, depth = 3, nwidth = 256;
@@ -107,7 +107,7 @@ void StyleConv1 (uint3 id : SV_DispatchThreadID) //id.xy=288 286x286x3->284x284x
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 1, 0);
 }
 
-[numthreads(1, THREAD_Y_32Z, 32)]
+[numthreads(32, THREAD_Y_32Z, 1)]
 void StyleNormal1(uint3 id : SV_DispatchThreadID) //284x284x32
 {
 	uint width = THREAD_Y_32Z, depth = 32, nwidth = 284;
@@ -130,7 +130,7 @@ void StyleConv2(uint3 id : SV_DispatchThreadID) //id.xy=144 284x284x32->141x141x
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 2, 1);
 }
 
-[numthreads(1,THREAD_Y_32Z,32)]
+[numthreads(32,THREAD_Y_32Z,1)]
 void StyleNormal2(uint3 id : SV_DispatchThreadID)  //141x141x32 
 {
 	uint width = THREAD_Y_32Z, depth = 32, nwidth = 141;
@@ -153,7 +153,7 @@ void StyleConv3 (uint3 id : SV_DispatchThreadID) //id.xy=72 141x141x32->70x70x64
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 3, 2)
 }
 
-[numthreads(1,REV_THREAD_Z,MAX_THREAD_Z)]
+[numthreads(MAX_THREAD_Z,REV_THREAD_Z,1)]
 void StyleNormal3(uint3 id : SV_DispatchThreadID)  // 70x70x64
 {
 	uint width = REV_THREAD_Z, depth = 64, nwidth = 70;
@@ -176,11 +176,11 @@ void StyleConv4 (uint3 id : SV_DispatchThreadID) //id.xy=40 70x70x64->34x34x128
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 4, 3);
 }
 
-[numthreads(1,REV_THREAD_Z, MAX_THREAD_Z)] 
+[numthreads(128, THREAD_Y_128Z, 1)] 
 void StyleNormal4(uint3 id : SV_DispatchThreadID) //34x34x128
 {
-	uint width = 8, depth = 128, nwidth = 128;
-	StdDefineNormal(id, encoder_conv4, encoder_conv4_statistic, width);
+	uint width = THREAD_Y_128Z, depth = 128, nwidth = 34;
+	StdDefineNormal(id, encoder_conv4, encoder_conv4_statistic, width);	
 }
 
 [numthreads(8,8,4)]
@@ -199,10 +199,10 @@ void StyleConv5(uint3 id : SV_DispatchThreadID) //id.xy=40 34x34x128->16x16x256
 	DefineEncoderConv(id, input, output, depth1, depth2, stride, 5, 4);
 }
 
-[numthreads(1, REV_THREAD_Z, MAX_THREAD_Z)]
+[numthreads(256, THREAD_Y_256Z, 1)]
 void StyleNormal5(uint3 id : SV_DispatchThreadID)  //16x16x256
 {
-	uint width = 4, depth = 256, nwidth = 16;
+	uint width = THREAD_Y_256Z, depth = 256, nwidth = 16;
 	StdDefineNormal(id, encoder_conv5, encoder_conv5_statistic, width);
 }
 
