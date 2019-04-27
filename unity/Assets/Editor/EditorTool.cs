@@ -14,7 +14,7 @@ public class EditorTool
         }
     }
 
-    [MenuItem("Tools/MakeRT")]
+    [MenuItem("Tools/MakeTexture")]
     static void MakeRT()
     {
         int width = 4, height = 2;
@@ -24,7 +24,7 @@ public class EditorTool
         texture2D.SetPixel(1, 0, new Color(0, 1, 0));
         texture2D.SetPixel(2, 0, new Color(0, 0, 1));
         texture2D.SetPixel(3, 0, new Color(1, 1, 0));
-        
+
         texture2D.SetPixel(0, 1, new Color(1, 1, 0));
         texture2D.SetPixel(1, 1, new Color(1, 1, 0));
         texture2D.SetPixel(2, 1, new Color(1, 1, 1));

@@ -33,24 +33,34 @@ public class LoadCheckpoint
 
     public float[] LoadLayer(string name)
     {
+        int[] shape;
+        return LoadLayer(name, out shape);
+    }
+
+    public float[] LoadLayer(string name, out int[] shape)
+    {
         string path = Application.dataPath + "/Resources/" + name + ".bytes";
         float[] rst;
         using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
         {
             var reader = new BinaryReader(fs);
-            rst = ReadLayer(reader);
+            rst = ReadLayer(reader, out shape);
             reader.Close();
         }
         return rst;
     }
 
-    private float[] ReadLayer(BinaryReader reader)
+    private float[] ReadLayer(BinaryReader reader, out int[] shapes)
     {
         short shape = reader.ReadInt16();
-        if (shape != 4) { Debug.LogError("not support shape" + shape); return null; }
+        if (shape != 4) { Debug.LogError("not support shape" + shape); shapes = null; return null; }
         short v2 = reader.ReadInt16();
         short v3 = reader.ReadInt16();
         short v4 = reader.ReadInt16();
+        shapes = new int[3];
+        shapes[0] = v2;
+        shapes[1] = v3;
+        shapes[2] = v4;
         float[] rst = new float[v2 * v3 * v4];
         for (int i = 0; i < v2; i++)
             for (int j = 0; j < v3; j++)
