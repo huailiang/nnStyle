@@ -7,15 +7,17 @@ public class VisualBufferTool : EditorWindow
     int[] shape;
     float[] layers;
     int fslider, pslider;
+    int select = 0, p_select = -1;
     Texture2D texture;
+    Material mat;
     const float e = 2.7182818f;
     LoadCheckpoint checkpoint;
-
-    int tx = 20, ty = 80, tw = 360;
+    bool showgrid;
+    int tx = 20, ty = 95, tw = 360;
     Rect texRect = Rect.zero;
     string[] p_layer = { "encoder_c1", "encoder_c2", "encoder_c3", "encoder_c4",
                         "decoder_d1", "decoder_d2", "decoder_d3", "decoder_d4", "decoder_r1" };
-    int select = 0, p_select = -1;
+    
 
     [MenuItem("Tools/LayerVisual")]
     static void VisualTool()
@@ -39,6 +41,10 @@ public class VisualBufferTool : EditorWindow
         {
             textureStyle = new GUIStyle(EditorStyles.objectField);
         }
+        if (mat == null)
+        {
+            mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Editor/EditorRes/grid.mat");
+        }
         texRect.x = tx;
         texRect.y = ty;
         texRect.width = tw;
@@ -52,10 +58,11 @@ public class VisualBufferTool : EditorWindow
         GUILayout.Space(10);
 
         GUILayout.BeginVertical();
-        GUILayout.Label("Visual NN Layer Buffer", boldLableStyle);
+        GUILayout.Label("Visual NN Layer", boldLableStyle);
         GUILayout.Space(8);
-        GUILayout.BeginHorizontal();
+
         select = EditorGUILayout.Popup(select, p_layer);
+        showgrid = EditorGUILayout.Toggle("show grid", showgrid);
         if (p_select != select)
         {
             string str = p_layer[select];
@@ -67,16 +74,16 @@ public class VisualBufferTool : EditorWindow
             }
             p_select = select;
         }
-        GUILayout.EndHorizontal();
-        GUILayout.Space(380);
+        GUILayout.Space(28 + tw);
 
         if (texture != null)
         {
-            EditorGUI.DrawPreviewTexture(texRect, texture);
+            EditorGUI.DrawPreviewTexture(texRect, texture, showgrid ? mat : null);
 
             if (shape != null)
             {
-                GUILayout.Space(8);
+                EditorGUILayout.LabelField("drag slider to view different depth in selected layer");
+
                 fslider = EditorGUILayout.IntSlider(fslider, 0, depth - 1);
                 if (fslider != pslider)
                 {
@@ -133,7 +140,7 @@ public class VisualBufferTool : EditorWindow
         float x = pos.x - tx;
         float y = pos.y - ty;
         yy = Mathf.FloorToInt(x * width / (float)tw);  //low dimension
-        xx = height - Mathf.FloorToInt(y * height / (float)tw); //high dimension 
+        xx = Mathf.FloorToInt(y * height / (float)tw); //high dimension 
         v = 0f;
         if (xx < width && yy < height)
         {
