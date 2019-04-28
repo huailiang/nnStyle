@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 public class VisualBufferTool : EditorWindow
@@ -53,7 +52,7 @@ public class VisualBufferTool : EditorWindow
         GUILayout.Space(10);
 
         GUILayout.BeginVertical();
-        GUILayout.Label("Visual Buffer", boldLableStyle);
+        GUILayout.Label("Visual NN Layer Buffer", boldLableStyle);
         GUILayout.Space(8);
         GUILayout.BeginHorizontal();
         select = EditorGUILayout.Popup(select, p_layer);
@@ -115,7 +114,7 @@ public class VisualBufferTool : EditorWindow
             for (int j = 0; j < width; j++)
             {
                 int idx = i * width * depth + j * depth + z;
-                float v = sigmod(layers[idx]);
+                float v = idx < layers.Length ? sigmod(layers[idx]) : 0;
                 Color color = new Color(v, v, v, 1);
                 texture.SetPixel(j, height - 1 - i, color);
             }
