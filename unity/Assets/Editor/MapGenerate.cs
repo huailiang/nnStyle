@@ -11,7 +11,7 @@ public class MapGenerate : Editor
     private ArgData data;
     private Model model;
     private List<Kernel> list;
-    
+
 
     [MenuItem("Tools/GenerateMap")]
     static void CreateFaceData()
@@ -77,7 +77,9 @@ public class MapGenerate : Editor
             var item = itr.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            data.datas[ix].kernel = Process(item.Key, true, out data.datas[ix].nearual);
+            Kernel kn = Process(item.Key, true, out data.datas[ix].nearual);
+            data.datas[ix].kernel = kn;
+            data.datas[ix].kname = kn;
             ix++;
         }
         var itr2 = v3.GetEnumerator();
@@ -86,7 +88,9 @@ public class MapGenerate : Editor
             var item = itr2.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            data.datas[ix].kernel = Process(item.Key, false, out data.datas[ix].nearual);
+            Kernel kn = Process(item.Key, false, out data.datas[ix].nearual);
+            data.datas[ix].kernel = kn;
+            data.datas[ix].kname = kn;
             ix++;
         }
     }
@@ -144,14 +148,15 @@ public class MapGenerate : Editor
         else if (buffer.StartsWith("decoder_g_r"))
         {
             string prex = "decoder_g_r";
-            string str = buffer.Substring(prex.Length, 5);
             if (v1)
             {
-                return FindKernel("ResiduleInst" + str.Replace("bn", ""));
+                string str = buffer.Substring(prex.Length, 5).Replace("bn", "");
+                return FindKernel("ResiduleInst" + str);
             }
             else
             {
-                return FindKernel("ResiduleConv" + str.Replace("c", ""));
+                string str = buffer.Substring(prex.Length, 4).Replace("c", "");
+                return FindKernel("ResiduleConv" + str);
             }
         }
         else if (buffer.StartsWith("decoder"))

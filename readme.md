@@ -30,7 +30,16 @@ You will find *args.bytes* generated in the unity/Assets/Resources/ directory.
 
 The file is store arguments about neural network trained in the tensorflow.
 
-The file format is not protobuf, defined self.
+Note: The file format is not protobuf, defined self.
+
+preprocess the bytes to generate map.assets for efficiency。 Open the Unity Env,
+
+run Tools->GenerateMap, the file will be generated.
+
+
+<br><img src='image/model3.jpg'><br>
+
+click the analysis button, the file will be filled with arg.bytes map info. And click the save button, the map will be serialzed to disk from memory.
 
 
 ###  Export neural network layer to unity env, use the command like this:

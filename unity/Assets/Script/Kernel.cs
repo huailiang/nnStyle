@@ -6,7 +6,7 @@ public struct Kernel
 {
     public int iv;
     public string sv;
-    
+
     public static implicit operator int(Kernel kt)
     {
         return kt.iv;
@@ -23,7 +23,7 @@ public struct Kernel
         kt.sv = str;
         return kt;
     }
-    
+
 }
 
 public class Model : IDisposable
@@ -55,7 +55,7 @@ public class Model : IDisposable
         decoderShader = decoder;
         InitEncoder();
         InitDecoder();
-       
+
     }
 
     public void BindRender(Renderer temp)
@@ -225,21 +225,9 @@ public class Model : IDisposable
         {
             var item = itr2.Current;
             var shader = shaders[(int)map[item.Key].nearual];
-            if (item.Key.StartsWith("encoder"))
-            {
-                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
-                buffer.SetData(item.Value);
-                shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
-            }
-        }
-        foreach (var item in v3)
-        {
-            if (item.Key.StartsWith("decoder"))
-            {
-                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
-                buffer.SetData(item.Value);
-                SetDecoderBuffer(item.Key, buffer, ResiduleConv1_1, ResiduleConv1_2, DecoderConv1, DecoderConv2, DecoderConv3, DecoderConv4);
-            }
+            buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
+            buffer.SetData(item.Value);
+            shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
         }
         encoderShader.SetTexture(StyleConv0, "source", mainTexture);
         ProcessNet();
@@ -434,6 +422,7 @@ public class BaseData
 {
     public string buffer;
     public int kernel;
+    public string kname;
     public Nearual nearual;
 }
 

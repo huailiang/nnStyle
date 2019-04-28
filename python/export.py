@@ -105,7 +105,9 @@ def export_args(checkpoint_path):
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
         if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
-                shape) > 0:
+            shape) > 0 and key.find("_r2_") < 0 and key.find("_r3_") < 0 and key.find("_r4_") < 0 \
+                and key.find("_r5_") < 0  and key.find("_r6_") < 0  and key.find("_r7_") < 0 and key.find("_r8_") < 0\
+                and key.find("_r9_") < 0:
             print(key.replace("/", "_"), shape)
             for x in shape:
                 counter += x
