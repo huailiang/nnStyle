@@ -40,6 +40,7 @@ public class Model : IDisposable
     private RenderTexture tempDestination = null;
     private Texture mainTexture = null;
     private const int width = 256;
+    private Dictionary<string, BaseData> map;
 
     private Kernel BindKernel(ComputeShader shader, string name)
     {
@@ -54,6 +55,7 @@ public class Model : IDisposable
         decoderShader = decoder;
         InitEncoder();
         InitDecoder();
+       
     }
 
     public void BindRender(Renderer temp)
@@ -63,6 +65,20 @@ public class Model : IDisposable
         tempDestination = new RenderTexture(width, width, 0);
         tempDestination.enableRandomWrite = true;
         tempDestination.Create();
+    }
+
+    private void BuildMap()
+    {
+        if (map == null)
+        {
+            map = new Dictionary<string, BaseData>();
+            var data = Resources.Load<ArgData>("map");
+            for (int i = 0; i < data.datas.Length; i++)
+            {
+                var it = data.datas[i];
+                map.Add(it.buffer, it);
+            }
+        }
     }
 
     public void Dispose()
@@ -193,44 +209,36 @@ public class Model : IDisposable
 
     public void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)
     {
-        foreach (var item in v1)
+        if (map == null) BuildMap();
+        ComputeShader[] shaders = { encoderShader, decoderShader };
+        var itr = v1.GetEnumerator();
+        while (itr.MoveNext())
         {
+            var item = itr.Current;
+            var shader = shaders[(int)map[item.Key].nearual];
+            buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
+            buffer.SetData(item.Value);
+            shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
+        }
+        var itr2 = v3.GetEnumerator();
+        while (itr2.MoveNext())
+        {
+            var item = itr2.Current;
+            var shader = shaders[(int)map[item.Key].nearual];
             if (item.Key.StartsWith("encoder"))
             {
-                buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
+                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                encoderShader.SetBuffer(StyleInstance0, item.Key, buffer);
-                encoderShader.SetBuffer(StyleInstance1, item.Key, buffer);
-                encoderShader.SetBuffer(StyleInstance2, item.Key, buffer);
-                encoderShader.SetBuffer(StyleInstance3, item.Key, buffer);
-                encoderShader.SetBuffer(StyleInstance4, item.Key, buffer);
-                encoderShader.SetBuffer(StyleInstance5, item.Key, buffer);
-            }
-            else if (item.Key.StartsWith("decoder"))
-            {
-                buffer = BufferPool.Get<float>(item.Key, item.Value.Length);
-                buffer.SetData(item.Value);
-                SetDecoderBuffer(item.Key, buffer, ResiduleInst1_1, ResiduleInst1_2, DecoderInstance1, DecoderInstance2, DecoderInstance3, DecoderInstance4);
-                if (item.Key == "decoder_g_pred_c_Conv_weights") decoderShader.SetBuffer(DecoderConv5, "decoder_g_pred_c_Conv_weights", buffer);
+                shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
             }
         }
         foreach (var item in v3)
         {
-            if (item.Key.StartsWith("encoder"))
+            if (item.Key.StartsWith("decoder"))
             {
                 buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
                 buffer.SetData(item.Value);
-                encoderShader.SetBuffer(StyleConv1, item.Key, buffer);
-                encoderShader.SetBuffer(StyleConv2, item.Key, buffer);
-                encoderShader.SetBuffer(StyleConv3, item.Key, buffer);
-                encoderShader.SetBuffer(StyleConv4, item.Key, buffer);
-                encoderShader.SetBuffer(StyleConv5, item.Key, buffer);
-            }
-            else if (item.Key.StartsWith("decoder"))
-            {
-                buffer = BufferPool.Get<Matrix3X3>(item.Key, item.Value.Length);
-                buffer.SetData(item.Value);
-                SetDecoderBuffer(item.Key, buffer, ResiduleConv1_1, ResiduleConv1_2, DecoderConv2, DecoderConv3, DecoderConv1, DecoderConv4);
+                SetDecoderBuffer(item.Key, buffer, ResiduleConv1_1, ResiduleConv1_2, DecoderConv1, DecoderConv2, DecoderConv3, DecoderConv4);
             }
         }
         encoderShader.SetTexture(StyleConv0, "source", mainTexture);
@@ -415,11 +423,18 @@ public class Model : IDisposable
 }
 
 
+public enum Nearual
+{
+    Encoder,
+    Decoder
+}
+
 [Serializable]
 public class BaseData
 {
     public string buffer;
-    public string kernel;
+    public int kernel;
+    public Nearual nearual;
 }
 
 

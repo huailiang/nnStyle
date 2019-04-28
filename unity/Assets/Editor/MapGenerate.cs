@@ -77,7 +77,7 @@ public class MapGenerate : Editor
             var item = itr.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            data.datas[ix].kernel = Process(item.Key, true);
+            data.datas[ix].kernel = Process(item.Key, true, out data.datas[ix].nearual);
             ix++;
         }
         var itr2 = v3.GetEnumerator();
@@ -86,7 +86,7 @@ public class MapGenerate : Editor
             var item = itr2.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            data.datas[ix].kernel = Process(item.Key, false);
+            data.datas[ix].kernel = Process(item.Key, false, out data.datas[ix].nearual);
             ix++;
         }
     }
@@ -124,11 +124,13 @@ public class MapGenerate : Editor
     }
 
 
-    private Kernel Process(string buffer, bool v1)
+    private Kernel Process(string buffer, bool v1, out Nearual nearual)
     {
+        nearual = Nearual.Decoder;
         if (buffer.StartsWith("encoder"))
         {
             string prex = "encoder_g_e";
+            nearual = Nearual.Encoder;
             string str = buffer.Substring(prex.Length, 1);
             if (v1)
             {
@@ -154,7 +156,7 @@ public class MapGenerate : Editor
         }
         else if (buffer.StartsWith("decoder"))
         {
-            string prex = "decoder_g_e"; 
+            string prex = "decoder_g_e";
             string str = buffer.Substring(prex.Length, 1);
             if (v1)
             {
