@@ -422,7 +422,6 @@ public class BaseData
 {
     public string buffer;
     public int kernel;
-    public string kname;
     public Nearual nearual;
 }
 

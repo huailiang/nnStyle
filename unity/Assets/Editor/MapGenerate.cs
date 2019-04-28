@@ -77,9 +77,7 @@ public class MapGenerate : Editor
             var item = itr.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            Kernel kn = Process(item.Key, true, out data.datas[ix].nearual);
-            data.datas[ix].kernel = kn;
-            data.datas[ix].kname = kn;
+            data.datas[ix].kernel = Process(item.Key, true, out data.datas[ix].nearual);
             ix++;
         }
         var itr2 = v3.GetEnumerator();
@@ -88,9 +86,7 @@ public class MapGenerate : Editor
             var item = itr2.Current;
             data.datas[ix] = new BaseData();
             data.datas[ix].buffer = item.Key;
-            Kernel kn = Process(item.Key, false, out data.datas[ix].nearual);
-            data.datas[ix].kernel = kn;
-            data.datas[ix].kname = kn;
+            data.datas[ix].kernel = Process(item.Key, false, out data.datas[ix].nearual);
             ix++;
         }
     }

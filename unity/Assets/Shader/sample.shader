@@ -1,4 +1,12 @@
-﻿Shader "nn/sample"
+﻿/*
+Copyright (c) 2019 huailiang
+
+# This file is part of neural network impleted with shader
+
+contact: peng_huailiang@qq.com
+*/
+
+Shader "nn/sample"
 {
 	Properties
 	{
