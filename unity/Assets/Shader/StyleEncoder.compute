@@ -6,9 +6,9 @@ Copyright (c) 2019 huailiang
 contact: peng_huailiang@qq.com
 */
 
-#pragma kernel StyleEncoderConv
-#pragma kernel StyleEncoderNormal
-#pragma kernel StyleEncoderInstance
+#pragma kernel StyleConv0
+#pragma kernel StyleNormal0
+#pragma kernel StyleInstance0
 #pragma kernel StylePad
 #pragma kernel StyleConv1
 #pragma kernel StyleNormal1
@@ -58,7 +58,7 @@ conv5			  16x16x256
 */
 
 [numthreads(8, 8, 3)]
-void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
+void StyleConv0(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
 	float4 color = source[uint2(id.x, width - 1 - id.y)];
@@ -69,14 +69,14 @@ void StyleEncoderConv(uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(3, 64, 1)]
-void StyleEncoderNormal(uint3 id : SV_DispatchThreadID) // 256x256x3
+void StyleNormal0(uint3 id : SV_DispatchThreadID) // 256x256x3
 {
 	uint width = 64, depth = 3, nwidth = 256;
 	StdDefineNormal(id, encoder_inst, encoder_conv0_statistic, width);
 }
 
 [numthreads(8, 8, 3)]
-void StyleEncoderInstance(uint3 id : SV_DispatchThreadID) //id.xy=256 256x256x3
+void StyleInstance0(uint3 id : SV_DispatchThreadID) //id.xy=256 256x256x3
 {
 	uint width = 256, depth = 3;
 	int idx = StdID(id, width, depth);

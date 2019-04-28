@@ -44,7 +44,7 @@
 				fixed4 col = tex2D(_MainTex, i.uv);
 				bool b_x = fmod(floor(1000 * i.uv.x), 100) < 2;
 				bool b_y = fmod(floor(1000 * i.uv.y), 100) < 2;
-				col = b_x || b_y ? 0.6f * fixed4(1, 1, 1, 1) : col;
+				col = b_x || b_y ? 0.62f * fixed4(1, 1, 1, 1) : col;
 				return col;
 			}
 			ENDCG

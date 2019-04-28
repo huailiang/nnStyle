@@ -8,16 +8,16 @@ public class VisualBufferTool : EditorWindow
     float[] layers;
     int fslider, pslider;
     int select = 0, p_select = -1;
+    int tx = 20, ty = 95, tw = 360;
     Texture2D texture;
     Material mat;
     const float e = 2.7182818f;
     LoadCheckpoint checkpoint;
     bool showgrid;
-    int tx = 20, ty = 95, tw = 360;
     Rect texRect = Rect.zero;
     string[] p_layer = { "encoder_c1", "encoder_c2", "encoder_c3", "encoder_c4",
                         "decoder_d1", "decoder_d2", "decoder_d3", "decoder_d4", "decoder_r1" };
-    
+
 
     [MenuItem("Tools/LayerVisual")]
     static void VisualTool()
@@ -43,6 +43,7 @@ public class VisualBufferTool : EditorWindow
         }
         if (mat == null)
         {
+            showgrid = true;
             mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Editor/EditorRes/grid.mat");
         }
         texRect.x = tx;
@@ -74,7 +75,7 @@ public class VisualBufferTool : EditorWindow
             }
             p_select = select;
         }
-        GUILayout.Space(28 + tw);
+        GUILayout.Space(30 + tw);
 
         if (texture != null)
         {
@@ -142,7 +143,7 @@ public class VisualBufferTool : EditorWindow
         yy = Mathf.FloorToInt(x * width / (float)tw);  //low dimension
         xx = Mathf.FloorToInt(y * height / (float)tw); //high dimension 
         v = 0f;
-        if (xx < width && yy < height)
+        if (xx >= 0 && xx < width && yy >= 0 && yy < height)
         {
             v = sample(xx, yy);
             return true;
@@ -153,7 +154,7 @@ public class VisualBufferTool : EditorWindow
     float sample(int x, int y)
     {
         int idx = x * width * depth + y * depth + z;
-        if (idx < layers.Length && idx >= 0)
+        if (idx < layers.Length)
         {
             return layers[idx];
         }
