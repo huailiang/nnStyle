@@ -231,11 +231,16 @@ public class Model : IDisposable
         }
         map.Clear();
         encoderShader.SetTexture(StyleConv0, "source", mainTexture);
-        ProcessNet();
+        ProcessNearual();
         Debug.Log("Process neural network finsih");
     }
 
-    void ProcessNet()
+    public void RebindSource(RenderTexture rt)
+    {
+        encoderShader.SetTexture(StyleConv0, "source", rt);
+    }
+
+    void ProcessNearual()
     {
         ProcessEncoder();
         ProcessDecoder();

@@ -4,6 +4,7 @@ public class StyleProcess : MonoBehaviour
 {
     public ComputeShader encoderShader, decoderShader;
     public Renderer tempRender = null;
+    public bool realtimeRender = true;
     private LoadCheckpoint checkpoint;
     private bool drawGui = true;
     private Model model;
@@ -12,7 +13,7 @@ public class StyleProcess : MonoBehaviour
     {
         if (tempRender.sharedMaterial.mainTexture == null)
         {
-            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app1");
+            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app2");
         }
         model = new Model(encoderShader, decoderShader);
         model.BindRender(tempRender);
@@ -20,6 +21,17 @@ public class StyleProcess : MonoBehaviour
         checkpoint.Load(model.Process);
     }
 
+    void OnRenderImage(RenderTexture src, RenderTexture dst)
+    {
+        Graphics.Blit(src, dst);
+        if (realtimeRender && model != null)
+        {
+            model.RebindSource(src);
+            model.DrawEncoder();
+            model.DrawResidule();
+            model.DrawDecoder();
+        }
+    }
 
     private void OnDestroy()
     {
@@ -28,7 +40,7 @@ public class StyleProcess : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (!realtimeRender && Input.GetKeyUp(KeyCode.Space))
         {
             drawGui = !drawGui;
         }
@@ -36,7 +48,7 @@ public class StyleProcess : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!drawGui) return;
+        if (!drawGui || realtimeRender) return;
         if (GUI.Button(new Rect(20, 20, 80, 40), "Run"))
         {
             model.DrawEncoder();
@@ -57,5 +69,6 @@ public class StyleProcess : MonoBehaviour
             model.DrawRenderTexure();
         }
     }
+
 
 }
