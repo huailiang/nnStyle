@@ -14,6 +14,9 @@ Python2.7 or 3.5
 
 Tensorflow 1.7 or new
 
+PIL, numpy, scipy
+
+tqdm
 
 ## Export Data
 
@@ -69,16 +72,36 @@ python main.py \
 The generated picture will be placed in model folder.
 
 
+## Training 
+
+Content images used for training: [Places365-Standard high-res train mages (105GB)](http://data.csail.mit.edu/places/places365/train_large_places365standard.tar).  
+
+Style images used for training the aforementioned models: [download link](https://hcicloud.iwr.uni-heidelberg.de/index.php/s/NcJj2oLBTYuT1tf).    
+Query style examples used to collect style images: [query_style_images.tar.gz](https://yadi.sk/d/5sormJouqyuI4A).
+
+1. Download and extract style archives in folder `./data`.   
+2. Download and extract content images.
+3. Launch the training process (for example, on van Gogh):
+
+```
+CUDA_VISIBLE_DEVICES=1 python main.py \
+                 --model_name=model_van-gogh \
+                 --batch_size=1 \
+                 --phase=train \
+                 --image_size=256 \
+                 --lr=0.0002 \
+                 --dsr=0.8 \
+                 --ptcd=/path/to/Places2/data_large \
+                 --ptad=./data/vincent-van-gogh_road-with-cypresses-1890
+```
+
 ## Comment
 
 If encoder or decoder network, group will be z's thread at first. 
 
-For example,  `StyleNormal1` in encoder thread-z is set as 32 at first. and thread-y must be less than 32, because of max threads is 1024, that is 32x32. But the layer is 284x284x32, so scale is 284/32 = 8, while width is set 32.
+Due to limit 64 on thread-z, we exchange thread-x and thread-z on batch-normal stage.
 
-if thread-z more than 64, width should be set 1024/depth, for example `StyleNormal5` shape is 16x16x256, width is 1024/256 = 4, scale = 16 / 4 = 4.
-This is due to g_cache limited.
-
-
+However, thread-x is alse limited 1024 in compute shader.
 
 
 ## Active Function
