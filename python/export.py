@@ -5,8 +5,9 @@
 
 import os
 import shutil
-import tensorflow as tf
 import struct
+
+import tensorflow as tf
 from tensorflow.python import pywrap_tensorflow
 
 tf.set_random_seed(228)
@@ -20,7 +21,7 @@ def write(f, key, tensor):
         """
     shape = tensor.shape
     f.write(struct.pack('h', len(shape)))
-    f.write(struct.pack('h' + str(len(key)) + 's', len(key), key))
+    f.write(struct.pack('h' + str(len(key)) + 's', len(key), key.encode('utf-8')))
     if len(shape) == 1:
         f.write(struct.pack('h', shape[0]))
         for x in range(0, shape[0]):
@@ -48,9 +49,9 @@ def warite_layer(f, tensor):
     f.write(struct.pack('h', shape[1]))
     f.write(struct.pack('h', shape[2]))
     f.write(struct.pack('h', shape[3]))
-    for i in xrange(0, shape[1]):
-        for j in xrange(0, shape[2]):
-            for k in xrange(0, shape[3]):
+    for i in range(0, shape[1]):
+        for j in range(0, shape[2]):
+            for k in range(0, shape[3]):
                 byte = struct.pack('f', tensor[0, i, j, k])
                 f.write(byte)
 
@@ -101,13 +102,14 @@ def export_args(checkpoint_path):
     print("len: ", len(var_to_shape_map))
     counter = 0
     name = "args.bytes"
-    f = open(name, 'w')
+    f = open(name, 'wb')
     for key in var_to_shape_map:
         shape = reader.get_tensor(key).shape
-        if not key.endswith("Adam_1") and not key.endswith("Adam") and not key.startswith("discriminator") and len(
-            shape) > 0 and key.find("_r2_") < 0 and key.find("_r3_") < 0 and key.find("_r4_") < 0 \
-                and key.find("_r5_") < 0  and key.find("_r6_") < 0  and key.find("_r7_") < 0 and key.find("_r8_") < 0\
-                and key.find("_r9_") < 0:
+        if not key.endswith("Adam_1") and not key.endswith("Adam") \
+                and not key.startswith("discriminator") and len(shape) > 0 \
+                and key.find("_r2_") < 0 and key.find("_r3_") < 0 and key.find("_r4_") < 0 \
+                and key.find("_r5_") < 0 and key.find("_r6_") < 0 and key.find("_r7_") < 0 \
+                and key.find("_r8_") < 0 and key.find("_r9_") < 0:
             print(key.replace("/", "_"), shape)
             for x in shape:
                 counter += x
