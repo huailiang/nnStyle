@@ -5,10 +5,10 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(ArgData))]
+[CustomEditor(typeof(NearualData))]
 public class MapGenerate : Editor
 {
-    private ArgData data;
+    private NearualData data;
     private Model model;
     private List<Kernel> list;
 
@@ -19,7 +19,7 @@ public class MapGenerate : Editor
         string path = "Assets/Resources/map.asset";
         if (!File.Exists(path))
         {
-            ArgData asset = ScriptableObject.CreateInstance<ArgData>();
+            NearualData asset = ScriptableObject.CreateInstance<NearualData>();
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.Refresh();
         }
@@ -31,7 +31,7 @@ public class MapGenerate : Editor
 
     private void OnEnable()
     {
-        data = target as ArgData;
+        data = target as NearualData;
         SortData();
     }
 

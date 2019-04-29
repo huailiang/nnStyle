@@ -72,7 +72,7 @@ public class Model : IDisposable
         if (map == null)
         {
             map = new Dictionary<string, BaseData>();
-            var data = Resources.Load<ArgData>("map");
+            var data = Resources.Load<NearualData>("map");
             for (int i = 0; i < data.datas.Length; i++)
             {
                 var it = data.datas[i];
@@ -229,6 +229,7 @@ public class Model : IDisposable
             buffer.SetData(item.Value);
             shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
         }
+        map.Clear();
         encoderShader.SetTexture(StyleConv0, "source", mainTexture);
         ProcessNet();
         Debug.Log("Process neural network finsih");
@@ -408,32 +409,5 @@ public class Model : IDisposable
 
         decoderShader.SetTexture(DecoderConv5, "decoder_destination", tempDestination);
     }
-}
-
-
-public enum Nearual
-{
-    Encoder,
-    Decoder
-}
-
-[Serializable]
-public class BaseData
-{
-    public string buffer;
-    public int kernel;
-    public Nearual nearual;
-}
-
-
-public class ArgData : ScriptableObject
-{
-    public BaseData[] datas;
-
-    public void OnSave()
-    {
-        Debug.Log("saved on editor");
-    }
-
 }
 
