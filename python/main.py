@@ -1,12 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: penghuailiang
+# @Date  : 2019-04-12
+
 import tensorflow as tf
+from parse import parser
 from model import Artgan
-from parser import *
+
 
 tf.set_random_seed(228)
 
 
 def main(_):
-    args = get_args()
+    args = parser.parse_args()
     tfconfig = tf.ConfigProto(allow_soft_placement=False)
     tfconfig.gpu_options.allow_growth = True
     with tf.Session(config=tfconfig) as sess:

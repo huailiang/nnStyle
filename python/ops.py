@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: penghuailiang
+# @Date  : 2019-04-27
+
 import math
 import numpy as np
 import tensorflow as tf

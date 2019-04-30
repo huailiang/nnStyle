@@ -58,7 +58,7 @@ def warite_layer(f, tensor):
 
 def movefile(srcfile, dstfile):
     """
-     move file from source to destnation
+     move file from source to destination
     :param srcfile:  source path
     :param dstfile:  destination path
     """
