@@ -84,13 +84,10 @@ class Artgan(object):
             # ==================== Define placeholders. ===================== #
             with tf.name_scope('placeholder'):
                 self.input_painting = tf.placeholder(
-                    dtype=tf.float32, shape=[
-                        self.batch_size, None, None, 3], name='painting')
+                    dtype=tf.float32, shape=[self.batch_size, None, None, 3], name='painting')
                 self.input_photo = tf.placeholder(
-                    dtype=tf.float32, shape=[
-                        self.batch_size, None, None, 3], name='photo')
-                self.lr = tf.placeholder(
-                    dtype=tf.float32, shape=(), name='learning_rate')
+                    dtype=tf.float32, shape=[self.batch_size, None, None, 3], name='photo')
+                self.lr = tf.placeholder(dtype=tf.float32, shape=(), name='learning_rate')
 
             # ===================== Wire the graph. ========================= #
             # Encode input images.
@@ -179,8 +176,7 @@ class Artgan(object):
                     self.output_photo_discr_predictions.keys(),
                     self.output_photo_discr_predictions.values())}
 
-            self.gener_loss = tf.add_n(
-                list(self.output_photo_gener_loss.values()))
+            self.gener_loss = tf.add_n(list(self.output_photo_gener_loss.values()))
 
             # Compute generator accuracies.
             self.output_photo_gener_acc = {
@@ -195,9 +191,7 @@ class Artgan(object):
 
             # Image loss.
             self.img_loss_photo = mse_criterion(
-                transformer_block(
-                    self.output_photo), transformer_block(
-                    self.input_photo))
+                transformer_block(self.output_photo), transformer_block(self.input_photo))
             self.img_loss = self.img_loss_photo
 
             # Features loss.
