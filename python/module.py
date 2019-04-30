@@ -92,8 +92,7 @@ def decoder(features, options, reuse=True, name="decoder"):
 
 def discriminator(image, options, reuse=True, name="discriminator"):
     """
-    Discriminator agent, that provides us with information about image plausibility at
-    different scales.
+    Discriminator agent, that provides us with information about image plausibility at different scales.
     Args:
         image: input tensor
         options: options defining number of kernels in conv layers

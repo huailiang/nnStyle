@@ -15,11 +15,6 @@ import tensorflow.contrib.layers as tflayers
 from utils import *
 
 
-def instance_normx(input, name="instance_norm"):
-    with tf.variable_scope(name):
-        return tf.nn.moments(input, axes=[1, 2], keep_dims=True)
-
-
 def instance_norm(input, name="instance_norm", is_training=True):
     with tf.variable_scope(name):
         depth = input.get_shape()[3]

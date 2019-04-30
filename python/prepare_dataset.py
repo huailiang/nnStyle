@@ -28,13 +28,10 @@ class ArtDataset():
         batch_image = []
 
         for _ in range(batch_size):
-            image = scipy.misc.imread(
-                name=random.choice(
-                    self.dataset), mode='RGB')
+            image = scipy.misc.imread(name=random.choice(self.dataset), mode='RGB')
 
             if max(image.shape) > 1800.:
-                image = scipy.misc.imresize(
-                    image, size=1800. / max(image.shape))
+                image = scipy.misc.imresize(image, size=1800. / max(image.shape))
             if max(image.shape) < 800:
                 # Resize the smallest side of the image to 800px
                 alpha = 800. / float(min(image.shape))
@@ -50,15 +47,9 @@ class ArtDataset():
                 batch_image.append((image).astype(np.float32))
         # Now return a batch in correct form
         batch_image = np.asarray(batch_image)
-
         return {"image": batch_image}
 
-    def initialize_batch_worker(
-            self,
-            queue,
-            augmentor,
-            batch_size=1,
-            seed=228):
+    def initialize_batch_worker(self, queue, augmentor, batch_size=1, seed=228):
         np.random.seed(seed)
         while True:
             batch = self.get_batch(augmentor=augmentor, batch_size=batch_size)
@@ -91,15 +82,12 @@ class CocoDataset():
 
         batch_image = []
         for _ in range(batch_size):
-            image = scipy.misc.imread(
-                name=random.choice(
-                    self.dataset), mode='RGB')
+            image = scipy.misc.imread(name=random.choice(self.dataset), mode='RGB')
             image = scipy.misc.imresize(image, size=2.)
             image_shape = image.shape
 
             if max(image_shape) > 1800.:
-                image = scipy.misc.imresize(
-                    image, size=1800. / max(image_shape))
+                image = scipy.misc.imresize(image, size=1800. / max(image_shape))
             if max(image_shape) < 800:
                 # Resize the smallest side of the image to 800px
                 alpha = 800. / float(min(image_shape))
@@ -113,12 +101,7 @@ class CocoDataset():
 
         return {"image": np.asarray(batch_image)}
 
-    def initialize_batch_worker(
-            self,
-            queue,
-            augmentor,
-            batch_size=1,
-            seed=228):
+    def initialize_batch_worker(self, queue, augmentor, batch_size=1, seed=228):
         np.random.seed(seed)
         while True:
             batch = self.get_batch(augmentor=augmentor, batch_size=batch_size)

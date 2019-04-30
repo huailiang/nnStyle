@@ -23,23 +23,18 @@ class Augmentor():
                  vertical_flip_prb=0.5):
 
         self.crop_size = crop_size
-
         self.scale_augm_prb = scale_augm_prb
         self.scale_augm_range = scale_augm_range
-
         self.rotation_augm_prb = rotation_augm_prb
         self.rotation_augm_range = rotation_augm_range
-
         self.hsv_augm_prb = hsv_augm_prb
         self.hue_augm_shift = hue_augm_shift
         self.saturation_augm_scale = saturation_augm_scale
         self.saturation_augm_shift = saturation_augm_shift
         self.value_augm_scale = value_augm_scale
         self.value_augm_shift = value_augm_shift
-
         self.affine_trnsfm_prb = affine_trnsfm_prb
         self.affine_trnsfm_range = affine_trnsfm_range
-
         self.horizontal_flip_prb = horizontal_flip_prb
         self.vertical_flip_prb = vertical_flip_prb
 
@@ -80,15 +75,11 @@ class Augmentor():
                     high=self.rotation_augm_range * 90.))
 
         if self.affine_trnsfm_prb > np.random.uniform():
-            image = self.affine(image=image,
-                                rng=self.affine_trnsfm_range
-                                )
+            image = self.affine(image=image, rng=self.affine_trnsfm_range)
         image = image[(rows // 4):-(rows // 4), (cols // 4):-(cols // 4), :]
 
         # Crop out patch of desired size.
-        image = self.crop(image=image,
-                          crop_size=self.crop_size
-                          )
+        image = self.crop(image=image, crop_size=self.crop_size)
 
         if self.hsv_augm_prb > np.random.uniform():
             image = self.hsv_transform(
