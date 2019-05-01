@@ -91,18 +91,13 @@ class Artgan(object):
 
             # ===================== Wire the graph. ========================= #
             # Encode input images.
-            self.input_photo_features = encoder(
-                image=self.input_photo, options=self.options, reuse=False)
+            self.input_photo_features = encoder(image=self.input_photo, options=self.options, reuse=False)
 
             # Decode obtained features
-            self.output_photo = decoder(
-                features=self.input_photo_features,
-                options=self.options,
-                reuse=False)
+            self.output_photo = decoder(features=self.input_photo_features, options=self.options, reuse=False)
 
             # Get features of output images. Need them to compute feature loss.
-            self.output_photo_features = encoder(
-                image=self.output_photo, options=self.options, reuse=True)
+            self.output_photo_features = encoder(image=self.output_photo, options=self.options, reuse=True)
 
             # Add discriminators.
             # Note that each of the predictions contain multiple predictions at different scale.
@@ -167,7 +162,7 @@ class Artgan(object):
 
             self.discr_acc = (tf.add_n(list(self.input_painting_discr_acc.values())) +
                               tf.add_n(list(self.input_photo_discr_acc.values())) +
-                              tf.add_n(list(self.output_photo_discr_acc.values()))) / float(len(scale_weight.keys()) * 3)
+                              tf.add_n(list(self.output_photo_discr_acc.values())))/float(len(scale_weight.keys()) * 3)
 
             # Generator.
             # Predicts ones for both output images.
@@ -195,8 +190,7 @@ class Artgan(object):
             self.img_loss = self.img_loss_photo
 
             # Features loss.
-            self.feature_loss_photo = abs_criterion(
-                self.output_photo_features, self.input_photo_features)
+            self.feature_loss_photo = abs_criterion(self.output_photo_features, self.input_photo_features)
             self.feature_loss = self.feature_loss_photo
 
             # ================== Define optimization steps. =============== #
@@ -284,14 +278,10 @@ class Artgan(object):
 
             # ===================== Wire the graph. ========================= #
             # Encode input images.
-            self.input_photo_features = encoder(
-                image=self.input_photo, options=self.options, reuse=False)
+            self.input_photo_features = encoder(image=self.input_photo, options=self.options, reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(
-                features=self.input_photo_features,
-                options=self.options,
-                reuse=False)
+            self.output_photo = decoder(features=self.input_photo_features, options=self.options, reuse=False)
 
     def train(self, args, ckpt_nmbr=None):
         # Initialize augmentor.
@@ -305,10 +295,8 @@ class Artgan(object):
             value_augm_shift=0.05,
             value_augm_scale=0.05,
         )
-        content_dataset_coco = prepare_dataset.CocoDataset(
-            path_to_dataset=self.options.path_to_content_dataset)
-        art_dataset = prepare_dataset.ArtDataset(
-            path_to_art_dataset=self.options.path_to_art_dataset)
+        content_dataset_coco = prepare_dataset.CocoDataset(path_to_dataset=self.options.path_to_content_dataset)
+        art_dataset = prepare_dataset.ArtDataset(path_to_art_dataset=self.options.path_to_art_dataset)
 
         # Initialize queue workers for both datasets.
         q_art = multiprocessing.Queue(maxsize=10)
@@ -351,8 +339,8 @@ class Artgan(object):
                 range(self.initial_step, self.options.total_steps + 1),
                 initial=self.initial_step,
                 total=self.options.total_steps):
-            # Get batch from the queue with batches q, if the last is
-            # non-empty.
+            time.sleep(0.1)
+            # Get batch from the queue with batches q, if the last is non-empty.
             while q_art.empty() or q_content.empty():
                 pass
             batch_art = q_art.get()
@@ -630,20 +618,14 @@ class Artgan(object):
             else:
                 return False
         else:
-            print(
-                " [*] Reading latest checkpoint from folder %s." %
-                checkpoint_dir)
+            print(" [*] Reading latest checkpoint from folder %s." % checkpoint_dir)
             ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
                 print("checkpoint path: ", ckpt.model_checkpoint_path)
                 self.initial_step = int(ckpt_name.split("_")[-1].split(".")[0])
-                print(
-                    "Load checkpoint %s. Initial step: %s." %
-                    (ckpt_name, self.initial_step))
-                self.saver.restore(
-                    self.sess, os.path.join(
-                        checkpoint_dir, ckpt_name))
+                print("Load checkpoint %s. Initial step: %s." % (ckpt_name, self.initial_step))
+                self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
                 return True
             else:
                 return False

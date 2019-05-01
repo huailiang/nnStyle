@@ -60,6 +60,7 @@ class CocoDataset():
 
     def __init__(self, path_to_dataset):
         self.dataset = []
+        print(path_to_dataset)
         if os.path.exists(path_to_dataset):
             for file_name in tqdm(os.listdir(path_to_dataset)):
                 self.dataset.append(os.path.join(path_to_dataset, file_name))

@@ -19,6 +19,7 @@ def main(_):
         model = Artgan(sess, args)
 
         if args.phase == 'train':
+            print("Train.")
             model.train(args, ckpt_nmbr=args.ckpt_nmbr)
         if args.phase == 'inference' or args.phase == 'test':
             print("Inference.")

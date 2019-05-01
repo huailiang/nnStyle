@@ -52,8 +52,8 @@ parser.add_argument(
     '--ptcd',
     dest='path_to_content_dataset',
     type=str,
-    default=None,
-    help='Path to Places365 training dataset.')
+    default='./data/micro_coco _dataset',
+    help='Path to microsoft coco training dataset.')
 
 parser.add_argument(
     '--total_steps',

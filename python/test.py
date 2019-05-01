@@ -6,6 +6,44 @@ from ops import *
 import imageio
 import numpy as np
 
+from tqdm import tqdm
+import multiprocessing
+
+# encoding:utf-8
+from multiprocessing import Process
+import os, time, random
+
+
+def r():
+    print 'run method'
+
+
+import time
+from tqdm import tqdm
+
+for i in tqdm(range(10, 20)):
+    # print(i)
+    time.sleep(1)
+
+# if __name__ == "__main__":
+#         print "main process run..."
+#         #没有指定Process的targt
+#         p1 = Process()
+#         p2 = Process()
+#         #如果在创建Process时不指定target，那么执行时没有任何效果。
+#         #因为默认的run方法是判断如果不指定target，那就什么都不做
+#         #所以这里手动改变了run方法
+#         p1.run = r
+#         p2.run = r
+
+#         p1.start()
+#         p2.start()
+#         print("********")
+#         p1.join()
+#         p2.join()
+#         time.sleep(0.001)
+#         print "main process runned all lines..."
+
 #
 # tf.set_random_seed(228)
 #
@@ -55,9 +93,9 @@ import numpy as np
 # '''
 #
 
-img_path = "./RT.jpg"
-img = imageio.imread(img_path)
-printf(img, "img")  # tensor = tf.convert_to_tensor(img)
+# img_path = "./RT.jpg"
+# img = imageio.imread(img_path)
+# printf(img, "img")  # tensor = tf.convert_to_tensor(img)
 # tensor = tf.image.resize_images(images=tensor, size=tf.shape(tensor)[0:2] * 2,
 #                                 method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 # with tf.Session() as sess:
