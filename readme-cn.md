@@ -7,6 +7,11 @@
 
 我们使用预训练好的TensorFlow模型， 并在unity使用compute shader实现了一套前向传播的网络。
 
+<br><img src='image/tf1.jpg'> <br>
+
+
+<br><img src='image/tf2.jpg'> <br>
+
 
 ## 环境
 

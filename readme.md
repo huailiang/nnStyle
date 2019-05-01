@@ -7,6 +7,12 @@ The project aimed to transfer style  realtime in the video game.
 
 We trained the model in the tensorflow, and forward the network in the unity environment.
 
+<br><img src='image/tf1.jpg'> <br>
+
+
+<br><img src='image/tf2.jpg'> <br>
+
+
 
 ## Environment
 
