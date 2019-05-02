@@ -22,18 +22,14 @@ def save_batch(input_painting_batch, input_photo_batch, output_painting_batch, o
     Returns:
 
     """
+
     def batch_to_img(batch):
-        return np.reshape(batch,
-                          newshape=(batch.shape[0]*batch.shape[1], batch.shape[2], batch.shape[3]))
+        return np.reshape(batch, newshape=(batch.shape[0] * batch.shape[1], batch.shape[2], batch.shape[3]))
 
-    inputs = np.concatenate([batch_to_img(input_painting_batch), batch_to_img(input_photo_batch)],
-                            axis=0)
-    outputs = np.concatenate([batch_to_img(output_painting_batch), batch_to_img(output_photo_batch)],
-                             axis=0)
-
-    to_save = np.concatenate([inputs,outputs], axis=1)
+    inputs = np.concatenate([batch_to_img(input_painting_batch), batch_to_img(input_photo_batch)], axis=0)
+    outputs = np.concatenate([batch_to_img(output_painting_batch), batch_to_img(output_photo_batch)], axis=0)
+    to_save = np.concatenate([inputs, outputs], axis=1)
     to_save = np.clip(to_save, a_min=0., a_max=255.).astype(np.uint8)
-
     scipy.misc.imsave(filepath, arr=to_save)
 
 
@@ -44,8 +40,7 @@ def normalize_arr_of_imgs(arr):
         arr: numpy array of arbitrary shape and dimensions.
     Returns:
     """
-    return arr/127.5 - 1.
-    # return (arr - np.mean(arr)) / np.std(arr)
+    return arr / 127.5 - 1.  # return (arr - np.mean(arr)) / np.std(arr)
 
 
 def denormalize_arr_of_imgs(arr):

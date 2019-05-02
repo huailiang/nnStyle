@@ -339,7 +339,6 @@ class Artgan(object):
                 range(self.initial_step, self.options.total_steps + 1),
                 initial=self.initial_step,
                 total=self.options.total_steps):
-            time.sleep(0.1)
             # Get batch from the queue with batches q, if the last is non-empty.
             while q_art.empty() or q_content.empty():
                 pass
