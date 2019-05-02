@@ -59,7 +59,7 @@ public class VisualBufferTool : EditorWindow
         GUILayout.Space(10);
 
         GUILayout.BeginVertical();
-        GUILayout.Label("Visual NN Layer", boldLableStyle);
+        GUILayout.Label("Visual Nearual Layer", boldLableStyle);
         GUILayout.Space(8);
 
         select = EditorGUILayout.Popup(select, p_layer);
