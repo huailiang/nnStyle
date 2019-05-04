@@ -66,17 +66,17 @@ def decoder(features, options, reuse=True, name="decoder"):
         # Now stack 9 residual blocks
         num_kernels = features.get_shape().as_list()[-1]
         r1 = residule_block(features, num_kernels, name='g_r1')
-        r2 = residule_block(r1, num_kernels, name='g_r2')
-        r3 = residule_block(r2, num_kernels, name='g_r3')
-        r4 = residule_block(r3, num_kernels, name='g_r4')
-        r5 = residule_block(r4, num_kernels, name='g_r5')
-        r6 = residule_block(r5, num_kernels, name='g_r6')
-        r7 = residule_block(r6, num_kernels, name='g_r7')
-        r8 = residule_block(r7, num_kernels, name='g_r8')
-        r9 = residule_block(r8, num_kernels, name='g_r9')
+        # r2 = residule_block(r1, num_kernels, name='g_r2')
+        # r3 = residule_block(r2, num_kernels, name='g_r3')
+        # r4 = residule_block(r3, num_kernels, name='g_r4')
+        # r5 = residule_block(r4, num_kernels, name='g_r5')
+        # r6 = residule_block(r5, num_kernels, name='g_r6')
+        # r7 = residule_block(r6, num_kernels, name='g_r7')
+        # r8 = residule_block(r7, num_kernels, name='g_r8')
+        # r9 = residule_block(r8, num_kernels, name='g_r9')
 
         # Decode image.
-        d1 = tf.nn.relu(instance_norm(input=deconv2d(r9, options.gf_dim * 8, 3, 2, name='g_d1_dc'), name='g_d1_bn',
+        d1 = tf.nn.relu(instance_norm(input=deconv2d(r1, options.gf_dim * 8, 3, 2, name='g_d1_dc'), name='g_d1_bn',
                                       is_training=options.is_training))
         d2 = tf.nn.relu(instance_norm(input=deconv2d(d1, options.gf_dim * 4, 3, 2, name='g_d2_dc'), name='g_d2_bn',
                                       is_training=options.is_training))

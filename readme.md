@@ -58,6 +58,9 @@ python main.py \
          --image_size=256
 ```
 
+
+You can also download this dataset from [baidu clound disk](https://pan.baidu.com/s/13_kSWE-OiqHFDXix9NwL_g), and import to unity env.
+
 If you visual layer data as image, you can use tool in unity, and click Tools->LayerVisual, Then you will get tool like this:
 
 
