@@ -12,6 +12,8 @@ We trained the model in the tensorflow, and forward the network in the unity env
 
 <br><img src='image/tf2.jpg'> <br>
 
+As shown in the picture，left is origin picture, middle is unity transfer picture, and right is tensorflow inference picture.
+
 
 
 ## Environment

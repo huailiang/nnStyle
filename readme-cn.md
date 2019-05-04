@@ -12,6 +12,7 @@
 
 <br><img src='image/tf2.jpg'> <br>
 
+如上图所示， 左边是原图，中间是unity转换的图片，右边是TensorFlow inrefrence的图片。
 
 ## 环境
 
