@@ -537,7 +537,6 @@ class Artgan(object):
                 self.output_photo, feed_dict={
                     self.input_photo: normalize_arr_of_imgs(img)})
             img = d_list[0]
-            img = img[0]
             img = denormalize_arr_of_imgs(img)
             if resize_to_original:
                 img = scipy.misc.imresize(img, size=img_shape)
@@ -579,8 +578,8 @@ class Artgan(object):
             export_layer(d_list[7], "decoder_y3")
 
     def export_arg(self, cpkt):
-        checkpoint_path = os.path.join(self.checkpoint_long_dir, cpkt)
-        export_args(checkpoint_path)
+        checkpoint_pth = os.path.join(self.checkpoint_long_dir, cpkt)
+        export_args(checkpoint_pth)
 
     def save(self, step, is_long=False):
         if not os.path.exists(self.checkpoint_dir):

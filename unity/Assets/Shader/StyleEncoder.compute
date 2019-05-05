@@ -28,6 +28,7 @@ contact: peng_huailiang@qq.com
 
 #include "libEncoder.cginc"
 
+int alpha;
 Texture2D<float4> source;
 RWStructuredBuffer<float> encoder_inst;
 StructuredBuffer<float> encoder_g_e0_bn_offset;
@@ -61,7 +62,7 @@ conv5			  16x16x256
 void StyleConv0(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
-	float4 color = source[uint2(id.x, width - 1 - id.y)];
+	float4 color = source[uint2(id.x * alpha, alpha * (width - 1 - id.y))];
 	float arr[3] = { color.x, color.y, color.z };
 	float v = 2 * arr[id.z] - 1;  // (0,1) -> (-1,1)
 	int idx = id.y * width * depth + id.x * depth + id.z;

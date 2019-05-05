@@ -16,7 +16,7 @@ public class StyleProcess : MonoBehaviour
             tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app2");
         }
         model = new Model(encoderShader, decoderShader);
-        model.BindRender(tempRender);
+        model.BindRender(tempRender, realtimeRender);
         checkpoint = new LoadCheckpoint();
         checkpoint.Load(model.Process);
     }

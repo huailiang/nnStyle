@@ -58,10 +58,18 @@ public class Model : IDisposable
 
     }
 
-    public void BindRender(Renderer temp)
+    public void BindRender(Renderer temp, bool realtime)
     {
         tempRender = temp;
-        mainTexture = tempRender.sharedMaterial.mainTexture;
+        if (realtime)
+        {
+            encoderShader.SetInt("alpha", Screen.height / 256);
+        }
+        else
+        {
+            mainTexture = tempRender.sharedMaterial.mainTexture;
+            encoderShader.SetInt("alpha", 1);
+        }
         tempDestination = new RenderTexture(width, width, 0);
         tempDestination.enableRandomWrite = true;
         tempDestination.Create();
@@ -230,7 +238,7 @@ public class Model : IDisposable
             shader.SetBuffer(map[item.Key].kernel, item.Key, buffer);
         }
         map.Clear();
-        encoderShader.SetTexture(StyleConv0, "source", mainTexture);
+        if (mainTexture != null) encoderShader.SetTexture(StyleConv0, "source", mainTexture);
         ProcessNearual();
         Debug.Log("Process neural network finsih");
     }
