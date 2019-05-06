@@ -29,10 +29,10 @@ contact: peng_huailiang@qq.com
 #include "libEncoder.cginc"
 
 uniform int alpha;
-Texture2D<float4> source;
-RWStructuredBuffer<float> encoder_inst;
-StructuredBuffer<float> encoder_g_e0_bn_offset;
-StructuredBuffer<float> encoder_g_e0_bn_scale;
+Texture2D<half4> source;
+RWStructuredBuffer<half> encoder_inst;
+StructuredBuffer<half> encoder_g_e0_bn_offset;
+StructuredBuffer<half> encoder_g_e0_bn_scale;
 DefineEncoderArg(1)
 DefineEncoderArg(2)
 DefineEncoderArg(3)
@@ -62,9 +62,9 @@ conv5			  16x16x256
 void StyleConv0(uint3 id : SV_DispatchThreadID)
 {
 	uint width = 256, depth = 3;
-	float4 color = source[uint2(id.x * alpha, alpha * (width - 1 - id.y))];
-	float arr[3] = { color.x, color.y, color.z };
-	float v = 2 * arr[id.z] - 1;  // (0,1) -> (-1,1)
+	half4 color = source[uint2(id.x * alpha, alpha * (width - 1 - id.y))];
+	half arr[3] = { color.x, color.y, color.z };
+	half v = 2 * arr[id.z] - 1;  // (0,1) -> (-1,1)
 	int idx = id.y * width * depth + id.x * depth + id.z;
 	encoder_inst[idx] = v;
 }
@@ -81,13 +81,13 @@ void StyleInstance0(uint3 id : SV_DispatchThreadID) //id.xy=256 256x256x3
 {
 	uint width = 256, depth = 3;
 	int idx = StdID(id, width, depth);
-	float color = encoder_inst[idx];
-	float mean = encoder_conv0_statistic[id.z * 2];
-	float variance = encoder_conv0_statistic[id.z * 2 + 1];
-	float inv = rsqrt(variance + EPSILON);
-	float normalized = (color - mean) * inv;
-	float scale = encoder_g_e0_bn_scale[id.z];
-	float offset = encoder_g_e0_bn_offset[id.z];
+	half color = encoder_inst[idx];
+	half mean = encoder_conv0_statistic[id.z * 2];
+	half variance = encoder_conv0_statistic[id.z * 2 + 1];
+	half inv = rsqrt(variance + EPSILON);
+	half normalized = (color - mean) * inv;
+	half scale = encoder_g_e0_bn_scale[id.z];
+	half offset = encoder_g_e0_bn_offset[id.z];
 	encoder_inst[idx] = scale * normalized + offset;
 }
 

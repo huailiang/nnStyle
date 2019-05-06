@@ -33,9 +33,9 @@ contact: peng_huailiang@qq.com
 #pragma kernel DecoderPad5
 #pragma kernel DecoderConv5
 
-RWStructuredBuffer<float> input_initial;
-RWStructuredBuffer<float> input_writable;
-RWTexture2D<float4> decoder_destination;
+RWStructuredBuffer<half> input_initial;
+RWStructuredBuffer<half> input_writable;
+RWTexture2D<half4> decoder_destination;
 
 #include "libStd.cginc"
 #include "libDecoderArgs.cginc"
@@ -46,7 +46,7 @@ DefineDecodeBuffer(1)
 DefineDecodeBuffer(2)
 DefineDecodeBuffer(3)
 DefineDecodeBuffer(4)
-RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
+RWStructuredBuffer<half> decoder_conv5_pad;		// 262x262x32
 
 /*
 ***  formula  o=(w-k+2p)/s+1  ***
@@ -271,10 +271,10 @@ void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.xy=256
 {
 	//conv: （262x262x32) ->（256x256x3）
 	uint width = 262, depth1 = 32, depth2 =3, ks = 7, stride = 1;
-	float rgb[3];
+	half rgb[3];
 	for(uint i = 0; i < depth2; i++)
 	{
-		float v= 0.0f;
+		half v= 0.0f;
 		for(uint j = 0; j < depth1; j++)
 		{
 			int d_indx = (depth2 * j + i)* ks * ks;
@@ -283,5 +283,5 @@ void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.xy=256
 		rgb[i] = sigmod(v);
 	}
 	uint2 coord = uint2(id.y, width - ks + stride -1 - id.x);
-	decoder_destination[coord] = float4(rgb[0], rgb[1], rgb[2], 1);
+	decoder_destination[coord] = half4(rgb[0], rgb[1], rgb[2], 1);
 }

@@ -63,11 +63,11 @@ void StdSeq(int x, int y, int z, int width,int depth, out int res[9])
 /*
 conv2d with valid padding
 */
-float3x3 StdSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int width, int depth)
+half3x3 StdSample(RWStructuredBuffer<half> buffer, int x, int y, int z, int width, int depth)
 {
 	int sq[9];
 	StdSeq(x, y, z, width, depth, sq);
-	return float3x3(buffer[sq[0]], buffer[sq[1]], buffer[sq[2]],
+	return half3x3(buffer[sq[0]], buffer[sq[1]], buffer[sq[2]],
 		buffer[sq[3]], buffer[sq[4]], buffer[sq[5]],
 		buffer[sq[6]], buffer[sq[7]], buffer[sq[8]]);
 }
@@ -76,9 +76,9 @@ float3x3 StdSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int wi
 conv2d with same padding 
 xy range section will be filled with zero
 */
-float3x3 StdSlowSample(RWStructuredBuffer<float> buffer, int x, int y, int z, int width, int depth)
+half3x3 StdSlowSample(RWStructuredBuffer<half> buffer, int x, int y, int z, int width, int depth)
 {
-	float a[9];
+	half a[9];
 	bool x1 = x + 1 < width;
 	bool x2 = x + 2 < width;
 	bool y1 = y + 1 < width;
@@ -92,7 +92,7 @@ float3x3 StdSlowSample(RWStructuredBuffer<float> buffer, int x, int y, int z, in
 	a[6] = y2 ? buffer[StdIndex(x, y + 2, z, width, depth)] : 0;
 	a[7] = x1 && y2 ? buffer[StdIndex(x + 1, y + 2, z, width, depth)] : 0;
 	a[8] = x2 && y2 ? buffer[StdIndex(x + 2, y + 2, z, width, depth)] : 0;
-	return float3x3(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+	return half3x3(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
 }
 
 
@@ -124,7 +124,7 @@ inline bool StdCheckRange(uint3 id, uint width)
 	GroupMemoryBarrierWithGroupSync();	\
 	if (id.y == 1)	\
 	{	\
-		float mean = 0, qrt = 0;	\
+		half mean = 0, qrt = 0;	\
 		for (uint i = 0; i < width; i++)	\
 		{	\
 			int idx = i * depth + z;	\
