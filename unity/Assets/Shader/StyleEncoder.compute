@@ -28,7 +28,7 @@ contact: peng_huailiang@qq.com
 
 #include "libEncoder.cginc"
 
-int alpha;
+uniform int alpha;
 Texture2D<float4> source;
 RWStructuredBuffer<float> encoder_inst;
 StructuredBuffer<float> encoder_g_e0_bn_offset;
