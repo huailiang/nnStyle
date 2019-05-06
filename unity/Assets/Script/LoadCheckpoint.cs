@@ -119,7 +119,6 @@ public class LoadCheckpoint
         short output = reader.ReadInt16();
         short height = reader.ReadInt16();
         short width = reader.ReadInt16();
-
         if (height == 3 && width == 3)
         {
             v3_map.Add(key, new Matrix3X3[input * output]);

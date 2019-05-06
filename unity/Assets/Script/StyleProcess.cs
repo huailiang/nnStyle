@@ -13,7 +13,7 @@ public class StyleProcess : MonoBehaviour
     {
         if (tempRender.sharedMaterial.mainTexture == null)
         {
-            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app2");
+            tempRender.sharedMaterial.mainTexture = Resources.Load<Texture>("app1");
         }
         model = new Model(encoderShader, decoderShader);
         model.BindRender(tempRender, realtimeRender);
@@ -57,18 +57,18 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 80, 80, 40), "Decode"))
         {
-            float[] layer = checkpoint.LoadLayer("encoder_c5");
+            float[] layer = checkpoint.LoadLayer("encoder_c3");
             BufferPool.Get("input_initial").SetData(layer);
             model.DrawResidule();
             model.DrawDecoder();
         }
-        if (GUI.Button(new Rect(20, 140, 80, 40), "Output"))
+        if (GUI.Button(new Rect(20, 140, 80, 40), "Test"))
         {
-            float[] layer = checkpoint.LoadLayer("decoder_d4");
-            BufferPool.Get("decoder_conv4").SetData(layer);
-            model.DrawRenderTexure();
+            float[] layer = checkpoint.LoadLayer("encoder_c0");
+            BufferPool.Get("encoder_conv0").SetData(layer);
+            BufferProfile.Printf("encoder_conv0");
+            BufferProfile.Printf("encoder_conv2");
+            model.Test();
         }
     }
-
-
 }

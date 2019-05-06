@@ -30,7 +30,7 @@ parser.add_argument(
 parser.add_argument(
     '--ckpt_name',
     dest='ckpt_name',
-    default='model16_van-gogh_bks10_flw100_300000.ckpt-300000',
+    default='model_van-gogh-simple_300000.ckpt-300000',
     help='name of the checkpoint')
 parser.add_argument(
     '--image_size',

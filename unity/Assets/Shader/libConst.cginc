@@ -31,6 +31,7 @@ contact: peng_huailiang@qq.com
 #define MAX_THREAD_X	512
 #define MAX_THREAD_Y	512
 #define REV_THREAD_Z    8  // as MAX_THREAD/MAX_THREAD_Z
+#define THREAD_Y_16Z    32
 #define THREAD_Y_32Z    16 //MAX_THREAD/32
 #define THREAD_Y_64Z    8
 #define THREAD_Y_128Z   4
@@ -40,6 +41,7 @@ contact: peng_huailiang@qq.com
 #define MAX_THREAD_X	1024
 #define MAX_THREAD_Y	1024
 #define REV_THREAD_Z    16  // as 1024/64
+#define THREAD_Y_16Z    64
 #define THREAD_Y_32Z    32
 #define THREAD_Y_64Z    16
 #define THREAD_Y_128Z   8

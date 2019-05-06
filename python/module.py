@@ -25,18 +25,14 @@ def encoder(image, options, reuse=True, name="encoder"):
             print("encoder reuse", tf.get_variable_scope().reuse)
             assert tf.get_variable_scope().reuse is False
         image = instance_norm(input=image, is_training=options.is_training, name='g_e0_bn')
-        c0 = tf.pad(image, [[0, 0], [15, 15], [15, 15], [0, 0]], "REFLECT")
-        c1 = tf.nn.relu(instance_norm(input=conv2d(c0, options.gf_dim, 3, 1, padding='VALID', name='g_e1_c'),
+        c0 = tf.pad(image, [[0, 0], [4, 4], [4, 4], [0, 0]], "REFLECT")
+        c1 = tf.nn.relu(instance_norm(input=conv2d(c0, options.gf_dim, 3, 2, padding='VALID', name='g_e1_c'),
                                       is_training=options.is_training, name='g_e1_bn'))
         c2 = tf.nn.relu(instance_norm(input=conv2d(c1, options.gf_dim, 3, 2, padding='VALID', name='g_e2_c'),
                                       is_training=options.is_training, name='g_e2_bn'))
         c3 = tf.nn.relu(instance_norm(conv2d(c2, options.gf_dim * 2, 3, 2, padding='VALID', name='g_e3_c'),
                                       is_training=options.is_training, name='g_e3_bn'))
-        c4 = tf.nn.relu(instance_norm(conv2d(c3, options.gf_dim * 4, 3, 2, padding='VALID', name='g_e4_c'),
-                                      is_training=options.is_training, name='g_e4_bn'))
-        c5 = tf.nn.relu(instance_norm(conv2d(c4, options.gf_dim * 8, 3, 2, padding='VALID', name='g_e5_c'),
-                                      is_training=options.is_training, name='g_e5_bn'))
-        return c5
+        return c3, c0, c2
 
 
 def decoder(features, options, reuse=True, name="decoder"):
@@ -66,28 +62,15 @@ def decoder(features, options, reuse=True, name="decoder"):
         # Now stack 9 residual blocks
         num_kernels = features.get_shape().as_list()[-1]
         r1 = residule_block(features, num_kernels, name='g_r1')
-        # r2 = residule_block(r1, num_kernels, name='g_r2')
-        # r3 = residule_block(r2, num_kernels, name='g_r3')
-        # r4 = residule_block(r3, num_kernels, name='g_r4')
-        # r5 = residule_block(r4, num_kernels, name='g_r5')
-        # r6 = residule_block(r5, num_kernels, name='g_r6')
-        # r7 = residule_block(r6, num_kernels, name='g_r7')
-        # r8 = residule_block(r7, num_kernels, name='g_r8')
-        # r9 = residule_block(r8, num_kernels, name='g_r9')
 
         # Decode image.
-        d1 = tf.nn.relu(instance_norm(input=deconv2d(r1, options.gf_dim * 8, 3, 2, name='g_d1_dc'), name='g_d1_bn',
+        d1 = tf.nn.relu(instance_norm(input=deconv2d(r1, options.gf_dim * 2, 3, 2, name='g_d1_dc'), name='g_d1_bn',
                                       is_training=options.is_training))
-        d2 = tf.nn.relu(instance_norm(input=deconv2d(d1, options.gf_dim * 4, 3, 2, name='g_d2_dc'), name='g_d2_bn',
+        d2 = tf.nn.relu(instance_norm(input=deconv2d(d1, options.gf_dim, 3, 2, name='g_d2_dc'), name='g_d2_bn',
                                       is_training=options.is_training))
-        d3 = tf.nn.relu(instance_norm(input=deconv2d(d2, options.gf_dim * 2, 3, 2, name='g_d3_dc'), name='g_d3_bn',
-                                      is_training=options.is_training))
-        d4 = tf.nn.relu(instance_norm(input=deconv2d(d3, options.gf_dim, 3, 2, name='g_d4_dc'), name='g_d4_bn',
-                                      is_training=options.is_training))
-
-        d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
-        pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c')) * 2. - 1.
-        return pred
+        d3 = deconv2d(d2, 3, 3, 2, name="g_d3_dc")
+        pred = tf.nn.sigmoid(d3) * 2. - 1.
+        return pred, d1, d2, d3, r1
 
 
 def discriminator(image, options, reuse=True, name="discriminator"):

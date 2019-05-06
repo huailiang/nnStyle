@@ -124,7 +124,7 @@ def export_layer(tensor, name):
     shape = tensor.shape
     if len(shape) == 4:
         print("\n export %s shape: %dx%dx%d" % (name, shape[1], shape[2], shape[3]))
-        f = open(name + ".bytes", 'w')
+        f = open(name + ".bytes", 'wb')
         warite_layer(f, tensor)
         f.close()
         print("write layer finish")

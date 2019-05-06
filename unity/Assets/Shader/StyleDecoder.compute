@@ -24,14 +24,6 @@ contact: peng_huailiang@qq.com
 #pragma kernel DecoderInstance2
 #pragma kernel DecoderExpand3
 #pragma kernel DecoderConv3
-#pragma kernel DecoderNormal3
-#pragma kernel DecoderInstance3
-#pragma kernel DecoderExpand4
-#pragma kernel DecoderConv4
-#pragma kernel DecoderNormal4
-#pragma kernel DecoderInstance4
-#pragma kernel DecoderPad5
-#pragma kernel DecoderConv5
 
 RWStructuredBuffer<float> input_initial;
 RWStructuredBuffer<float> input_writable;
@@ -45,20 +37,18 @@ DefineDecodeBuffer(0)
 DefineDecodeBuffer(1)
 DefineDecodeBuffer(2)
 DefineDecodeBuffer(3)
-DefineDecodeBuffer(4)
-RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
+//DefineDecodeBuffer(4)
+//RWStructuredBuffer<float> decoder_conv5_pad;		// 262x262x32
 
 /*
 ***  formula  o=(w-k+2p)/s+1  ***
 encoder construct as:
-init  16x16x256->
-resid	16x16x256->  
-decv1	  32x32x256->
-decv2		64x64x128->
-decv3		  128x128x64->
-decv4			256x256x32->
-pad 				262x262x32->
-conv(pred)				256x256x3		
+init  32x32x64->
+resid	32x32x64->  
+decv1	  64x64x32->
+decv2		128x128x16->
+decv3		  256x256x3->
+pred			256x256x3		
 */
 
 /*
@@ -66,222 +56,153 @@ residule-block
 16x16x256->18x18x256->16x16x256
 */
 [numthreads(8,8,4)]
-void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
+void ResidulePad1_1(uint3 id : SV_DispatchThreadID) //id.xy=40  32x32x64->34x34x64
 {
-	uint pad = 1, width = 16, depth = 256;
+	uint pad = 1, width = 32, depth = 64;
 	if (StdCheckRange(id, width + 2 * pad)) return;
 	StdPad(id, width, depth, pad);
 	decoder_conv0[indx2] = input_initial[indx];
 }
 
 [numthreads(8,8,1)]
-void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
+void ResiduleConv1_1(uint3 id: SV_DispatchThreadID) //id.xy=32 34x34x64->32x32x64
 {
-	int input = 18, output = 16, depth = 256;
+	int input = 34, output = 32, depth = 64;
 	DefineResiduleConv(id, input, output, 1, 1)
 }
 
-[numthreads(256,THREAD_Y_256Z,1)]
-void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.z=256 16x16x256
+[numthreads(64, THREAD_Y_64Z,1)]
+void ResiduleNormal1_1(uint3 id: SV_DispatchThreadID) //id.z=64 32x32x64
 {
-	uint width = THREAD_Y_256Z, depth = 256, nwidth = 16;
+	uint width = THREAD_Y_64Z, depth = 64, nwidth = 32;
 	StdDefineNormal(id, input_writable, decoder_conv0_statistic, width);
 }
 
 [numthreads(8,8,4)]
-void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
+void ResiduleInst1_1(uint3 id:SV_DispatchThreadID) //id.xy=32 32x32x64
 {
-	uint width = 16, depth = 256;
+	uint width = 32, depth = 64;
 	DeifineResiduleInst(id, 1, 1);
 	input_writable[indx] = input_writable[indx];
 }
 
 [numthreads(8, 8, 4)]
-void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=24  18x18x256
+void ResidulePad1_2(uint3 id : SV_DispatchThreadID) //id.xy=40  32x32x64->34x34x64
 {
-	uint pad = 1, width = 16, depth = 256;
+	uint pad = 1, width = 32, depth = 64;
 	if (StdCheckRange(id, width + 2 * pad)) return;
 	StdPad(id, width, depth, pad);
 	decoder_conv0[indx2] = relu(input_writable[indx]);
 }
 
 [numthreads(8,8,1)]
-void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 18x18x256->16x16x256
+void ResiduleConv1_2(uint3 id: SV_DispatchThreadID) //id.xy=32 34x34x64->32x32x64
 {
-	int input = 18, output = 16, depth = 256;
+	int input = 34, output = 32, depth = 64;
 	DefineResiduleConv(id, input, output, 1, 2)
 }
 
-[numthreads(256,THREAD_Y_256Z,1)]
-void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256
+[numthreads(64, THREAD_Y_64Z,1)]
+void ResiduleNormal1_2(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x64
 {
-	uint width = 4, depth = 256, nwidth = 16;
+	uint width = THREAD_Y_64Z, depth = 64, nwidth = 32;
 	StdDefineNormal(id, input_writable, decoder_conv0_statistic, width);
 }
 
 [numthreads(8,8,4)]
-void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=16 16x16x256
+void ResiduleInst1_2(uint3 id:SV_DispatchThreadID) //id.xy=32 32x32x64
 {
-	uint width = 16, depth = 256;
+	uint width = 32, depth = 64;
 	DeifineResiduleInst(id, 1, 2);
 	input_writable[indx] += input_initial[indx];
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=16 16x16x256->32x32x256
+void DecoderExpand1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x64->64x64x64
 {
-	int width = 16, depth = 256;
+	int width = 32, depth = 64;
 	int indx = StdID(id, width, depth);
 	float v = input_writable[indx];
 	DefineDecoderPad(id, 1)
 }
 
 [numthreads(8,8,1)]
-void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256->32x32x256
+void DecoderConv1(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x64->64x64x64
 {
-	uint width = 32, depth1 = 256, depth2 = 256;
+	uint width = 64, depth1 = 64, depth2 = 64;
 	DefineDecoderConv(id, width, depth1, depth2, 1);
 }
 
-[numthreads(256, THREAD_Y_256Z, 1)]
-void DecoderNormal1(uint3 id: SV_DispatchThreadID) //id.z=256 32x32x256
+[numthreads(64, THREAD_Y_64Z, 1)]
+void DecoderNormal1(uint3 id: SV_DispatchThreadID) //id.z=32 64x64x64
 {
-	uint width = THREAD_Y_256Z, depth = 256, nwidth = 32;
+	uint width = THREAD_Y_64Z, depth = 64, nwidth = 64;
 	StdDefineNormal(id, decoder_conv1, decoder_conv1_statistic, width);
 }
 
 [numthreads(8,8,4)]
-void DecoderInstance1(uint3 id: SV_DispatchThreadID) //id.xy=32 32x32x256
+void DecoderInstance1(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x64
 {
-	uint width = 32, depth = 256;
+	uint width = 64, depth = 64;
 	DefineDecoderInstRelu(id, 1)
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand2(uint3 id: SV_DispatchThreadID) //id.xy=32, 32x32x256->64x64x256
+void DecoderExpand2(uint3 id: SV_DispatchThreadID) //id.xy=64, 64x64x64->128x128x64
 {
-	int width = 32, depth = 256;
+	int width = 64, depth = 64;
 	DefineDecoderExpand(id, 2, 1);
 }
 
 [numthreads(8,8,1)]
-void DecoderConv2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x256->64x64x128
+void DecoderConv2(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64->128x128x32
 {
-	uint width = 64, depth1 = 256, depth2 = 128;
+	uint width = 128, depth1 = 64, depth2 = 32;
 	DefineDecoderConv(id, width, depth1, depth2, 2);
 }
 
-[numthreads(128, THREAD_Y_128Z, 1)]
-void DecoderNormal2(uint3 id: SV_DispatchThreadID) //id.z=MAX_THREAD_Z*2 64x64x128
+[numthreads(32, THREAD_Y_32Z, 1)]
+void DecoderNormal2(uint3 id: SV_DispatchThreadID) //id.z=16 128x128x32
 {
-	uint width = THREAD_Y_128Z, depth = 128, nwidth = 64;
+	uint width = THREAD_Y_32Z, depth = 32, nwidth = 128;
 	StdDefineNormal(id, decoder_conv2, decoder_conv2_statistic, width);
 }
 
 [numthreads(8,8,4)]
-void DecoderInstance2(uint3 id: SV_DispatchThreadID) //id.xy=64 64x64x128
+void DecoderInstance2(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x32
 {
-	uint width = 64, depth = 128;
+	uint width = 128, depth = 32;
 	DefineDecoderInstRelu(id, 2)
 }
 
 [numthreads(8,8,4)]
-void DecoderExpand3(uint3 id: SV_DispatchThreadID)//id.xy=64 64x64x128->128x128x128 
+void DecoderExpand3(uint3 id: SV_DispatchThreadID)//id.xy=128 128x128x32->256x256x32
 {
-	int width = 64, depth = 128;
+	int width = 128, depth = 32;
 	DefineDecoderExpand(id, 3, 2);
 }
 
 [numthreads(8,8,1)]
-void DecoderConv3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x128->128x128x64
+void DecoderConv3(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32->256x256x3
 {
-	uint width = 128, depth1 = 128, depth2 = 64;
-	DefineDecoderConv(id, width, depth1, depth2, 3);
-}
-
-[numthreads(MAX_THREAD_Z, REV_THREAD_Z, 1)]
-void DecoderNormal3(uint3 id: SV_DispatchThreadID) //128x128x64
-{
-	uint width = REV_THREAD_Z, depth = 64, nwidth = 128;
-	StdDefineNormal(id, decoder_conv3, decoder_conv3_statistic, width);
-}
-
-[numthreads(8,8,4)]
-void DecoderInstance3(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64
-{
-	uint width = 128, depth = 64;
-	DefineDecoderInstRelu(id, 3)
-}
-
-[numthreads(8,8,4)]
-void DecoderExpand4(uint3 id: SV_DispatchThreadID) //id.xy=128 128x128x64->256x256x64
-{
-	int width = 128, depth = 64;
-	DefineDecoderExpand(id, 4, 3);
-}
-
-[numthreads(8,8,1)]
-void DecoderConv4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x64->256x256x32
-{
-	uint width = 256, depth1 = 64, depth2 = 32;
-	DefineDecoderConv(id, width, depth1, depth2, 4);
-}
-
-[numthreads(32, THREAD_Y_32Z, 1)]
-void DecoderNormal4(uint3 id: SV_DispatchThreadID) //256x256x32
-{
-	uint width = THREAD_Y_32Z, depth = 32, nwidth = 256;
-	StdDefineNormal(id, decoder_conv4, decoder_conv4_statistic, width);
-}
-
-[numthreads(8,8,4)]
-void DecoderInstance4(uint3 id: SV_DispatchThreadID) //id.xy=256 256x256x32
-{
-	uint width = 256, depth = 32;
-	DefineDecoderInstRelu(id, 4)
-}
-
-[numthreads(8,8,4)]
-void DecoderPad5(uint3 id: SV_DispatchThreadID) //id.xy=264 256x256x32->262x262x32
-{
-	uint pad = 3, width = 256, depth = 32;
-	if (StdCheckRange(id, width + 2 * pad)) return;
-	StdPad(id, width, depth, pad)
-	decoder_conv5_pad[indx2] = decoder_conv4[indx];
-}
-
-float DotConv7x7(uint3 id, uint width, uint depth,uint z, int d_indx)
-{
-	float v = 0.0f;
-	for(int i = 0; i < 7; i++)
-	{
-		[unroll(7)]
-		for(int j = 0; j < 7; j++)
-		{
-			int c_indx = StdIndex(id.x + j, id.y + i, z, width, depth);
-			v += decoder_conv5_pad[c_indx] * decoder_g_pred_c_Conv_weights[d_indx];
-			d_indx++;
-		}
-	}
-	return v;
-}
-
-[numthreads(8,8,1)]
-void DecoderConv5(uint3 id: SV_DispatchThreadID) //id.xy=256
-{
-	//conv: （262x262x32) ->（256x256x3）
-	uint width = 262, depth1 = 32, depth2 =3, ks = 7, stride = 1;
+	uint width = 256, depth1 = 32, depth2 = 3;
 	float rgb[3];
-	for(uint i = 0; i < depth2; i++)
+	for (uint j = 0; j < depth2; j++)
 	{
-		float v= 0.0f;
-		for(uint j = 0; j < depth1; j++)
+		float v = 0.0f;
+		for (uint i = 0; i < depth1; i++)
 		{
-			int d_indx = (depth2 * j + i)* ks * ks;
-			v += DotConv7x7(id, width, depth1, j, d_indx);
+			float3x3 xsamp = StdSlowSample(decoder_conv3_conved, id.x, id.y, i, width, depth1);
+			float3x3 kernel = decoder_g_d3_dc_conv2d_Conv_weights[depth2 * i + j];
+			float3x3 conv = xsamp * kernel;
+			float3 iall = conv[0] + conv[1] + conv[2];
+			v += iall[0] + iall[1] + iall[2];
 		}
-		rgb[i] = sigmod(v);
+		int indx = (width * depth2) * id.x + depth2 * id.y + j;
+		decoder_conv3[indx] = v;
+		rgb[j] = sigmod(v);
 	}
-	uint2 coord = uint2(id.y, width - ks + stride -1 - id.x);
+	uint2 coord = uint2(id.y, width - id.x);
 	decoder_destination[coord] = float4(rgb[0], rgb[1], rgb[2], 1);
 }
+

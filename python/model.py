@@ -281,7 +281,7 @@ class Artgan(object):
             self.input_photo_features = encoder(image=self.input_photo, options=self.options, reuse=False)
 
             # Decode obtained features.
-            self.output_photo = decoder(features=self.input_photo_features, options=self.options, reuse=False)
+            self.output_photo = decoder(features=self.input_photo_features[0], options=self.options, reuse=False)
 
     def train(self, args, ckpt_nmbr=None):
         # Initialize augmentor.
@@ -562,20 +562,14 @@ class Artgan(object):
             img = np.expand_dims(img, axis=0)
             e_list = self.sess.run(self.input_photo_features,
                                    feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
-            export_layer(e_list[1], "encoder_c1")
-            export_layer(e_list[2], "encoder_c2")
-            export_layer(e_list[3], "encoder_c3")
-            export_layer(e_list[4], "encoder_c4")
-            export_layer(e_list[0], "encoder_c5")
+            # export_layer(e_list[0], "encoder_c3")
+            export_layer(e_list[1], "encoder_c0")
+            printf(e_list[1], "encoder_c0")
+            printf(e_list[2], "encoder_c2")
             d_list = self.sess.run(self.output_photo,
                                    feed_dict={self.input_photo: normalize_arr_of_imgs(img)})
-            export_layer(d_list[1], "decoder_d1")
-            export_layer(d_list[2], "decoder_d2")
-            export_layer(d_list[3], "decoder_d3")
-            export_layer(d_list[3], "decoder_d4")
-            export_layer(d_list[5], "decoder_y1")
-            export_layer(d_list[6], "decoder_y2")
-            export_layer(d_list[7], "decoder_y3")
+            # export_layer(d_list[1], "decoder_d1")
+
 
     def export_arg(self, cpkt):
         checkpoint_pth = os.path.join(self.checkpoint_long_dir, cpkt)
