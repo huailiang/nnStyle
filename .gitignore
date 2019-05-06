@@ -4,9 +4,7 @@
 **/.vscode/
 **/.idea/
 **/obj/
-**/Assets/ShaderForge/
-**/Assets/ShaderForge.meta
-**/Assets/QUVEditor/
+**/FreeMountain*
 **/Test/
 **/Test.meta
 python/input/

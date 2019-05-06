@@ -28,11 +28,10 @@ public struct Kernel
 
 public class Model : IDisposable
 {
-    private Kernel StyleConv0, StyleNormal0, StyleInstance0, StylePad, StyleConv1, StyleNormal1, StyleInstance1, StyleConv2, StyleNormal2, StyleInstance2;
-    private Kernel StyleConv3, StyleNormal3, StyleInstance3;
+    private Kernel StyleConv0, StyleNormal0, StyleInstance0, StylePad, StyleConv1, StyleNormal1, StyleInstance1;
+    private Kernel StyleConv2, StyleNormal2, StyleInstance2, StyleConv3, StyleNormal3, StyleInstance3;
     private Kernel ResidulePad1_1, ResiduleConv1_1, ResiduleNormal1_1, ResiduleInst1_1, ResidulePad1_2, ResiduleConv1_2, ResiduleNormal1_2, ResiduleInst1_2;
-    private Kernel DecoderExpand1, DecoderConv1, DecoderNormal1, DecoderInstance1, DecoderExpand2, DecoderConv2, DecoderNormal2, DecoderInstance2;
-    private Kernel DecoderExpand3, DecoderConv3;
+    private Kernel DecoderExpand1, DecoderConv1, DecoderNormal1, DecoderInstance1, DecoderExpand2, DecoderConv2, DecoderNormal2, DecoderInstance2, DecoderExpand3, DecoderConv3;
 
     private ComputeShader encoderShader, decoderShader;
     private ComputeBuffer buffer;
