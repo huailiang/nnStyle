@@ -180,22 +180,7 @@ public class Model : IDisposable
         decoderShader.Dispatch(DecoderConv3, 256 / 8, 256 / 8, 1);
         tempRender.sharedMaterial.SetTexture("_MainTex", tempDestination);
     }
-
-    public void Test()
-    {
-        encoderShader.Dispatch(StyleConv1, 136 / 8, 136 / 8, 1);
-        encoderShader.Dispatch(StyleNormal1, 1, 1, 1);
-        encoderShader.Dispatch(StyleInstance1, 136 / 8, 136 / 8, 32 / 4);
-        encoderShader.Dispatch(StyleConv2, 72 / 8, 72 / 8, 1);
-        encoderShader.Dispatch(StyleNormal2, 1, 1, 1);
-        encoderShader.Dispatch(StyleInstance2, 72 / 8, 72 / 8, 32 / 4);
-        encoderShader.Dispatch(StyleConv3, 32 / 8, 32 / 8, 1);
-        encoderShader.Dispatch(StyleNormal3, 1, 1, 1);
-        encoderShader.Dispatch(StyleInstance3, 32 / 8, 32 / 8, 64 / 4);
-        DrawResidule();
-        DrawDecoder();
-    }
-
+    
 
     public void Process(Dictionary<string, float[]> v1, Dictionary<string, Matrix3X3[]> v3)
     {

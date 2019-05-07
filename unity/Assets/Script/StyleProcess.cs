@@ -57,18 +57,14 @@ public class StyleProcess : MonoBehaviour
         }
         if (GUI.Button(new Rect(20, 80, 80, 40), "Decode"))
         {
-            float[] layer = checkpoint.LoadLayer("encoder_c3");
-            BufferPool.Get("input_initial").SetData(layer);
-            model.DrawResidule();
-            model.DrawDecoder();
-        }
-        if (GUI.Button(new Rect(20, 140, 80, 40), "Test"))
-        {
-            float[] layer = checkpoint.LoadLayer("encoder_c0");
-            BufferPool.Get("encoder_conv0").SetData(layer);
-            BufferProfile.Printf("encoder_conv0");
-            BufferProfile.Printf("encoder_conv2");
-            model.Test();
+            float[] layer = null;
+            if (checkpoint.LoadLayer("encoder_c3", out layer))
+            {
+                BufferPool.Get("input_initial").SetData(layer);
+                model.DrawResidule();
+                model.DrawDecoder();
+            }
         }
     }
+
 }
