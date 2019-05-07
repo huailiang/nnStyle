@@ -14,6 +14,14 @@
 
 如上图所示， 左边是原图，中间是unity转换的图片，右边是TensorFlow inrefrence的图片。
 
+
+我们通过后处理把风格转换后的RT渲染到一个render上的实时效果图：
+
+<br><img src='image/show.gif'> <br>
+
+对应项目中的Forest Scene， 上图右下角即转换风格的RT. 
+
+
 ## 环境
 
 Unity2018.2 	<br>

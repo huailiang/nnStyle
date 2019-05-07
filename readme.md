@@ -14,6 +14,11 @@ We trained the model in the tensorflow, and forward the network in the unity env
 
 As shown in the picture，left is origin picture, middle is unity transfer picture, and right is tensorflow inference picture.
 
+We render a effect by post-processing：
+
+<br><img src='image/show.gif'> <br>
+
+implements with scene named *forest* in the project, the styled effetc is displayed at bottom-right corner in preview picture.
 
 
 ## Environment
