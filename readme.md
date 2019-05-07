@@ -14,6 +14,11 @@ We trained the model in the tensorflow, and forward the network in the unity env
 
 As shown in the picture，left is origin picture, middle is unity transfer picture, and right is tensorflow inference picture.
 
+We render a effect by post-processing：
+
+<br><img src='image/show.gif'> <br>
+
+implements with scene named *forest* in the project, the styled effetc is displayed at bottom-right corner in preview picture.
 
 
 ## Environment
@@ -23,6 +28,16 @@ Python2.7 or 3.5 <br>
 Tensorflow 1.7 or new <br>
 PIL, numpy, scipy, cv2 <br>
 tqdm
+
+## Branch
+
+git branch description:
+
+master: Complex implements but at the expense of performance. About 3 FPS at PC with Geforce GTX 1060 3GB
+
+fast: We delete some unimportant layer for performance. Aount 29 FPS at PC with Geforce GTX 1060 3GB
+
+half: Transfer float type to half type in compute shader for less memory.
 
 ## Export Data
 

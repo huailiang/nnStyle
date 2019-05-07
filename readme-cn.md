@@ -14,6 +14,14 @@
 
 如上图所示， 左边是原图，中间是unity转换的图片，右边是TensorFlow inrefrence的图片。
 
+
+我们通过后处理把风格转换后的RT渲染到一个render上的实时效果图：
+
+<br><img src='image/show.gif'> <br>
+
+对应项目中的Forest Scene， 上图右下角即转换风格的RT. 
+
+
 ## 环境
 
 Unity2018.2 	<br>
@@ -21,6 +29,17 @@ Python2.7 or 3.5 <br>
 Tensorflow 1.7 or new <br>
 PIL, numpy, scipy, cv2 <br>
 tqdm
+
+
+## 分支
+
+git 分支说明:
+
+master: 复杂完整的实现，但牺牲了性能. 在PC(显卡 Geforce GTX 1060 3GB) 上大概3FPS
+
+fast:  为了性能删除了一些不必要的网络层. 在PC（显卡Geforce GTX 1060 3GB）上大概29FPS
+
+half:  在compute shader中把float类型转换为half类型， 为了节省运行内存
 
 ## 数据处理
 
