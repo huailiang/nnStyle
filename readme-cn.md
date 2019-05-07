@@ -63,7 +63,7 @@ python main.py \
 ```
 
 
-你也可以在[百度云盘](https://pan.baidu.com/s/13_kSWE-OiqHFDXix9NwL_g)上下载到这些导出好的数据, 然后导入到unity.
+你也可以在[百度云盘](https://pan.baidu.com/s/1hNqmZv1Xvygx7nMb7PfZjg) (提取码：6thf)上下载到这些导出好的数据, 然后导入到unity.
 
 
 导出之后，在unity中运行Tools->LayerVisual, 可以看到每一层的数据可视化图像，如下图所示：
