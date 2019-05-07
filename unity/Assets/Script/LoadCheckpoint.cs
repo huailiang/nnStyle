@@ -31,29 +31,44 @@ public class LoadCheckpoint
         return null;
     }
 
-    public float[] LoadLayer(string name)
+    public bool LoadLayer(string name,out float[] layer)
     {
         int[] shape;
-        return LoadLayer(name, out shape);
+        return LoadLayer(name, out shape, out layer);
     }
 
-    public float[] LoadLayer(string name, out int[] shape)
+    public bool LoadLayer(string name, out int[] shape, out float[] layer)
     {
         string path = Application.dataPath + "/Resources/" + name + ".bytes";
-        float[] rst;
-        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+        if (File.Exists(path))
         {
-            var reader = new BinaryReader(fs);
-            rst = ReadLayer(reader, out shape);
-            reader.Close();
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                var reader = new BinaryReader(fs);
+                bool rst = ReadLayer(reader, out shape, out layer);
+                reader.Close();
+                return rst;
+            }
         }
-        return rst;
+        else
+        {
+            shape = null;
+            layer = null;
+            return false;
+        }
     }
 
-    private float[] ReadLayer(BinaryReader reader, out int[] shapes)
+    private bool ReadLayer(BinaryReader reader, out int[] shapes, out float[] layer)
     {
         short shape = reader.ReadInt16();
-        if (shape != 4) { Debug.LogError("not support shape" + shape); shapes = null; return null; }
+        if (shape != 4)
+        {
+            Debug.LogError("not support shape" + shape);
+
+            shapes = null;
+            layer = null;
+            return false;
+        }
         short v2 = reader.ReadInt16();
         short v3 = reader.ReadInt16();
         short v4 = reader.ReadInt16();
@@ -61,15 +76,15 @@ public class LoadCheckpoint
         shapes[0] = v2;
         shapes[1] = v3;
         shapes[2] = v4;
-        float[] rst = new float[v2 * v3 * v4];
+        layer = new float[v2 * v3 * v4];
         for (int i = 0; i < v2; i++)
             for (int j = 0; j < v3; j++)
                 for (int k = 0; k < v4; k++)
                 {
                     int idx = i * v3 * v4 + j * v4 + k;
-                    rst[idx] = reader.ReadSingle();
+                    layer[idx] = reader.ReadSingle();
                 }
-        return rst;
+        return true;
     }
 
 
