@@ -30,6 +30,17 @@ Tensorflow 1.7 or new <br>
 PIL, numpy, scipy, cv2 <br>
 tqdm
 
+
+## 分支
+
+git 分支说明:
+
+master: 复杂完整的实现，但牺牲了性能. 在PC(显卡 Geforce GTX 1060 3GB) 上大概3FPS
+
+fast:  为了性能删除了一些不必要的网络层. 在PC（显卡Geforce GTX 1060 3GB）上大概29FPS
+
+half:  在compute shader中把float类型转换为half类型， 为了节省运行内存
+
 ## 数据处理
 
 ### 导出网络参数命令:

@@ -29,6 +29,16 @@ Tensorflow 1.7 or new <br>
 PIL, numpy, scipy, cv2 <br>
 tqdm
 
+## Branch
+
+git branch description:
+
+master: Complex implements but at the expense of performance. About 3 FPS at PC with Geforce GTX 1060 3GB
+
+fast: We delete some unimportant layer for performance. Aount 29 FPS at PC with Geforce GTX 1060 3GB
+
+half: Transfer float type to half type in compute shader for less memory.
+
 ## Export Data
 
 ### run the command like this:
