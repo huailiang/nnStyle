@@ -1,11 +1,10 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public class VisualBufferTool : EditorWindow
+public class VisualBufferWindow : LgWindow
 {
-    GUIStyle boldLableStyle, textureStyle;
     int[] shape;
-    float[] layers;
+    float[] layer;
     int fslider, pslider;
     int select = 0, p_select = -1;
     int tx = 20, ty = 95, tw = 360;
@@ -22,30 +21,14 @@ public class VisualBufferTool : EditorWindow
     [MenuItem("Tools/LayerVisual")]
     static void VisualTool()
     {
-        EditorWindow.GetWindowWithRect(typeof(VisualBufferTool), new Rect(0, 0, 400, 600), true, "Visual Buffer");
+        LgWindow.GetWindow<VisualBufferWindow>(400, 600, "LayerWindow");
     }
 
-    private void Init()
+    protected override void LgInit()
     {
-        if (checkpoint == null)
-        {
-            checkpoint = new LoadCheckpoint();
-        }
-        if (boldLableStyle == null)
-        {
-            boldLableStyle = new GUIStyle(EditorStyles.label);
-            boldLableStyle.fontSize = 22;
-            boldLableStyle.fontStyle = FontStyle.Bold;
-        }
-        if (textureStyle == null)
-        {
-            textureStyle = new GUIStyle(EditorStyles.objectField);
-        }
-        if (mat == null)
-        {
-            showgrid = true;
-            mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Editor/EditorRes/grid.mat");
-        }
+        checkpoint = new LoadCheckpoint();
+        showgrid = true;
+        mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Editor/EditorRes/grid.mat");
         texRect.x = tx;
         texRect.y = ty;
         texRect.width = tw;
@@ -53,9 +36,8 @@ public class VisualBufferTool : EditorWindow
     }
 
 
-    void OnGUI()
+    protected override void LgGUI()
     {
-        Init();
         GUILayout.Space(10);
 
         GUILayout.BeginVertical();
@@ -70,8 +52,9 @@ public class VisualBufferTool : EditorWindow
             if (!string.IsNullOrEmpty(str))
             {
                 fslider = 0;
-                layers = checkpoint.LoadLayer(str, out shape);
-                DrawTexture();
+                layer = null;
+                if (checkpoint.LoadLayer(str, out shape, out layer))
+                    DrawTexture();
             }
             p_select = select;
         }
@@ -122,7 +105,7 @@ public class VisualBufferTool : EditorWindow
             for (int j = 0; j < width; j++)
             {
                 int idx = i * width * depth + j * depth + z;
-                float v = idx < layers.Length ? sigmod(layers[idx]) : 0;
+                float v = idx < layer.Length ? sigmod(layer[idx]) : 0;
                 Color color = new Color(v, v, v, 1);
                 texture.SetPixel(j, height - 1 - i, color);
             }
@@ -154,9 +137,9 @@ public class VisualBufferTool : EditorWindow
     float sample(int x, int y)
     {
         int idx = x * width * depth + y * depth + z;
-        if (idx < layers.Length)
+        if (idx < layer.Length)
         {
-            return layers[idx];
+            return layer[idx];
         }
         return 0f;
     }
