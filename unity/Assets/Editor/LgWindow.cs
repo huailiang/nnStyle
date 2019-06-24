@@ -1,9 +1,8 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public class LgWindow : EditorWindow
+public class CopyrightWindow : EditorWindow
 {
-
     Texture2D texture;
     Material mat;
     float factor;
@@ -13,7 +12,7 @@ public class LgWindow : EditorWindow
     [MenuItem("Tools/CopyRight")]
     static void CopyRight()
     {
-        EditorWindow.GetWindowWithRect(typeof(LgWindow), new Rect(0, 0, 280, 300), true, "");
+        EditorWindow.GetWindowWithRect(typeof(CopyrightWindow), new Rect(0, 0, 280, 300), true, "CopyRight");
     }
 
     private void OnEnable()
@@ -28,10 +27,13 @@ public class LgWindow : EditorWindow
     {
         if (mat != null)
         {
-            factor += Time.deltaTime * 0.1f;
+            factor += Time.deltaTime * 0.4f;
             factor = Mathf.Clamp(factor, 0, 0.5f);
-            Debug.Log(factor);
-            mat.SetFloat("_DistortFactor", factor);
+            if (factor <= 0.5f)
+            {
+                mat.SetFloat("_DistortFactor", factor);
+                Repaint();
+            }
         }
     }
 
@@ -40,12 +42,66 @@ public class LgWindow : EditorWindow
         if (texture != null)
         {
             EditorGUI.DrawPreviewTexture(texRect, texture, mat);
-
-
         }
-        EditorGUI.LabelField(new Rect(10, 280, 200, 20), "copyright");
-
+        EditorGUI.LabelField(new Rect(10, 280, 200, 20), "copyright@huailiang");
     }
 
+}
+
+
+public abstract class LgWindow : EditorWindow
+{
+    protected static GUIStyle boldLableStyle, textureStyle, labelBtnStyle;
+    private int width, height;
+    private bool inited = false;
+
+    private static void InitStyle()
+    {
+        if (boldLableStyle == null)
+        {
+            boldLableStyle = new GUIStyle(EditorStyles.label);
+            boldLableStyle.fontSize = 22;
+            boldLableStyle.fontStyle = FontStyle.Bold;
+        }
+        if (textureStyle == null)
+        {
+            textureStyle = new GUIStyle(EditorStyles.objectField);
+        }
+        if (labelBtnStyle == null)
+        {
+            labelBtnStyle = new GUIStyle(EditorStyles.miniButton);
+        }
+    }
+
+    public void Set(int w, int h)
+    {
+        width = w;
+        height = h;
+    }
+
+
+    public static EditorWindow GetWindow<T>(int width, int height, string title) where T : LgWindow
+    {
+        EditorWindow window = EditorWindow.GetWindowWithRect(typeof(T), new Rect(0, 0, width, height + 30), true, title);
+        (window as LgWindow).Set(width, height);
+        InitStyle();
+        return window;
+    }
+
+
+    private void OnGUI()
+    {
+        if (!inited)
+        {
+            inited = true;
+            LgInit();
+        }
+        LgGUI();
+        EditorGUI.LabelField(new Rect(width - 120, height + 10, 100, 30), "copyright @2019");
+    }
+
+    protected abstract void LgGUI();
+
+    protected virtual void LgInit() { }
 
 }
