@@ -3,6 +3,10 @@
 
 [English Version](./readme.md)
 
+[paper][i1]
+
+[website][i2]
+
 此项目旨在视频游戏中转换风格。
 
 我们使用预训练好的TensorFlow模型， 并在unity使用compute shader实现了一套前向传播的网络。
@@ -119,3 +123,8 @@ CUDA_VISIBLE_DEVICES=1 python main.py \
 Email: peng_huailiang@qq.com
 
 Blog:  https://huailiang.github.io/
+
+
+
+[i1]: https://github.com/huailiang/nnStyle/blob/master/image/paper.pdf
+[i2]: https://huailiang.github.io/blog/2019/nnstyle/
