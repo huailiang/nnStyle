@@ -3,6 +3,10 @@
 
 [中文版](./readme-cn.md)
 
+[paper][i1]
+
+[website][i2]
+
 The project aimed to transfer style  realtime in the video game. 
 
 We trained the model in the tensorflow, and forward the network in the unity environment.
@@ -147,3 +151,7 @@ R stands for relu, G stands for sigmod, while B stands for tanh.
 Email: peng_huailiang@qq.com
 
 Blog:  https://huailiang.github.io/
+
+
+[i1]: https://github.com/huailiang/nnStyle/blob/master/image/paper.pdf
+[i2]: https://huailiang.github.io/blog/2019/nnstyle/
