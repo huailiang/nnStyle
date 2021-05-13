@@ -153,7 +153,7 @@ def reduce_spatial_dim(input_tensor):
     Since labels and discriminator outputs are of different shapes (and even ranks)
     we should write a routine to deal with that.
     Args:
-        input: tensor of shape [batch_size, spatial_resol_1, spatial_resol_2, depth]
+        input_tensor: tensor of shape [batch_size, spatial_resol_1, spatial_resol_2, depth]
     Returns:
         tensor of shape [batch_size, depth]
     """
@@ -166,7 +166,7 @@ def add_spatial_dim(input_tensor, dims_list, resol_list):
     """
         Appends dimensions mentioned in dims_list resol_list times. S
         Args:
-            input: tensor of shape [batch_size, depth0]
+            input_tensor: tensor of shape [batch_size, depth0]
             dims_list: list of integers with position of new  dimensions to append.
             resol_list: list of integers with corresponding new dimensionalities for each dimension.
         Returns:
